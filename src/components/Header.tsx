@@ -56,8 +56,8 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
           onClick={() => onNavigate('home')}
           className="header-logo"
         >
+          <span className="header-logo-top">HOUSE OF</span>
           <span className="header-logo-main">TÉFA</span>
-          <span className="header-logo-sub">Africana</span>
         </button>
 
         {/* Right Actions */}
@@ -177,8 +177,8 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
           left: 0;
           right: 0;
           z-index: 50;
-          background: var(--color-cream);
-          border-bottom: 1px solid var(--color-nude-light);
+          background: #FFFFFF;
+          border-bottom: 1px solid #EEEEEE;
         }
 
         .header-inner {
@@ -195,7 +195,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
           padding: var(--space-2);
           background: none;
           border: none;
-          color: var(--color-brown);
+          color: #111111;
           cursor: pointer;
         }
 
@@ -215,25 +215,33 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
         .header-link {
           background: none;
           border: none;
-          font-family: 'Quicksand', sans-serif;
+          font-family: 'Rethena', serif;
           font-size: 0.9375rem;
           font-weight: 600;
-          color: var(--color-brown);
+          color: #111111;
           cursor: pointer;
-          transition: color var(--transition-fast);
+          transition: all var(--transition-fast);
+          position: relative;
         }
 
-        .header-link:hover {
-          color: var(--color-coral);
+        .header-link::after {
+          content: '';
+          position: absolute;
+          bottom: -4px;
+          left: 0;
+          width: 0;
+          height: 2px;
+          background: #111111;
+          transition: width var(--transition-fast);
+        }
+
+        .header-link:hover::after {
+          width: 100%;
         }
 
         .header-admin-link {
-          color: var(--color-text-muted);
+          color: #666666;
           font-size: 0.8125rem;
-        }
-
-        .header-admin-link:hover {
-          color: var(--color-coral);
         }
 
         .header-logo {
@@ -246,24 +254,26 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
           background: none;
           border: none;
           cursor: pointer;
+          gap: 2px;
+        }
+
+        .header-logo-top {
+          font-family: 'Rethena', serif;
+          font-size: 0.625rem;
+          text-transform: uppercase;
+          letter-spacing: 0.3em;
+          color: #666666;
+          line-height: 1;
         }
 
         .header-logo-main {
           font-family: 'Cormorant Garamond', serif;
-          font-size: 2rem;
+          font-size: 1.75rem;
           font-weight: 700;
           font-style: italic;
           letter-spacing: 0.15em;
-          color: var(--color-brown-dark);
-        }
-
-        .header-logo-sub {
-          font-family: 'Quicksand', sans-serif;
-          font-size: 0.625rem;
-          text-transform: uppercase;
-          letter-spacing: 0.4em;
-          color: var(--color-brown-light);
-          margin-top: -4px;
+          color: #111111;
+          line-height: 1;
         }
 
         .header-actions {
@@ -276,8 +286,13 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
           padding: var(--space-2);
           background: none;
           border: none;
-          color: var(--color-brown);
+          color: #111111;
           cursor: pointer;
+          transition: opacity var(--transition-fast);
+        }
+
+        .header-icon-btn:hover {
+          opacity: 0.7;
         }
 
         .header-search {
@@ -293,11 +308,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
           align-items: center;
           gap: var(--space-2);
           padding: var(--space-2) var(--space-4);
-          background: var(--color-brown-dark);
-          color: white;
-          border: none;
+          background: #111111;
+          color: #FFFFFF;
+          border: 1px solid #111111;
           border-radius: var(--radius-full);
-          font-family: 'Quicksand', sans-serif;
+          font-family: 'Rethena', serif;
           font-size: 0.875rem;
           font-weight: 600;
           cursor: pointer;
@@ -305,7 +320,8 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
         }
 
         .header-cart-btn:hover {
-          background: var(--color-coral);
+          background: #FFFFFF;
+          color: #111111;
         }
 
         /* Mobile Menu */
@@ -324,7 +340,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
           bottom: 0;
           width: 80%;
           max-width: 320px;
-          background: var(--color-cream);
+          background: #FFFFFF;
           z-index: 70;
           padding: var(--space-8);
           display: flex;
@@ -341,7 +357,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
         .mobile-menu-header button {
           background: none;
           border: none;
-          color: var(--color-brown);
+          color: #111111;
           cursor: pointer;
         }
 
@@ -350,7 +366,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
           font-size: 1.75rem;
           font-weight: 700;
           font-style: italic;
-          color: var(--color-brown-dark);
+          color: #111111;
         }
 
         .mobile-menu-nav {
@@ -365,22 +381,23 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
           align-items: center;
           background: none;
           border: none;
-          font-family: 'Quicksand', sans-serif;
+          font-family: 'Rethena', serif;
           font-size: 1.125rem;
           font-weight: 600;
-          color: var(--color-brown-dark);
+          color: #111111;
           cursor: pointer;
           padding: var(--space-2) 0;
+          transition: opacity var(--transition-fast);
         }
 
         .mobile-menu-link:hover {
-          color: var(--color-coral);
+          opacity: 0.7;
         }
 
         .mobile-menu-categories {
           padding-top: var(--space-4);
           margin-top: var(--space-4);
-          border-top: 1px solid var(--color-nude-light);
+          border-top: 1px solid #EEEEEE;
           display: flex;
           flex-direction: column;
           gap: var(--space-3);
@@ -389,30 +406,30 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
         .mobile-menu-cat-link {
           background: none;
           border: none;
-          font-family: 'Quicksand', sans-serif;
+          font-family: 'Rethena', serif;
           font-size: 1rem;
-          color: var(--color-text-light);
+          color: #333333;
           cursor: pointer;
           text-align: left;
-          transition: color var(--transition-fast);
+          transition: opacity var(--transition-fast);
         }
 
         .mobile-menu-cat-link:hover {
-          color: var(--color-coral);
+          opacity: 0.7;
         }
 
         .mobile-menu-footer {
           margin-top: auto;
           padding-top: var(--space-6);
-          border-top: 1px solid var(--color-nude-light);
+          border-top: 1px solid #EEEEEE;
         }
 
         .mobile-menu-admin-link {
           background: none;
           border: none;
-          font-family: 'Quicksand', sans-serif;
+          font-family: 'Rethena', serif;
           font-size: 0.875rem;
-          color: var(--color-text-muted);
+          color: #666666;
           cursor: pointer;
         }
 

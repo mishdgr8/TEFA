@@ -28,6 +28,7 @@ export interface Category {
   name: string;
   slug: string;
   image: string;
+  hoverImage?: string;
 }
 
 export interface CartItem {

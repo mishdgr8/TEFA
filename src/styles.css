@@ -3,56 +3,73 @@
    Warm palette: Orange, Nude, Brown, Pink, Cream
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* ─── Custom Fonts ─── */
+@font-face {
+  font-family: 'LC SAC';
+  src: url('/assets/fonts/LCSac Trial-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Rethena';
+  src: url('/assets/rethena/Rethena Demo.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ─── CSS Custom Properties ─── */
 :root {
-  /* Primary Palette */
-  --color-coral: #E07B54;
-  --color-coral-dark: #C86A45;
-  --color-coral-light: #F0A080;
-  
-  /* Nude/Beige Tones */
-  --color-nude: #D4B5A0;
-  --color-nude-light: #E8D5C8;
-  --color-nude-dark: #B99B84;
-  
-  /* Brown/Chocolate */
-  --color-brown: #8B6F5C;
-  --color-brown-dark: #6B5244;
-  --color-brown-light: #A8917E;
-  
-  /* Blush Pink */
-  --color-blush: #DCACA5;
-  --color-blush-light: #F0D0CC;
-  --color-blush-dark: #C89890;
-  
+  /* Primary Palette (Now B&W) */
+  --color-coral: #111111;
+  --color-coral-dark: #000000;
+  --color-coral-light: #333333;
+
+  /* Subtle Neutrals */
+  --color-nude: #F0F0F0;
+  --color-nude-light: #F9F9F9;
+  --color-nude-dark: #E5E5E5;
+
+  /* Darks */
+  --color-brown: #333333;
+  --color-brown-dark: #111111;
+  --color-brown-light: #666666;
+
+  /* Accent Greys */
+  --color-blush: #CCCCCC;
+  --color-blush-light: #EEEEEE;
+  --color-blush-dark: #999999;
+
   /* Backgrounds */
-  --color-cream: #FBF7F4;
-  --color-cream-dark: #F5EDE6;
+  --color-cream: #FFFFFF;
+  --color-cream-dark: #F9F9F9;
   --color-white: #FFFFFF;
-  
+
   /* Text Colors */
-  --color-text: #3D3029;
-  --color-text-light: #7A6B60;
-  --color-text-muted: #A99B8F;
-  
+  --color-text: #111111;
+  --color-text-light: #333333;
+  --color-text-muted: #666666;
+
   /* Shadows */
   --shadow-sm: 0 1px 2px rgba(139, 111, 92, 0.05);
   --shadow-md: 0 4px 12px rgba(139, 111, 92, 0.08);
   --shadow-lg: 0 8px 30px rgba(139, 111, 92, 0.12);
   --shadow-xl: 0 20px 50px rgba(139, 111, 92, 0.15);
-  
+
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-base: 250ms ease;
   --transition-slow: 400ms ease;
-  
+
   /* Border Radius */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 20px;
   --radius-xl: 28px;
   --radius-full: 9999px;
-  
+
   /* Spacing Scale */
   --space-1: 4px;
   --space-2: 8px;
@@ -69,7 +86,9 @@
 }
 
 /* ─── Base Styles ─── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -82,20 +101,26 @@ html {
 }
 
 body {
-  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-weight: 500;
-  font-size: 16px;
+  font-family: 'Rethena', 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  /* Slightly larger for better readability with the new font */
   line-height: 1.6;
   color: var(--color-text);
   background-color: var(--color-cream);
 }
 
 /* ─── Typography ─── */
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Rethena', 'Cormorant Garamond', serif;
   font-weight: 600;
   line-height: 1.2;
-  color: var(--color-brown-dark);
+  color: #111111;
 }
 
 .font-serif {
@@ -103,7 +128,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .font-sans {
-  font-family: 'Quicksand', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .text-display {
@@ -144,17 +169,45 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ─── Colors ─── */
-.text-coral { color: var(--color-coral); }
-.text-brown { color: var(--color-brown); }
-.text-blush { color: var(--color-blush); }
-.text-muted { color: var(--color-text-muted); }
+.text-coral {
+  color: var(--color-coral);
+}
 
-.bg-coral { background-color: var(--color-coral); }
-.bg-nude { background-color: var(--color-nude); }
-.bg-brown { background-color: var(--color-brown); }
-.bg-blush { background-color: var(--color-blush); }
-.bg-cream { background-color: var(--color-cream); }
-.bg-white { background-color: var(--color-white); }
+.text-brown {
+  color: var(--color-brown);
+}
+
+.text-blush {
+  color: var(--color-blush);
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+.bg-coral {
+  background-color: var(--color-coral);
+}
+
+.bg-nude {
+  background-color: var(--color-nude);
+}
+
+.bg-brown {
+  background-color: var(--color-brown);
+}
+
+.bg-blush {
+  background-color: var(--color-blush);
+}
+
+.bg-cream {
+  background-color: var(--color-cream);
+}
+
+.bg-white {
+  background-color: var(--color-white);
+}
 
 /* ─── Buttons ─── */
 .btn {
@@ -326,44 +379,109 @@ h1, h2, h3, h4, h5, h6 {
   gap: var(--space-6);
 }
 
-.grid-2 { grid-template-columns: repeat(2, 1fr); }
-.grid-3 { grid-template-columns: repeat(3, 1fr); }
-.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
 
 @media (max-width: 1024px) {
-  .grid-4 { grid-template-columns: repeat(2, 1fr); }
-  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 640px) {
-  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ─── Flexbox Utilities ─── */
-.flex { display: flex; }
-.flex-col { flex-direction: column; }
-.items-center { align-items: center; }
-.justify-center { justify-content: center; }
-.justify-between { justify-content: space-between; }
-.gap-2 { gap: var(--space-2); }
-.gap-4 { gap: var(--space-4); }
-.gap-6 { gap: var(--space-6); }
-.gap-8 { gap: var(--space-8); }
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-2 {
+  gap: var(--space-2);
+}
+
+.gap-4 {
+  gap: var(--space-4);
+}
+
+.gap-6 {
+  gap: var(--space-6);
+}
+
+.gap-8 {
+  gap: var(--space-8);
+}
 
 /* ─── Animations ─── */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateX(-20px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 .animate-fade-in {

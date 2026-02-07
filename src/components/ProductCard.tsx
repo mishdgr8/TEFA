@@ -4,46 +4,46 @@ import { Product, PageName, PageParams } from '../types';
 import { formatPrice, getCategoryName } from '../data/store';
 
 interface ProductCardProps {
-    product: Product;
-    onNavigate: (page: PageName, params?: PageParams) => void;
+  product: Product;
+  onNavigate: (page: PageName, params?: PageParams) => void;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onNavigate }) => {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="product-card"
-            onClick={() => onNavigate('product', { slug: product.slug })}
-        >
-            <div className="product-card-image">
-                <img
-                    src={product.images[0]}
-                    alt={product.name}
-                    loading="lazy"
-                />
-                <div className="product-card-overlay" />
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="product-card"
+      onClick={() => onNavigate('product', { slug: product.slug })}
+    >
+      <div className="product-card-image">
+        <img
+          src={product.images[0]}
+          alt={product.name}
+          loading="lazy"
+        />
+        <div className="product-card-overlay" />
 
-                {/* Tags */}
-                {product.tags.length > 0 && (
-                    <div className="product-card-tags">
-                        {product.tags.slice(0, 2).map(tag => (
-                            <span key={tag} className="product-card-tag">{tag}</span>
-                        ))}
-                    </div>
-                )}
-            </div>
+        {/* Tags */}
+        {product.tags.length > 0 && (
+          <div className="product-card-tags">
+            {product.tags.slice(0, 2).map(tag => (
+              <span key={tag} className="product-card-tag">{tag}</span>
+            ))}
+          </div>
+        )}
+      </div>
 
-            <div className="product-card-content">
-                <div className="product-card-info">
-                    <h3 className="product-card-title">{product.name}</h3>
-                    <p className="product-card-category">{getCategoryName(product.categoryId)}</p>
-                </div>
-                <p className="product-card-price">{formatPrice(product.price)}</p>
-            </div>
+      <div className="product-card-content">
+        <div className="product-card-info">
+          <h3 className="product-card-title">{product.name}</h3>
+          <p className="product-card-category">{getCategoryName(product.categoryId)}</p>
+        </div>
+        <p className="product-card-price">{formatPrice(product.price)}</p>
+      </div>
 
-            <style>{`
+      <style>{`
         .product-card {
           cursor: pointer;
           transition: transform var(--transition-base);
@@ -75,7 +75,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onNavigate })
         .product-card-overlay {
           position: absolute;
           inset: 0;
-          background: linear-gradient(to top, rgba(139, 111, 92, 0.3), transparent 40%);
+          background: linear-gradient(to top, rgba(0, 0, 0, 0.3), transparent 40%);
           opacity: 0;
           transition: opacity var(--transition-base);
         }
@@ -146,6 +146,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onNavigate })
           white-space: nowrap;
         }
       `}</style>
-        </motion.div>
-    );
+    </motion.div>
+  );
 };

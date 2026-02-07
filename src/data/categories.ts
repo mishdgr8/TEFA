@@ -3,26 +3,37 @@ import { Category } from '../types';
 export const CATEGORIES: Category[] = [
     {
         id: '1',
-        name: 'Ankara Sets',
-        slug: 'ankara-sets',
-        image: 'https://images.unsplash.com/photo-1590736704728-f4730bb30770?auto=format&fit=crop&q=80&w=800'
+        name: 'Shakara Sets',
+        slug: 'shakara-sets',
+        image: '/assets/categories/shakara front.png',
+        hoverImage: '/assets/categories/shakara back.png'
     },
     {
         id: '2',
-        name: 'Kaftans',
-        slug: 'kaftans',
-        image: 'https://images.unsplash.com/photo-1597505666710-85f096738943?auto=format&fit=crop&q=80&w=800'
+        name: 'Bubu Gowns',
+        slug: 'bubu-gowns',
+        image: '/assets/categories/bubu front 1.png',
+        hoverImage: '/assets/categories/bubu back.png'
     },
     {
         id: '3',
-        name: 'Dresses',
-        slug: 'dresses',
-        image: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&q=80&w=800'
+        name: 'The Two Piece',
+        slug: 'the-two-piece',
+        image: '/assets/categories/two-piece front.png',
+        hoverImage: '/assets/categories/two-piece back.png'
     },
     {
         id: '4',
-        name: 'Accessories',
-        slug: 'accessories',
-        image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&q=80&w=800'
+        name: 'Jumpsuits',
+        slug: 'jumpsuits',
+        image: '/assets/categories/jumpsuit front.png',
+        hoverImage: '/assets/categories/jumpsuit back.png'
+    },
+    {
+        id: '5',
+        name: 'The Pants',
+        slug: 'the-pants',
+        image: '/assets/categories/pants 1.png',
+        hoverImage: '/assets/categories/pants 2.png'
     },
 ];
