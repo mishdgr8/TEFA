@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PageName } from '../../types';
+import { useNavigate } from 'react-router-dom';
 import {
   Package,
   Plus,
@@ -8,34 +8,95 @@ import {
   Home,
   ChevronRight,
   Loader2,
-  Lock
+  Lock,
+  MessageSquare,
+  Trash2,
+  Edit,
+  ExternalLink
 } from 'lucide-react';
 import { useStore } from '../../data/store';
+import { CategoryForm } from './CategoryForm';
+import { ReviewForm } from './ReviewForm';
+import { Category, CustomerReview } from '../../types';
 
 interface AdminDashboardProps {
-  onNavigate: (page: PageName) => void;
   onOpenProductForm: (productId?: string) => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
-  onNavigate,
   onOpenProductForm
 }) => {
-  const { products, categories, deleteProduct, user, loading } = useStore();
+  const navigate = useNavigate();
+  const {
+    products,
+    categories,
+    reviews,
+    deleteProduct,
+    deleteCategory,
+    deleteReview,
+    user,
+    loading
+  } = useStore();
+
+  const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'reviews'>('products');
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const handleDelete = async (id: string, name: string) => {
-    if (confirm(`Are you sure you want to delete "${name}"?`)) {
+  // Modals for Categories and Reviews
+  const [isCategoryFormOpen, setIsCategoryFormOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [isReviewFormOpen, setIsReviewFormOpen] = useState(false);
+  const [editingReview, setEditingReview] = useState<CustomerReview | null>(null);
+
+  const handleDeleteProduct = async (id: string, name: string) => {
+    if (confirm(`Are you sure you want to delete product "${name}"?`)) {
       setDeletingId(id);
       try {
         await deleteProduct(id);
       } catch (error) {
         console.error('Failed to delete product:', error);
-        alert('Failed to delete product. Please try again.');
+        alert('Failed to delete product.');
       } finally {
         setDeletingId(null);
       }
     }
+  };
+
+  const handleDeleteCategory = async (id: string, name: string) => {
+    if (confirm(`Are you sure you want to delete category "${name}"? Products in this category will become uncategorized.`)) {
+      setDeletingId(id);
+      try {
+        await deleteCategory(id);
+      } catch (error) {
+        console.error('Failed to delete category:', error);
+        alert('Failed to delete category.');
+      } finally {
+        setDeletingId(null);
+      }
+    }
+  };
+
+  const handleDeleteReview = async (id: string, name: string) => {
+    if (confirm(`Are you sure you want to delete review from "${name}"?`)) {
+      setDeletingId(id);
+      try {
+        await deleteReview(id);
+      } catch (error) {
+        console.error('Failed to delete review:', error);
+        alert('Failed to delete review.');
+      } finally {
+        setDeletingId(null);
+      }
+    }
+  };
+
+  const openCategoryForm = (category?: Category) => {
+    setEditingCategory(category || null);
+    setIsCategoryFormOpen(true);
+  };
+
+  const openReviewForm = (review?: CustomerReview) => {
+    setEditingReview(review || null);
+    setIsReviewFormOpen(true);
   };
 
   // Show login prompt if not authenticated
@@ -46,45 +107,59 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <Lock size={48} />
           <h2>Admin Access Required</h2>
           <p>Please sign in to access the admin dashboard.</p>
-          <button onClick={() => onNavigate('home')} className="admin-back-home">
+          <button onClick={() => navigate('/')} className="admin-back-home">
             Go to Homepage
           </button>
         </div>
         <style>{`
-                    .admin-auth-required {
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: center;
-                        min-height: 60vh;
-                        text-align: center;
-                        padding: var(--space-8);
-                    }
-                    .admin-auth-required svg {
-                        color: var(--color-coral);
-                        margin-bottom: var(--space-6);
-                    }
-                    .admin-auth-required h2 {
-                        font-family: 'Cormorant Garamond', serif;
-                        font-size: 1.75rem;
-                        font-style: italic;
-                        margin-bottom: var(--space-2);
-                    }
-                    .admin-auth-required p {
-                        color: var(--color-text-muted);
-                        margin-bottom: var(--space-6);
-                    }
-                    .admin-back-home {
-                        padding: var(--space-3) var(--space-6);
-                        background: var(--color-coral);
-                        color: white;
-                        border: none;
-                        border-radius: var(--radius-md);
-                        font-family: 'Quicksand', sans-serif;
-                        font-weight: 600;
-                        cursor: pointer;
-                    }
-                `}</style>
+          .admin-auth-required {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            text-align: center;
+            padding: 32px;
+          }
+          .admin-auth-required svg {
+            color: #ff7f50;
+            margin-bottom: 24px;
+          }
+          .admin-auth-required h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.75rem;
+            font-style: italic;
+            margin-bottom: 8px;
+          }
+          .admin-auth-required p {
+            color: #666;
+            margin-bottom: 24px;
+          }
+          .admin-back-home {
+            padding: 12px 24px;
+            background: #ff7f50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  if (!user.isAdmin) {
+    return (
+      <div className="admin-page">
+        <div className="admin-auth-required">
+          <Lock size={48} />
+          <h2>Access Denied</h2>
+          <p>You do not have permission to access the admin dashboard.</p>
+          <button onClick={() => navigate('/')} className="admin-back-home">
+            Go to Homepage
+          </button>
+        </div>
       </div>
     );
   }
@@ -97,25 +172,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <p>Loading products...</p>
         </div>
         <style>{`
-                    .admin-loading {
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: center;
-                        min-height: 60vh;
-                        gap: var(--space-4);
-                    }
-                    .admin-loading svg {
-                        color: var(--color-coral);
-                    }
-                    .spin {
-                        animation: spin 1s linear infinite;
-                    }
-                    @keyframes spin {
-                        from { transform: rotate(0deg); }
-                        to { transform: rotate(360deg); }
-                    }
-                `}</style>
+          .admin-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            gap: 16px;
+          }
+          .spin {
+            animation: spin 1s linear infinite;
+          }
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
       </div>
     );
   }
@@ -123,15 +195,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   return (
     <div className="admin-page">
       <div className="admin-container">
-        {/* Admin Header */}
-
         <div className="admin-header">
           <div>
             <h1>Admin Dashboard</h1>
             <p>Manage your TÉFA products and inventory</p>
           </div>
           <div className="admin-header-actions">
-            <button onClick={() => onNavigate('home')} className="admin-back-btn">
+            <button onClick={() => navigate('/')} className="admin-back-btn">
               <Home size={18} /> View Store
             </button>
             <button onClick={() => onOpenProductForm()} className="admin-add-btn">
@@ -140,235 +210,267 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="admin-stats">
-          <div className="stat-card">
-            <div className="stat-icon">
-              <Package size={24} />
-            </div>
-            <div className="stat-info">
-              <span className="stat-value">{products.length}</span>
-              <span className="stat-label">Products</span>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">
-              <Grid3X3 size={24} />
-            </div>
-            <div className="stat-info">
-              <span className="stat-value">{categories.length}</span>
-              <span className="stat-label">Categories</span>
-            </div>
-          </div>
+        {/* Tabs */}
+        <div className="admin-tabs">
+          <button
+            className={`tab-btn ${activeTab === 'products' ? 'active' : ''}`}
+            onClick={() => setActiveTab('products')}
+          >
+            <Package size={18} />
+            Products
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'categories' ? 'active' : ''}`}
+            onClick={() => setActiveTab('categories')}
+          >
+            <Grid3X3 size={18} />
+            Categories
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'reviews' ? 'active' : ''}`}
+            onClick={() => setActiveTab('reviews')}
+          >
+            <MessageSquare size={18} />
+            Customer Reviews
+          </button>
         </div>
 
-        {/* Products Table */}
-        <div className="admin-section">
-          <div className="section-header">
-            <h2>All Products</h2>
-            <button onClick={() => onOpenProductForm()} className="section-add-btn">
-              <Plus size={16} /> New
-            </button>
-          </div>
-
-          <div className="products-table">
-            <div className="table-header">
-              <span className="col-image">Image</span>
-              <span className="col-name">Name</span>
-              <span className="col-category">Category</span>
-              <span className="col-price">Price</span>
-              <span className="col-actions">Actions</span>
+        {/* Tab Content */}
+        {activeTab === 'products' && (
+          <div className="admin-section">
+            <div className="section-header">
+              <h2>All Products ({products.length})</h2>
+              <button onClick={() => onOpenProductForm()} className="section-add-btn">
+                <Plus size={16} /> Add Product
+              </button>
             </div>
 
-            <div className="table-body">
-              {products.map(product => (
-                <div key={product.id} className="table-row">
-                  <div className="col-image">
-                    <img src={product.images[0]} alt={product.name} />
-                  </div>
-                  <div className="col-name">
-                    <span className="product-name">{product.name}</span>
-                    <span className="product-tags">
-                      {product.tags.join(', ')}
-                    </span>
-                  </div>
-                  <div className="col-category">
-                    {categories.find(c => c.id === product.categoryId)?.name || 'N/A'}
-                  </div>
-                  <div className="col-price">
-                    ₦{product.price.toLocaleString()}
-                  </div>
-                  <div className="col-actions">
-                    <button
-                      onClick={() => onOpenProductForm(product.id)}
-                      className="action-btn edit"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(product.id, product.name)}
-                      className="action-btn delete"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
+            <div className="products-table">
+              <div className="table-header">
+                <span className="col-image">Image</span>
+                <span className="col-name">Name</span>
+                <span className="col-category">Category</span>
+                <span className="col-price">Price</span>
+                <span className="col-actions">Actions</span>
+              </div>
 
-              {products.length === 0 && (
-                <div className="table-empty">
-                  <p>No products yet. Add your first product!</p>
-                  <button onClick={() => onOpenProductForm()}>
-                    <Plus size={16} /> Add Product
-                  </button>
-                </div>
-              )}
+              <div className="table-body">
+                {products.map(product => (
+                  <div key={product.id} className="table-row">
+                    <div className="col-image">
+                      <img src={product.images[0]} alt={product.name} />
+                    </div>
+                    <div className="col-name">
+                      <span className="product-name">{product.name}</span>
+                      <span className="product-tags">
+                        {product.tags.join(', ')}
+                      </span>
+                    </div>
+                    <div className="col-category">
+                      {categories.find(c => c.id === product.categoryId)?.name || 'N/A'}
+                    </div>
+                    <div className="col-price">
+                      ₦{product.price.toLocaleString()}
+                    </div>
+                    <div className="col-actions">
+                      <button onClick={() => onOpenProductForm(product.id)} className="action-btn edit">
+                        <Edit size={16} />
+                      </button>
+                      <button onClick={() => handleDeleteProduct(product.id, product.name)} className="action-btn delete" disabled={deletingId === product.id}>
+                        {deletingId === product.id ? <Loader2 className="spin" size={16} /> : <Trash2 size={16} />}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {products.length === 0 && (
+                  <div className="table-empty">
+                    <p>No products yet. Add your first product!</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {activeTab === 'categories' && (
+          <div className="admin-section">
+            <div className="section-header">
+              <h2>All Categories ({categories.length})</h2>
+              <button onClick={() => openCategoryForm()} className="section-add-btn">
+                <Plus size={16} /> Add Category
+              </button>
+            </div>
+
+            <div className="products-table">
+              <div className="table-header cat-grid">
+                <span className="col-image">Image</span>
+                <span className="col-name">Name</span>
+                <span className="col-slug">Slug</span>
+                <span className="col-actions">Actions</span>
+              </div>
+
+              <div className="table-body">
+                {categories.map(cat => (
+                  <div key={cat.id} className="table-row cat-grid">
+                    <div className="col-image"><img src={cat.image} alt={cat.name} /></div>
+                    <div className="col-name"><span className="product-name">{cat.name}</span></div>
+                    <div className="col-slug"><code>{cat.slug}</code></div>
+                    <div className="col-actions">
+                      <button onClick={() => openCategoryForm(cat)} className="action-btn edit"><Edit size={16} /></button>
+                      <button onClick={() => handleDeleteCategory(cat.id, cat.name)} className="action-btn delete" disabled={deletingId === cat.id}>
+                        {deletingId === cat.id ? <Loader2 className="spin" size={16} /> : <Trash2 size={16} />}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'reviews' && (
+          <div className="admin-section">
+            <div className="section-header">
+              <h2>Customer Reviews ({reviews.length})</h2>
+              <button onClick={() => openReviewForm()} className="section-add-btn">
+                <Plus size={16} /> Add Review
+              </button>
+            </div>
+
+            <div className="products-table">
+              <div className="table-header review-grid">
+                <span className="col-image">Thumb</span>
+                <span className="col-name">User</span>
+                <span className="col-platform">Platform</span>
+                <span className="col-actions">Actions</span>
+              </div>
+
+              <div className="table-body">
+                {reviews.map(review => (
+                  <div key={review.id} className="table-row review-grid">
+                    <div className="col-image"><img src={review.thumbnail} alt={review.username} /></div>
+                    <div className="col-name">
+                      <span className="product-name">{review.username}</span>
+                      {review.videoUrl && (
+                        <a href={review.videoUrl} target="_blank" rel="noopener noreferrer" className="review-link">
+                          View Video <ExternalLink size={12} />
+                        </a>
+                      )}
+                    </div>
+                    <div className="col-platform" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: 'bold' }}>
+                      {review.platform}
+                    </div>
+                    <div className="col-actions">
+                      <button onClick={() => openReviewForm(review)} className="action-btn edit"><Edit size={16} /></button>
+                      <button onClick={() => handleDeleteReview(review.id, review.username)} className="action-btn delete" disabled={deletingId === review.id}>
+                        {deletingId === review.id ? <Loader2 className="spin" size={16} /> : <Trash2 size={16} />}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {isCategoryFormOpen && <CategoryForm category={editingCategory} onClose={() => setIsCategoryFormOpen(false)} />}
+      {isReviewFormOpen && <ReviewForm review={editingReview} onClose={() => setIsReviewFormOpen(false)} />}
 
       <style>{`
         .admin-page {
           padding-top: 100px;
-          padding-bottom: var(--space-24);
-          background: var(--color-cream-dark);
+          padding-bottom: 80px;
+          background: #fdfaf7;
           min-height: 100vh;
         }
 
         .admin-container {
           max-width: 1200px;
           margin: 0 auto;
-          padding: 0 var(--space-4);
+          padding: 0 20px;
         }
 
         .admin-header {
           display: flex;
-          flex-direction: column;
-          gap: var(--space-4);
-          margin-bottom: var(--space-8);
-        }
-
-        @media (min-width: 768px) {
-          .admin-header {
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
-          }
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 32px;
         }
 
         .admin-header h1 {
           font-family: 'Cormorant Garamond', serif;
           font-size: 2rem;
-          font-weight: 700;
           font-style: italic;
-          margin-bottom: var(--space-1);
+          margin: 0;
         }
 
         .admin-header p {
-          color: var(--color-text-muted);
-          font-size: 0.9375rem;
+          color: #666;
+          margin: 4px 0 0 0;
         }
 
         .admin-header-actions {
           display: flex;
-          gap: var(--space-3);
+          gap: 12px;
+        }
+
+        .admin-back-btn, .admin-add-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 20px;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
         }
 
         .admin-back-btn {
-          display: flex;
-          align-items: center;
-          gap: var(--space-2);
-          padding: var(--space-3) var(--space-5);
           background: white;
-          color: var(--color-brown);
-          border: 1px solid var(--color-nude);
-          border-radius: var(--radius-md);
-          font-family: 'Quicksand', sans-serif;
-          font-weight: 600;
-          font-size: 0.875rem;
-          cursor: pointer;
-          transition: all var(--transition-fast);
-        }
-
-        .admin-back-btn:hover {
-          background: var(--color-cream);
+          color: #2C1810;
+          border: 1px solid #eee;
         }
 
         .admin-add-btn {
-          display: flex;
-          align-items: center;
-          gap: var(--space-2);
-          padding: var(--space-3) var(--space-5);
-          background: var(--color-coral);
+          background: #ff7f50;
           color: white;
           border: none;
-          border-radius: var(--radius-md);
-          font-family: 'Quicksand', sans-serif;
-          font-weight: 600;
-          font-size: 0.875rem;
-          cursor: pointer;
-          transition: all var(--transition-fast);
         }
 
-        .admin-add-btn:hover {
-          background: var(--color-coral-dark);
-        }
-
-        .admin-stats {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: var(--space-4);
-          margin-bottom: var(--space-8);
-        }
-
-        @media (min-width: 768px) {
-          .admin-stats {
-            grid-template-columns: repeat(4, 1fr);
-          }
-        }
-
-        .stat-card {
+        .admin-tabs {
+          display: flex;
+          gap: 4px;
+          margin-bottom: 32px;
           background: white;
-          padding: var(--space-6);
-          border-radius: var(--radius-lg);
-          box-shadow: var(--shadow-sm);
+          padding: 4px;
+          border-radius: 12px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+          width: fit-content;
+        }
+
+        .tab-btn {
           display: flex;
           align-items: center;
-          gap: var(--space-4);
+          gap: 8px;
+          padding: 10px 20px;
+          border: none;
+          background: none;
+          border-radius: 8px;
+          font-weight: 600;
+          color: #666;
+          cursor: pointer;
         }
 
-        .stat-icon {
-          width: 56px;
-          height: 56px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: var(--color-coral-light);
-          color: var(--color-coral-dark);
-          border-radius: var(--radius-md);
-        }
-
-        .stat-info {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .stat-value {
-          font-size: 1.75rem;
-          font-weight: 700;
-          color: var(--color-brown-dark);
-        }
-
-        .stat-label {
-          font-size: 0.8125rem;
-          color: var(--color-text-muted);
+        .tab-btn.active {
+          background: #2C1810;
+          color: white;
         }
 
         .admin-section {
           background: white;
-          border-radius: var(--radius-lg);
-          box-shadow: var(--shadow-sm);
+          border-radius: 16px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.05);
           overflow: hidden;
         }
 
@@ -376,33 +478,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: var(--space-5) var(--space-6);
-          border-bottom: 1px solid var(--color-nude-light);
+          padding: 24px;
+          border-bottom: 1px solid #eee;
         }
 
         .section-header h2 {
-          font-family: 'Quicksand', sans-serif;
-          font-size: 1rem;
-          font-weight: 700;
+          margin: 0;
+          font-size: 1.25rem;
         }
 
         .section-add-btn {
           display: flex;
           align-items: center;
-          gap: var(--space-1);
-          padding: var(--space-2) var(--space-3);
-          background: var(--color-cream-dark);
-          color: var(--color-brown);
-          border: none;
-          border-radius: var(--radius-md);
-          font-family: 'Quicksand', sans-serif;
+          gap: 4px;
+          padding: 8px 16px;
+          background: #fdfaf7;
+          border: 1px solid #eee;
+          border-radius: 6px;
           font-weight: 600;
-          font-size: 0.8125rem;
           cursor: pointer;
-        }
-
-        .section-add-btn:hover {
-          background: var(--color-nude-light);
         }
 
         .products-table {
@@ -410,146 +504,76 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         }
 
         .table-header {
-          display: none;
-        }
-
-        @media (min-width: 768px) {
-          .table-header {
-            display: grid;
-            grid-template-columns: 80px 2fr 1fr 100px 150px;
-            gap: var(--space-4);
-            padding: var(--space-3) var(--space-6);
-            background: var(--color-cream-dark);
-            font-size: 0.6875rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--color-text-muted);
-          }
-        }
-
-        .table-body {
-          padding: var(--space-4);
-        }
-
-        @media (min-width: 768px) {
-          .table-body {
-            padding: 0;
-          }
+          display: grid;
+          grid-template-columns: 80px 2fr 1fr 100px 150px;
+          gap: 16px;
+          padding: 16px 24px;
+          background: #fdfaf7;
+          font-weight: 700;
+          text-transform: uppercase;
+          font-size: 11px;
+          color: #888;
+          letter-spacing: 0.1em;
         }
 
         .table-row {
-          display: flex;
-          flex-wrap: wrap;
-          gap: var(--space-3);
-          padding: var(--space-4);
-          border-bottom: 1px solid var(--color-nude-light);
+          display: grid;
+          grid-template-columns: 80px 2fr 1fr 100px 150px;
+          gap: 16px;
+          padding: 16px 24px;
           align-items: center;
-        }
-
-        @media (min-width: 768px) {
-          .table-row {
-            display: grid;
-            grid-template-columns: 80px 2fr 1fr 100px 150px;
-            gap: var(--space-4);
-            padding: var(--space-4) var(--space-6);
-          }
-        }
-
-        .table-row:last-child {
-          border-bottom: none;
+          border-bottom: 1px solid #f5f5f5;
         }
 
         .col-image img {
-          width: 64px;
-          height: 80px;
+          width: 60px;
+          height: 60px;
           object-fit: cover;
-          border-radius: var(--radius-sm);
-        }
-
-        .col-name {
-          display: flex;
-          flex-direction: column;
-          flex: 1;
-          min-width: 150px;
+          border-radius: 8px;
         }
 
         .product-name {
           font-weight: 600;
-          color: var(--color-brown-dark);
+          display: block;
         }
 
         .product-tags {
-          font-size: 0.75rem;
-          color: var(--color-text-muted);
-        }
-
-        .col-category {
-          font-size: 0.875rem;
-          color: var(--color-text-light);
-        }
-
-        .col-price {
-          font-weight: 700;
-          color: var(--color-coral);
+          font-size: 11px;
+          color: #999;
         }
 
         .col-actions {
           display: flex;
-          gap: var(--space-2);
+          gap: 8px;
         }
 
         .action-btn {
-          padding: var(--space-2) var(--space-3);
+          padding: 8px;
+          border-radius: 6px;
           border: none;
-          border-radius: var(--radius-sm);
-          font-family: 'Quicksand', sans-serif;
-          font-weight: 600;
-          font-size: 0.75rem;
           cursor: pointer;
-          transition: all var(--transition-fast);
+          transition: transform 0.2s;
         }
 
-        .action-btn.edit {
-          background: var(--color-cream-dark);
-          color: var(--color-brown);
-        }
+        .action-btn:hover { transform: scale(1.1); }
+        .action-btn.edit { background: #f0f0f0; color: #666; }
+        .action-btn.delete { background: #fee2e2; color: #ef4444; }
 
-        .action-btn.edit:hover {
-          background: var(--color-nude-light);
-        }
-
-        .action-btn.delete {
-          background: #FEE2E2;
-          color: #DC2626;
-        }
-
-        .action-btn.delete:hover {
-          background: #FECACA;
-        }
-
-        .table-empty {
-          padding: var(--space-12);
-          text-align: center;
-        }
-
-        .table-empty p {
-          color: var(--color-text-muted);
-          margin-bottom: var(--space-4);
-        }
-
-        .table-empty button {
+        .review-link {
           display: inline-flex;
           align-items: center;
-          gap: var(--space-2);
-          padding: var(--space-3) var(--space-5);
-          background: var(--color-coral);
-          color: white;
-          border: none;
-          border-radius: var(--radius-md);
-          font-family: 'Quicksand', sans-serif;
-          font-weight: 600;
-          cursor: pointer;
+          gap: 4px;
+          font-size: 11px;
+          color: #CE870D;
+          text-decoration: none;
+        }
+
+        .cat-grid { grid-template-columns: 80px 1fr 1fr 150px !important; }
+        .review-grid { grid-template-columns: 80px 1fr 100px 150px !important; }
+
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
       `}</style>
     </div>

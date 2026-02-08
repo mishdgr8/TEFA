@@ -1,61 +1,101 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
 import { useStore } from '../data/store';
-import { PageName, PageParams } from '../types';
 
-interface ShopPageProps {
-    onNavigate: (page: PageName, params?: PageParams) => void;
-    categoryIdFilter?: string;
-}
+export const ShopPage: React.FC = () => {
+  const { categoryId } = useParams();
+  const navigate = useNavigate();
+  const { products, categories, currency, loading } = useStore();
+  const [activeCategory, setActiveCategory] = useState(categoryId || 'all');
 
-export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate, categoryIdFilter }) => {
-    const { products, categories } = useStore();
-    const [activeCategory, setActiveCategory] = useState(categoryIdFilter || 'all');
+  useEffect(() => {
+    if (categoryId) {
+      setActiveCategory(categoryId);
+    } else {
+      setActiveCategory('all');
+    }
+  }, [categoryId]);
 
-    const filteredProducts = useMemo(() => {
-        if (activeCategory === 'all') return products;
-        return products.filter(p => p.categoryId === activeCategory);
-    }, [activeCategory, products]);
+  const handleCategoryChange = (id: string) => {
+    if (id === 'all') {
+      navigate('/shop');
+    } else {
+      navigate(`/shop/${id}`);
+    }
+  };
 
-    return (
-        <div className="shop-page">
-            <div className="container">
-                <div className="shop-header">
-                    <h1>The Collection</h1>
+  const filteredProducts = useMemo(() => {
+    if (activeCategory === 'all') return products;
+    return products.filter(p => p.categoryId === activeCategory);
+  }, [activeCategory, products]);
 
-                    <div className="shop-filters">
-                        <button
-                            onClick={() => setActiveCategory('all')}
-                            className={`shop-filter-btn ${activeCategory === 'all' ? 'active' : ''}`}
-                        >
-                            All Pieces
-                        </button>
-                        {categories.map(cat => (
-                            <button
-                                key={cat.id}
-                                onClick={() => setActiveCategory(cat.id)}
-                                className={`shop-filter-btn ${activeCategory === cat.id ? 'active' : ''}`}
-                            >
-                                {cat.name}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+  return (
+    <div className="shop-page">
+      <div className="container">
+        <div className="shop-header">
+          <h1>The Collection</h1>
 
-                {filteredProducts.length > 0 ? (
-                    <div className="shop-grid">
-                        {filteredProducts.map(product => (
-                            <ProductCard key={product.id} product={product} onNavigate={onNavigate} />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="shop-empty">
-                        <p>No products found in this category.</p>
-                    </div>
-                )}
-            </div>
+          <div className="shop-filters">
+            <button
+              onClick={() => setActiveCategory('all')}
+              className={`shop-filter-btn ${activeCategory === 'all' ? 'active' : ''}`}
+            >
+              All Pieces
+            </button>
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`shop-filter-btn ${activeCategory === cat.id ? 'active' : ''}`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        </div>
 
-            <style>{`
+        {loading ? (
+          <div className="shop-loading">
+            <div className="loading-spinner" />
+            <p>Gathering our collection...</p>
+          </div>
+        ) : filteredProducts.length > 0 ? (
+          <div className="shop-grid">
+            {filteredProducts.map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <div className="shop-empty">
+            <p>No products found in this category.</p>
+          </div>
+        )}
+      </div>
+
+      <style>{`
+        .shop-loading {
+          padding: var(--space-24) 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: var(--space-4);
+          animation: fadeIn 0.4s ease forwards;
+        }
+
+        .loading-spinner {
+          width: 40px;
+          height: 40px;
+          border: 3px solid var(--color-nude);
+          border-top-color: var(--color-coral);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
         .shop-page {
           padding-top: 120px;
           padding-bottom: var(--space-24);
@@ -130,6 +170,6 @@ export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate, categoryIdFilter
           font-size: 1.125rem;
         }
       `}</style>
-        </div>
-    );
+    </div>
+  );
 };

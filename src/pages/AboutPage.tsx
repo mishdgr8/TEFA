@@ -1,26 +1,23 @@
 import React from 'react';
-import { PageName } from '../types';
+import { useNavigate } from 'react-router-dom';
 
-interface AboutPageProps {
-    onNavigate: (page: PageName) => void;
-}
+export const AboutPage: React.FC = () => {
+  const navigate = useNavigate();
+  return (
+    <div className="about-page">
+      <div className="about-content">
+        <h1>Our Manifesto</h1>
+        <div className="about-text">
+          <p>"TÉFA is more than a brand. It is an exploration of the intricate patterns of our identity."</p>
+          <p>We believe that luxury should be meaningful. We believe that heritage is a living thing, meant to be worn, shared, and evolved.</p>
+          <p>By blending ancestral dyeing techniques with contemporary silhouettes, we create a dialogue between the past and the future.</p>
+        </div>
+        <button onClick={() => navigate('/shop')}>
+          Explore the Result
+        </button>
+      </div>
 
-export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
-    return (
-        <div className="about-page">
-            <div className="about-content">
-                <h1>Our Manifesto</h1>
-                <div className="about-text">
-                    <p>"TÉFA is more than a brand. It is an exploration of the intricate patterns of our identity."</p>
-                    <p>We believe that luxury should be meaningful. We believe that heritage is a living thing, meant to be worn, shared, and evolved.</p>
-                    <p>By blending ancestral dyeing techniques with contemporary silhouettes, we create a dialogue between the past and the future.</p>
-                </div>
-                <button onClick={() => onNavigate('shop')}>
-                    Explore the Result
-                </button>
-            </div>
-
-            <style>{`
+      <style>{`
         .about-page {
           padding-top: 160px;
           padding-bottom: var(--space-24);
@@ -74,6 +71,6 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
           transform: translateY(-2px);
         }
       `}</style>
-        </div>
-    );
+    </div>
+  );
 };

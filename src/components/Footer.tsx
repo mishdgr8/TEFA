@@ -1,12 +1,10 @@
 import React from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { Instagram, MessageCircle, ChevronRight } from 'lucide-react';
-import { PageName } from '../types';
 
-interface FooterProps {
-  onNavigate: (page: PageName) => void;
-}
+export const Footer: React.FC = () => {
+  const navigate = useNavigate();
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   return (
     <footer className="footer">
       <div className="footer-pattern" />
@@ -35,10 +33,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <div className="footer-column">
             <h4 className="footer-heading">Explore</h4>
             <div className="footer-links">
-              <button onClick={() => onNavigate('shop')}>Shop Collection</button>
-              <button onClick={() => onNavigate('home')}>Featured Sets</button>
-              <button>Lookbook</button>
-              <button>New Arrivals</button>
+              <Link to="/shop">Shop Collection</Link>
+              <Link to="/">Featured Sets</Link>
+              <button onClick={() => navigate('/lookbook')}>Lookbook</button>
+              <button onClick={() => navigate('/shop')}>New Arrivals</button>
             </div>
           </div>
 
@@ -200,6 +198,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           gap: var(--space-3);
         }
 
+        .footer-links a,
         .footer-links button {
           background: none;
           border: none;
@@ -209,8 +208,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           cursor: pointer;
           text-align: left;
           transition: all var(--transition-fast);
+          text-decoration: none;
         }
 
+        .footer-links a:hover,
         .footer-links button:hover {
           color: #FFFFFF;
           padding-left: 4px;

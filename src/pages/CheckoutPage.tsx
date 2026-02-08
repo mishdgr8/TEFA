@@ -1,54 +1,53 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Instagram, MessageCircle } from 'lucide-react';
 import { useStore, formatPrice } from '../data/store';
-import { PageName, CustomerInfo } from '../types';
+import { CustomerInfo } from '../types';
 
-interface CheckoutPageProps {
-    onNavigate: (page: PageName) => void;
-}
+export const CheckoutPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { cart } = useStore();
+  const [formData, setFormData] = useState<CustomerInfo>({
+    name: '',
+    phone: '',
+    location: '',
+    note: ''
+  });
 
-export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
-    const { cart } = useStore();
-    const [formData, setFormData] = useState<CustomerInfo>({
-        name: '',
-        phone: '',
-        location: '',
-        note: ''
+  const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+  const generateMessage = () => {
+    let message = `Hi TÉFA! I'd like to place an order:\n\n`;
+    cart.forEach((item, idx) => {
+      const expressTag = item.isExpress ? ' [EXPRESS REQUEST]' : '';
+      message += `${idx + 1}) ${item.name}${expressTag}\n   Size: ${item.selectedSize}\n   Color: ${item.selectedColor}\n   Qty: ${item.qty}\n   Price: ${formatPrice(item.price * item.qty)}\n\n`;
     });
+    message += `Total Estimate: ${formatPrice(total)}\n\n`;
+    message += `Customer Info:\n`;
+    message += `- Name: ${formData.name || 'Not provided'}\n`;
+    message += `- Location: ${formData.location || 'Not provided'}\n`;
+    if (formData.note) message += `- Notes: ${formData.note}\n`;
+    message += `\nPlease confirm availability and payment details.`;
+    return message;
+  };
 
-    const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  const handleSendWhatsApp = () => {
+    const encoded = encodeURIComponent(generateMessage());
+    window.open(`https://wa.me/2340000000000?text=${encoded}`, '_blank');
+  };
 
-    const generateMessage = () => {
-        let message = `Hi TÉFA! I'd like to place an order:\n\n`;
-        cart.forEach((item, idx) => {
-            message += `${idx + 1}) ${item.name}\n   Size: ${item.selectedSize}\n   Color: ${item.selectedColor}\n   Qty: ${item.qty}\n   Price: ${formatPrice(item.price * item.qty)}\n\n`;
-        });
-        message += `Total Estimate: ${formatPrice(total)}\n\n`;
-        message += `Customer Info:\n`;
-        message += `- Name: ${formData.name || 'Not provided'}\n`;
-        message += `- Location: ${formData.location || 'Not provided'}\n`;
-        if (formData.note) message += `- Notes: ${formData.note}\n`;
-        message += `\nPlease confirm availability and payment details.`;
-        return message;
-    };
+  const handleSendInstagram = () => {
+    navigator.clipboard.writeText(generateMessage());
+    alert("Order summary copied to clipboard! Redirecting to Instagram...");
+    window.open(`https://instagram.com/tefa_africana/`, '_blank');
+  };
 
-    const handleSendWhatsApp = () => {
-        const encoded = encodeURIComponent(generateMessage());
-        window.open(`https://wa.me/2340000000000?text=${encoded}`, '_blank');
-    };
-
-    const handleSendInstagram = () => {
-        navigator.clipboard.writeText(generateMessage());
-        alert("Order summary copied to clipboard! Redirecting to Instagram...");
-        window.open(`https://instagram.com/tefa_africana/`, '_blank');
-    };
-
-    if (cart.length === 0) {
-        return (
-            <div className="checkout-empty">
-                <p>Your cart is empty.</p>
-                <button onClick={() => onNavigate('shop')}>Back to Shop</button>
-                <style>{`
+  if (cart.length === 0) {
+    return (
+      <div className="checkout-empty">
+        <p>Your cart is empty.</p>
+        <button onClick={() => navigate('/shop')}>Back to Shop</button>
+        <style>{`
           .checkout-empty {
             padding-top: 160px;
             text-align: center;
@@ -66,90 +65,90 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
             text-decoration: underline;
           }
         `}</style>
+      </div>
+    );
+  }
+
+  return (
+    <div className="checkout-page">
+      <div className="checkout-container">
+        <h1>Confirm Your Inquiry</h1>
+
+        {/* Order Summary */}
+        <div className="checkout-card">
+          <h3>
+            <span className="step-badge orange">1</span>
+            Order Summary
+          </h3>
+          <div className="order-items">
+            {cart.map(item => (
+              <div key={item.variantId} className="order-item">
+                <span>{item.name} (x{item.qty})</span>
+                <span className="order-item-price">{formatPrice(item.price * item.qty)}</span>
+              </div>
+            ))}
+            <div className="order-total">
+              <span>Estimated Total</span>
+              <span>{formatPrice(total)}</span>
             </div>
-        );
-    }
+          </div>
+        </div>
 
-    return (
-        <div className="checkout-page">
-            <div className="checkout-container">
-                <h1>Confirm Your Inquiry</h1>
-
-                {/* Order Summary */}
-                <div className="checkout-card">
-                    <h3>
-                        <span className="step-badge orange">1</span>
-                        Order Summary
-                    </h3>
-                    <div className="order-items">
-                        {cart.map(item => (
-                            <div key={item.variantId} className="order-item">
-                                <span>{item.name} (x{item.qty})</span>
-                                <span className="order-item-price">{formatPrice(item.price * item.qty)}</span>
-                            </div>
-                        ))}
-                        <div className="order-total">
-                            <span>Estimated Total</span>
-                            <span>{formatPrice(total)}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Customer Details */}
-                <div className="checkout-card">
-                    <h3>
-                        <span className="step-badge coral">2</span>
-                        Your Details (Optional)
-                    </h3>
-                    <div className="checkout-form">
-                        <div className="form-row">
-                            <input
-                                type="text"
-                                placeholder="Full Name"
-                                value={formData.name}
-                                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                            />
-                            <input
-                                type="text"
-                                placeholder="Phone Number"
-                                value={formData.phone}
-                                onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                            />
-                        </div>
-                        <input
-                            type="text"
-                            placeholder="Delivery City/Country"
-                            value={formData.location}
-                            onChange={e => setFormData({ ...formData, location: e.target.value })}
-                        />
-                        <textarea
-                            placeholder="Special notes or questions..."
-                            rows={3}
-                            value={formData.note}
-                            onChange={e => setFormData({ ...formData, note: e.target.value })}
-                        />
-                    </div>
-                </div>
-
-                {/* Send Inquiry */}
-                <div className="checkout-send">
-                    <div className="send-header">
-                        <h3>Ready to order?</h3>
-                        <p>Choose your preferred channel to send this inquiry.</p>
-                    </div>
-                    <div className="send-buttons">
-                        <button onClick={handleSendWhatsApp} className="whatsapp-btn">
-                            <MessageCircle size={20} /> Send on WhatsApp
-                        </button>
-                        <button onClick={handleSendInstagram} className="instagram-btn">
-                            <Instagram size={20} /> Send on Instagram
-                        </button>
-                    </div>
-                    <p className="send-note">Payments are arranged privately after confirmation.</p>
-                </div>
+        {/* Customer Details */}
+        <div className="checkout-card">
+          <h3>
+            <span className="step-badge coral">2</span>
+            Your Details (Optional)
+          </h3>
+          <div className="checkout-form">
+            <div className="form-row">
+              <input
+                type="text"
+                placeholder="Full Name"
+                value={formData.name}
+                onChange={e => setFormData({ ...formData, name: e.target.value })}
+              />
+              <input
+                type="text"
+                placeholder="Phone Number"
+                value={formData.phone}
+                onChange={e => setFormData({ ...formData, phone: e.target.value })}
+              />
             </div>
+            <input
+              type="text"
+              placeholder="Delivery City/Country"
+              value={formData.location}
+              onChange={e => setFormData({ ...formData, location: e.target.value })}
+            />
+            <textarea
+              placeholder="Special notes or questions..."
+              rows={3}
+              value={formData.note}
+              onChange={e => setFormData({ ...formData, note: e.target.value })}
+            />
+          </div>
+        </div>
 
-            <style>{`
+        {/* Send Inquiry */}
+        <div className="checkout-send">
+          <div className="send-header">
+            <h3>Ready to order?</h3>
+            <p>Choose your preferred channel to send this inquiry.</p>
+          </div>
+          <div className="send-buttons">
+            <button onClick={handleSendWhatsApp} className="whatsapp-btn">
+              <MessageCircle size={20} /> Send on WhatsApp
+            </button>
+            <button onClick={handleSendInstagram} className="instagram-btn">
+              <Instagram size={20} /> Send on Instagram
+            </button>
+          </div>
+          <p className="send-note">Payments are arranged privately after confirmation.</p>
+        </div>
+      </div>
+
+      <style>{`
         .checkout-page {
           padding-top: 120px;
           padding-bottom: var(--space-24);
@@ -364,6 +363,6 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
           color: rgba(255, 255, 255, 0.4);
         }
       `}</style>
-        </div>
-    );
+    </div>
+  );
 };

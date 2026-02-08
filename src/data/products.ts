@@ -15,6 +15,9 @@ export const DEFAULT_PRODUCTS: Product[] = [
         colors: [{ name: 'Indigo', hex: '#3F51B5' }, { name: 'Deep Sea', hex: '#1A237E' }],
         createdAt: Date.now(),
         updatedAt: Date.now(),
+        quantity: 10,
+        soldOut: false,
+        stockStatus: 'in_stock'
     },
     {
         id: 'p2',
@@ -30,6 +33,9 @@ export const DEFAULT_PRODUCTS: Product[] = [
         colors: [{ name: 'Saffron', hex: '#F4A261' }, { name: 'Clay', hex: '#BC6C25' }],
         createdAt: Date.now(),
         updatedAt: Date.now(),
+        quantity: 5,
+        soldOut: false,
+        stockStatus: 'in_stock'
     },
     {
         id: 'p3',
@@ -45,6 +51,9 @@ export const DEFAULT_PRODUCTS: Product[] = [
         colors: [{ name: 'Jungle Green', hex: '#2D6A4F' }, { name: 'Gold', hex: '#D4AF37' }],
         createdAt: Date.now(),
         updatedAt: Date.now(),
+        quantity: 3,
+        soldOut: false,
+        stockStatus: 'low_stock'
     },
     {
         id: 'p4',
@@ -60,6 +69,9 @@ export const DEFAULT_PRODUCTS: Product[] = [
         colors: [{ name: 'Multi', hex: '#000000' }],
         createdAt: Date.now(),
         updatedAt: Date.now(),
+        quantity: 15,
+        soldOut: false,
+        stockStatus: 'in_stock'
     },
     {
         id: 'p5',
@@ -75,6 +87,9 @@ export const DEFAULT_PRODUCTS: Product[] = [
         colors: [{ name: 'Coral', hex: '#E76F51' }],
         createdAt: Date.now(),
         updatedAt: Date.now(),
+        quantity: 8,
+        soldOut: false,
+        stockStatus: 'in_stock'
     },
     {
         id: 'p6',
@@ -90,5 +105,48 @@ export const DEFAULT_PRODUCTS: Product[] = [
         colors: [{ name: 'Charcoal', hex: '#333333' }],
         createdAt: Date.now(),
         updatedAt: Date.now(),
+        soldOut: true,
+        quantity: 0,
+        stockStatus: 'out_of_stock'
     },
+    {
+        id: 'p7',
+        name: "Odogwu Wige Bubu",
+        description: "for the African woman who is winning and carries the virtue of nature. 100% organic material",
+        categoryId: "2",
+        price: 30000,
+        currency: "₦",
+        images: ["https://firebasestorage.googleapis.com/v0/b/tefa-africana.firebasestorage.app/o/products%2Fnew%2F1770547604754_bubu_fron.png?alt=media&token=8c8f8f32-d0ae-495c-b8ac-626febf9b676"],
+        galleryImages: ["https://firebasestorage.googleapis.com/v0/b/tefa-africana.firebasestorage.app/o/products%2Fnew%2F1770547616375_bubu_back.png?alt=media&token=7d913c01-2df9-4c46-9c07-ce0aff4fe0e4"],
+        videoUrl: "",
+        quantity: 7,
+        soldOut: false,
+        stockStatus: "in_stock",
+        tags: ["Best Seller", "Limited Stock"],
+        sizes: ["S", "M", "L", "XL"],
+        colors: [{ hex: "#1f1e1e", name: "Black" }, { name: "Red", hex: "#f20707" }],
+        slug: "odogwu-wige-bubu",
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+    },
+    {
+        id: 'p8',
+        name: "Lola Jumpsuit",
+        description: "for the African woman who is winning and carries the virtue of nature. 100% organic material",
+        categoryId: "4",
+        price: 35000,
+        currency: "₦",
+        images: ["https://firebasestorage.googleapis.com/v0/b/tefa-africana.firebasestorage.app/o/products%2Fnew%2F1770548010712_jumpsuit_front.png?alt=media&token=8a8e0252-c532-4c73-bd58-552861b1e449"],
+        galleryImages: ["https://firebasestorage.googleapis.com/v0/b/tefa-africana.firebasestorage.app/o/products%2Fnew%2F1770548022340_jumpsuit_back.png?alt=media&token=b513badc-a34d-49ca-9845-c6414ce411e8"],
+        videoUrl: "",
+        quantity: 4,
+        soldOut: false,
+        stockStatus: "low_stock",
+        tags: ["Best Seller", "New Arrival"],
+        sizes: ["S", "M", "L", "XL"],
+        colors: [{ name: "Brown", hex: "#df7716" }, { name: "Purple", hex: "#7c537f" }],
+        slug: "lola-jumpsuit",
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+    }
 ];

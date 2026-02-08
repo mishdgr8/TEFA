@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag } from 'lucide-react';
 
@@ -6,6 +7,7 @@ import { ShoppingBag } from 'lucide-react';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { CartDrawer } from './components/CartDrawer';
+import { ChatWidget } from './components/ChatWidget';
 
 // Pages
 import { HomePage } from './pages/HomePage';
@@ -19,23 +21,14 @@ import { ProductForm } from './pages/admin/ProductForm';
 // Data
 import { useStore } from './data/store';
 
-// Types
-import { PageName, PageParams } from './types';
-
 export const App: React.FC = () => {
-    const [currentPage, setCurrentPage] = useState<PageName>('home');
-    const [pageParams, setPageParams] = useState<PageParams>({});
+    const navigate = useNavigate();
+    const location = useLocation();
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [editingProductId, setEditingProductId] = useState<string | undefined>(undefined);
     const [isProductFormOpen, setIsProductFormOpen] = useState(false);
 
-    const { cart, updateCartQty, removeFromCart } = useStore();
-
-    const navigate = (page: PageName, params: PageParams = {}) => {
-        setCurrentPage(page);
-        setPageParams(params);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
+    const { cart, updateCartQty, removeFromCart, currency } = useStore();
 
     const openProductForm = (productId?: string) => {
         setEditingProductId(productId);
@@ -47,60 +40,52 @@ export const App: React.FC = () => {
         setIsProductFormOpen(false);
     };
 
-    const renderCurrentPage = () => {
-        switch (currentPage) {
-            case 'home':
-                return <HomePage onNavigate={navigate} />;
-            case 'shop':
-                return <ShopPage onNavigate={navigate} categoryIdFilter={pageParams.categoryId} />;
-            case 'product':
-                return <ProductDetailPage slug={pageParams.slug || ''} onNavigate={navigate} />;
-            case 'checkout':
-                return <CheckoutPage onNavigate={navigate} />;
-            case 'about':
-                return <AboutPage onNavigate={navigate} />;
-            case 'admin':
-                return <AdminDashboard onNavigate={navigate} onOpenProductForm={openProductForm} />;
-            default:
-                return <HomePage onNavigate={navigate} />;
-        }
-    };
+    const isAdminRoute = location.pathname.startsWith('/admin');
 
     return (
         <div className="app-wrapper">
             <Header
-                onNavigate={navigate}
                 onOpenCart={() => setIsCartOpen(true)}
             />
 
             <AnimatePresence mode="wait">
                 <motion.main
-                    key={currentPage + JSON.stringify(pageParams)}
+                    key={location.pathname}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3 }}
                 >
-                    {renderCurrentPage()}
+                    <Routes location={location}>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/shop" element={<ShopPage />} />
+                        <Route path="/shop/:categoryId" element={<ShopPage />} />
+                        <Route path="/product/:slug" element={<ProductDetailPage />} />
+                        <Route path="/checkout" element={<CheckoutPage />} />
+                        <Route path="/about" element={<AboutPage />} />
+                        <Route path="/admin" element={<AdminDashboard onOpenProductForm={openProductForm} />} />
+                        <Route path="*" element={<HomePage />} />
+                    </Routes>
                 </motion.main>
             </AnimatePresence>
 
-            {currentPage !== 'admin' && <Footer onNavigate={navigate} />}
+            {!isAdminRoute && <Footer />}
 
             <CartDrawer
                 isOpen={isCartOpen}
                 onClose={() => setIsCartOpen(false)}
                 items={cart}
+                currency={currency}
                 onUpdateQty={updateCartQty}
                 onRemove={removeFromCart}
                 onCheckout={() => {
                     setIsCartOpen(false);
-                    navigate('checkout');
+                    navigate('/checkout');
                 }}
             />
 
             {/* Floating Cart Button (Mobile) */}
-            {currentPage !== 'admin' && currentPage !== 'checkout' && (
+            {!isAdminRoute && location.pathname !== '/checkout' && (
                 <button
                     onClick={() => setIsCartOpen(true)}
                     className="floating-cart-btn"
@@ -121,6 +106,9 @@ export const App: React.FC = () => {
                     onClose={closeProductForm}
                 />
             )}
+
+            {/* Chat Widget */}
+            {!isAdminRoute && <ChatWidget />}
 
             <style>{`
         .app-wrapper {

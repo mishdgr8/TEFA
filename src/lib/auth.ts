@@ -4,10 +4,15 @@ import {
     signInWithEmailAndPassword,
     signOut as firebaseSignOut,
     onAuthStateChanged,
+    signInWithPopup,
+    GoogleAuthProvider,
     User,
     UserCredential
 } from 'firebase/auth';
 import { auth } from './firebase';
+
+// Google Auth Provider
+const googleProvider = new GoogleAuthProvider();
 
 // Sign up with email and password
 export const signUp = async (email: string, password: string): Promise<UserCredential> => {
@@ -17,6 +22,11 @@ export const signUp = async (email: string, password: string): Promise<UserCrede
 // Sign in with email and password
 export const signIn = async (email: string, password: string): Promise<UserCredential> => {
     return signInWithEmailAndPassword(auth, email, password);
+};
+
+// Sign in with Google
+export const signInWithGoogle = async (): Promise<UserCredential> => {
+    return signInWithPopup(auth, googleProvider);
 };
 
 // Sign out

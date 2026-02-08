@@ -1,119 +1,126 @@
 import React from 'react';
 import { ShoppingBag, X, Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CartItem } from '../types';
+import { CartItem, CurrencyCode } from '../types';
 import { formatPrice } from '../data/store';
 
 interface CartDrawerProps {
-    isOpen: boolean;
-    onClose: () => void;
-    items: CartItem[];
-    onUpdateQty: (variantId: string, delta: number) => void;
-    onRemove: (variantId: string) => void;
-    onCheckout: () => void;
+  isOpen: boolean;
+  onClose: () => void;
+  items: CartItem[];
+  currency: CurrencyCode;
+  onUpdateQty: (variantId: string, delta: number) => void;
+  onRemove: (variantId: string) => void;
+  onCheckout: () => void;
 }
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({
-    isOpen,
-    onClose,
-    items,
-    onUpdateQty,
-    onRemove,
-    onCheckout
+  isOpen,
+  onClose,
+  items,
+  currency,
+  onUpdateQty,
+  onRemove,
+  onCheckout
 }) => {
-    const total = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  const total = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
 
-    return (
-        <AnimatePresence>
-            {isOpen && (
-                <>
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        className="cart-overlay"
-                    />
-                    <motion.div
-                        initial={{ x: '100%' }}
-                        animate={{ x: 0 }}
-                        exit={{ x: '100%' }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="cart-drawer"
-                    >
-                        {/* Header */}
-                        <div className="cart-header">
-                            <h2 className="cart-title">
-                                <ShoppingBag size={20} /> Inquiry Cart
-                            </h2>
-                            <button onClick={onClose} className="cart-close">
-                                <X size={24} />
-                            </button>
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="cart-overlay"
+          />
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="cart-drawer"
+          >
+            {/* Header */}
+            <div className="cart-header">
+              <h2 className="cart-title">
+                <ShoppingBag size={20} /> Inquiry Cart
+              </h2>
+              <button onClick={onClose} className="cart-close">
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Items */}
+            <div className="cart-items">
+              {items.length === 0 ? (
+                <div className="cart-empty">
+                  <ShoppingBag size={48} />
+                  <p>Your inquiry cart is empty.</p>
+                  <button onClick={onClose} className="cart-empty-btn">
+                    Start Browsing
+                  </button>
+                </div>
+              ) : (
+                items.map(item => (
+                  <div key={item.variantId} className="cart-item">
+                    <div className="cart-item-image">
+                      <img src={item.image} alt={item.name} />
+                    </div>
+                    <div className="cart-item-content">
+                      <div className="cart-item-header">
+                        <h4 className="cart-item-name">{item.name}</h4>
+                        <button
+                          onClick={() => onRemove(item.variantId)}
+                          className="cart-item-remove"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                      <p className="cart-item-variant">
+                        Size: {item.selectedSize} | Color: {item.selectedColor}
+                      </p>
+                      {item.isExpress && (
+                        <div className="cart-item-express">
+                          ✨ Express Production (14 days)
                         </div>
+                      )}
+                      <p className="cart-item-price">{formatPrice(item.price, currency)}</p>
+                      <div className="cart-item-qty">
+                        <button onClick={() => onUpdateQty(item.variantId, -1)}>
+                          <Minus size={14} />
+                        </button>
+                        <span>{item.qty}</span>
+                        <button onClick={() => onUpdateQty(item.variantId, 1)}>
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
 
-                        {/* Items */}
-                        <div className="cart-items">
-                            {items.length === 0 ? (
-                                <div className="cart-empty">
-                                    <ShoppingBag size={48} />
-                                    <p>Your inquiry cart is empty.</p>
-                                    <button onClick={onClose} className="cart-empty-btn">
-                                        Start Browsing
-                                    </button>
-                                </div>
-                            ) : (
-                                items.map(item => (
-                                    <div key={item.variantId} className="cart-item">
-                                        <div className="cart-item-image">
-                                            <img src={item.image} alt={item.name} />
-                                        </div>
-                                        <div className="cart-item-content">
-                                            <div className="cart-item-header">
-                                                <h4 className="cart-item-name">{item.name}</h4>
-                                                <button
-                                                    onClick={() => onRemove(item.variantId)}
-                                                    className="cart-item-remove"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                            <p className="cart-item-variant">
-                                                Size: {item.selectedSize} | Color: {item.selectedColor}
-                                            </p>
-                                            <p className="cart-item-price">{formatPrice(item.price)}</p>
-                                            <div className="cart-item-qty">
-                                                <button onClick={() => onUpdateQty(item.variantId, -1)}>
-                                                    <Minus size={14} />
-                                                </button>
-                                                <span>{item.qty}</span>
-                                                <button onClick={() => onUpdateQty(item.variantId, 1)}>
-                                                    <Plus size={14} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
+            {/* Footer */}
+            {items.length > 0 && (
+              <div className="cart-footer">
+                <div className="cart-total">
+                  <span>Subtotal</span>
+                  <span className="cart-total-amount">{formatPrice(total, currency)}</span>
+                </div>
+                <button onClick={onCheckout} className="cart-checkout-btn">
+                  Confirm Inquiry <ArrowRight size={18} />
+                </button>
+                <p className="cart-footer-note">
+                  Orders are finalized via Instagram or WhatsApp
+                </p>
+              </div>
+            )}
+          </motion.div>
 
-                        {/* Footer */}
-                        {items.length > 0 && (
-                            <div className="cart-footer">
-                                <div className="cart-total">
-                                    <span>Subtotal</span>
-                                    <span className="cart-total-amount">{formatPrice(total)}</span>
-                                </div>
-                                <button onClick={onCheckout} className="cart-checkout-btn">
-                                    Confirm Inquiry <ArrowRight size={18} />
-                                </button>
-                                <p className="cart-footer-note">
-                                    Orders are finalized via Instagram or WhatsApp
-                                </p>
-                            </div>
-                        )}
-                    </motion.div>
-
-                    <style>{`
+          <style>{`
             .cart-overlay {
               position: fixed;
               inset: 0;
@@ -261,18 +268,26 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             }
 
             .cart-item-variant {
-              font-size: 0.6875rem;
-              text-transform: uppercase;
-              letter-spacing: 0.1em;
+              font-size: 0.8125rem;
               color: var(--color-text-muted);
-              margin-top: var(--space-1);
+              margin-bottom: var(--space-2);
+            }
+
+            .cart-item-express {
+              display: inline-block;
+              font-size: 0.75rem;
+              font-weight: 700;
+              color: #C53030;
+              background: #FFF5F5;
+              padding: 2px 8px;
+              border-radius: var(--radius-sm);
+              margin-bottom: var(--space-2);
             }
 
             .cart-item-price {
-              font-weight: 600;
-              font-size: 0.875rem;
-              color: var(--color-coral);
-              margin-top: var(--space-1);
+              font-weight: 700;
+              color: var(--color-brown-dark);
+              margin-bottom: var(--space-2);
             }
 
             .cart-item-qty {
@@ -354,8 +369,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               color: var(--color-text-muted);
             }
           `}</style>
-                </>
-            )}
-        </AnimatePresence>
-    );
+        </>
+      )}
+    </AnimatePresence>
+  );
 };

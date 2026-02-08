@@ -1,29 +1,54 @@
-import React, { useState } from 'react';
-import { ShoppingBag, Menu, X, ChevronRight, Search, User, LogOut } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { ShoppingBag, Menu, X, ChevronRight, Search, User, LogOut, ChevronDown, Settings, History, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../data/store';
 import { CATEGORIES } from '../data/categories';
-import { PageName, PageParams } from '../types';
+import { PageName, PageParams, CURRENCIES } from '../types';
 import { AuthModal } from './AuthModal';
 import { signOut } from '../lib/auth';
 
 interface HeaderProps {
-  onNavigate: (page: PageName, params?: PageParams) => void;
   onOpenCart: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
+export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const { cart, user } = useStore();
+  const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const userDropdownRef = useRef<HTMLDivElement>(null);
+  const { cart, user, currency, setCurrency } = useStore();
   const cartCount = cart.reduce((sum, i) => sum + i.qty, 0);
+
+  const currentCurrency = CURRENCIES.find(c => c.code === currency) || CURRENCIES[0];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
+        setIsUserDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSignOut = async () => {
     try {
       await signOut();
+      setIsUserDropdownOpen(false);
     } catch (error) {
       console.error('Sign out failed:', error);
     }
+  };
+
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    setIsMenuOpen(false);
+    setIsUserDropdownOpen(false);
   };
 
   return (
@@ -40,38 +65,105 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
 
         {/* Desktop Navigation */}
         <div className="header-nav-desktop">
-          <button onClick={() => onNavigate('shop')} className="header-link">
+          <Link to="/shop" className="header-link">
             Shop
-          </button>
-          <button onClick={() => onNavigate('about')} className="header-link">
+          </Link>
+          <Link to="/about" className="header-link">
             About
-          </button>
-          <button onClick={() => onNavigate('admin')} className="header-link header-admin-link">
-            Admin
-          </button>
+          </Link>
+          {user?.isAdmin && (
+            <Link to="/admin" className="header-link header-admin-link">
+              Admin
+            </Link>
+          )}
         </div>
 
         {/* Logo (Centered) */}
-        <button
-          onClick={() => onNavigate('home')}
+        <Link
+          to="/"
           className="header-logo"
         >
           <span className="header-logo-top">HOUSE OF</span>
           <span className="header-logo-main">TÉFA</span>
-        </button>
+        </Link>
 
         {/* Right Actions */}
         <div className="header-actions">
+          {/* Currency Selector */}
+          <div className="currency-selector">
+            <button
+              className="currency-btn"
+              onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
+            >
+              <span className="currency-symbol">{currentCurrency.symbol}</span>
+              <span className="currency-code">{currentCurrency.code}</span>
+              <ChevronDown size={14} className={isCurrencyOpen ? 'rotated' : ''} />
+            </button>
+
+            {isCurrencyOpen && (
+              <div className="currency-dropdown">
+                {CURRENCIES.map(curr => (
+                  <button
+                    key={curr.code}
+                    className={`currency-option ${currency === curr.code ? 'active' : ''}`}
+                    onClick={() => {
+                      setCurrency(curr.code);
+                      setIsCurrencyOpen(false);
+                    }}
+                  >
+                    <span className="currency-option-symbol">{curr.symbol}</span>
+                    <span className="currency-option-code">{curr.code}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <button className="header-icon-btn header-search">
             <Search size={22} />
           </button>
 
           {user ? (
-            <div className="header-user-menu">
-              <span className="header-user-email">{user.email?.split('@')[0]}</span>
-              <button onClick={handleSignOut} className="header-icon-btn" title="Sign Out">
-                <LogOut size={18} />
+            <div className="user-dropdown-container" ref={userDropdownRef}>
+              <button
+                className="header-icon-btn user-icon-btn"
+                onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                title="Profile"
+              >
+                <User size={22} />
               </button>
+
+              {isUserDropdownOpen && (
+                <div className="user-dropdown">
+                  <div className="user-dropdown-header">
+                    <div className="user-avatar">
+                      <User size={20} />
+                    </div>
+                    <div className="user-info">
+                      <span className="user-name">{user.email?.split('@')[0]}</span>
+                      <span className="user-email">{user.email}</span>
+                    </div>
+                  </div>
+                  <div className="user-dropdown-divider" />
+                  <button className="user-dropdown-item" onClick={() => handleNavigate('/account')}>
+                    <Settings size={16} />
+                    <span>Account Settings</span>
+                  </button>
+                  <button className="user-dropdown-item" onClick={() => handleNavigate('/orders')}>
+                    <History size={16} />
+                    <span>Purchase History</span>
+                  </button>
+                  <button className="user-dropdown-item" onClick={() => handleNavigate('/wishlist')}>
+                    <Heart size={16} />
+                    <span>Wishlist</span>
+                  </button>
+                  <div className="user-dropdown-divider" />
+                  <button className="user-dropdown-item user-dropdown-signout" onClick={handleSignOut}>
+                    <LogOut size={16} />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <button
@@ -127,14 +219,14 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
 
               <div className="mobile-menu-nav">
                 <button
-                  onClick={() => { onNavigate('home'); setIsMenuOpen(false); }}
+                  onClick={() => handleNavigate('/')}
                   className="mobile-menu-link"
                 >
                   Home
                   <ChevronRight size={20} />
                 </button>
                 <button
-                  onClick={() => { onNavigate('shop'); setIsMenuOpen(false); }}
+                  onClick={() => handleNavigate('/shop')}
                   className="mobile-menu-link"
                 >
                   Shop All
@@ -145,10 +237,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
                   {CATEGORIES.map(cat => (
                     <button
                       key={cat.id}
-                      onClick={() => {
-                        onNavigate('shop', { categoryId: cat.id });
-                        setIsMenuOpen(false);
-                      }}
+                      onClick={() => handleNavigate(`/shop?category=${cat.id}`)}
                       className="mobile-menu-cat-link"
                     >
                       {cat.name}
@@ -156,14 +245,16 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
                   ))}
                 </div>
 
-                <div className="mobile-menu-footer">
-                  <button
-                    onClick={() => { onNavigate('admin'); setIsMenuOpen(false); }}
-                    className="mobile-menu-admin-link"
-                  >
-                    Admin Panel
-                  </button>
-                </div>
+                {user?.isAdmin && (
+                  <div className="mobile-menu-footer">
+                    <button
+                      onClick={() => handleNavigate('/admin')}
+                      className="mobile-menu-admin-link"
+                    >
+                      Admin Panel
+                    </button>
+                  </div>
+                )}
               </div>
             </motion.div>
           </>
@@ -280,6 +371,90 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
           display: flex;
           align-items: center;
           gap: var(--space-3);
+        }
+
+        .currency-selector {
+          position: relative;
+        }
+
+        .currency-btn {
+          display: flex;
+          align-items: center;
+          gap: var(--space-1);
+          padding: var(--space-2) var(--space-3);
+          background: var(--color-cream-dark);
+          border: 1px solid var(--color-nude);
+          border-radius: var(--radius-md);
+          font-family: 'Quicksand', sans-serif;
+          font-size: 0.8125rem;
+          font-weight: 600;
+          color: var(--color-brown);
+          cursor: pointer;
+          transition: all var(--transition-fast);
+        }
+
+        .currency-btn:hover {
+          background: var(--color-nude-light);
+        }
+
+        .currency-symbol {
+          font-weight: 700;
+        }
+
+        .currency-code {
+          display: none;
+        }
+
+        @media (min-width: 768px) {
+          .currency-code {
+            display: inline;
+          }
+        }
+
+        .currency-btn .rotated {
+          transform: rotate(180deg);
+        }
+
+        .currency-dropdown {
+          position: absolute;
+          top: calc(100% + 4px);
+          right: 0;
+          background: white;
+          border: 1px solid var(--color-nude);
+          border-radius: var(--radius-md);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          z-index: 100;
+          min-width: 100px;
+          overflow: hidden;
+        }
+
+        .currency-option {
+          display: flex;
+          align-items: center;
+          gap: var(--space-2);
+          width: 100%;
+          padding: var(--space-3) var(--space-4);
+          background: none;
+          border: none;
+          font-family: 'Quicksand', sans-serif;
+          font-size: 0.875rem;
+          color: var(--color-brown);
+          cursor: pointer;
+          transition: background var(--transition-fast);
+        }
+
+        .currency-option:hover {
+          background: var(--color-cream-dark);
+        }
+
+        .currency-option.active {
+          background: var(--color-coral);
+          color: white;
+        }
+
+        .currency-option-symbol {
+          font-weight: 700;
+          width: 16px;
         }
 
         .header-icon-btn {
@@ -435,6 +610,109 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onOpenCart }) => {
 
         .mobile-menu-admin-link:hover {
           color: var(--color-coral);
+        }
+
+        /* User Dropdown Styles */
+        .user-dropdown-container {
+          position: relative;
+        }
+
+        .user-icon-btn {
+          position: relative;
+        }
+
+        .user-dropdown {
+          position: absolute;
+          top: calc(100% + 8px);
+          right: 0;
+          background: white;
+          border: 1px solid var(--color-nude);
+          border-radius: var(--radius-lg);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+          z-index: 100;
+          min-width: 220px;
+          overflow: hidden;
+          animation: dropdownFadeIn 0.2s ease;
+        }
+
+        @keyframes dropdownFadeIn {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-dropdown-header {
+          display: flex;
+          align-items: center;
+          gap: var(--space-3);
+          padding: var(--space-4);
+          background: var(--color-cream-dark);
+        }
+
+        .user-avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background: var(--color-coral);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .user-info {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          overflow: hidden;
+        }
+
+        .user-name {
+          font-family: 'Rethena', serif;
+          font-size: 0.9375rem;
+          font-weight: 600;
+          color: var(--color-brown-dark);
+          text-transform: capitalize;
+        }
+
+        .user-email {
+          font-size: 0.75rem;
+          color: var(--color-text-muted);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .user-dropdown-divider {
+          height: 1px;
+          background: var(--color-nude-light);
+        }
+
+        .user-dropdown-item {
+          display: flex;
+          align-items: center;
+          gap: var(--space-3);
+          width: 100%;
+          padding: var(--space-3) var(--space-4);
+          background: none;
+          border: none;
+          font-family: 'Quicksand', sans-serif;
+          font-size: 0.875rem;
+          color: var(--color-brown);
+          cursor: pointer;
+          transition: background var(--transition-fast);
+          text-align: left;
+        }
+
+        .user-dropdown-item:hover {
+          background: var(--color-cream-dark);
+        }
+
+        .user-dropdown-signout {
+          color: #DC2626;
+        }
+
+        .user-dropdown-signout:hover {
+          background: #FEE2E2;
         }
       `}</style>
     </nav>
