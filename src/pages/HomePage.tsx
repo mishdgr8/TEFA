@@ -289,7 +289,7 @@ export const HomePage: React.FC = () => {
         <div className="container">
           <div className="reviews-header">
             <h2>Customer Spotlight</h2>
-            <a href="https://instagram.com/houseoftefa" target="_blank" rel="noopener noreferrer" className="instagram-link">
+            <a href="https://www.instagram.com/shop.tefa" target="_blank" rel="noopener noreferrer" className="instagram-link">
               <Instagram size={20} />
               @houseoftefa
             </a>

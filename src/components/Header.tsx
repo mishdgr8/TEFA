@@ -20,7 +20,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
-  const { cart, user, currency, setCurrency } = useStore();
+  const { cart, user, currency, setCurrency, products } = useStore();
   const cartCount = cart.reduce((sum, i) => sum + i.qty, 0);
 
   const currentCurrency = CURRENCIES.find(c => c.code === currency) || CURRENCIES[0];
@@ -43,6 +43,36 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
     } catch (error) {
       console.error('Sign out failed:', error);
     }
+  };
+
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Filter products for preview
+  const searchPreviews = searchQuery.trim().length > 1
+    ? products.filter(p => {
+      const lowerQuery = searchQuery.toLowerCase();
+      const categoryName = CATEGORIES.find(c => c.id === p.categoryId)?.name.toLowerCase() || '';
+      return (
+        p.name.toLowerCase().includes(lowerQuery) ||
+        categoryName.includes(lowerQuery)
+      );
+    }).slice(0, 5) // Limit to 5 previews
+    : [];
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+      setSearchQuery('');
+    }
+  };
+
+  const handlePreviewClick = (slug: string) => {
+    navigate(`/product/${slug}`);
+    setIsSearchOpen(false);
+    setSearchQuery('');
   };
 
   const handleNavigate = (path: string) => {
@@ -119,9 +149,56 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
             )}
           </div>
 
-          <button className="header-icon-btn header-search">
-            <Search size={22} />
-          </button>
+          <div className={`header-search-container ${isSearchOpen ? 'active' : ''}`}>
+            <input
+              type="text"
+              placeholder="Search..."
+              className="header-search-input"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              ref={searchInputRef}
+            />
+            <button
+              className="header-search-btn"
+              onClick={() => {
+                if (isSearchOpen && searchQuery) {
+                  handleSearch();
+                } else {
+                  setIsSearchOpen(!isSearchOpen);
+                  if (!isSearchOpen) {
+                    setTimeout(() => searchInputRef.current?.focus(), 100);
+                  }
+                }
+              }}
+            >
+              <Search size={20} />
+            </button>
+
+            {/* Search Previews Dropdown */}
+            {isSearchOpen && searchPreviews.length > 0 && (
+              <div className="search-preview-dropdown">
+                {searchPreviews.map(product => (
+                  <button
+                    key={product.id}
+                    className="search-preview-item"
+                    onClick={() => handlePreviewClick(product.slug)}
+                  >
+                    <div className="search-preview-image">
+                      <img src={product.images[0]} alt={product.name} />
+                    </div>
+                    <div className="search-preview-info">
+                      <span className="search-preview-name">{product.name}</span>
+                      <span className="search-preview-price">
+                        {/* Simple formatting since we might not have formatPrice easily available without changing imports */}
+                        {currentCurrency.symbol}{Math.round(product.price * currentCurrency.rate).toLocaleString()}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {user ? (
             <div className="user-dropdown-container" ref={userDropdownRef}>
@@ -471,11 +548,123 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
         }
 
         .header-search {
-          display: none;
+          display: block; /* Always show search trigger on desktop/mobile if needed */
+        }
+        
+        .header-search-container {
+          display: flex;
+          align-items: center;
+          background: var(--color-cream-dark);
+          border: 1px solid var(--color-nude);
+          border-radius: var(--radius-full);
+          padding: 4px 12px;
+          transition: all var(--transition-fast);
+          position: relative;
         }
 
-        @media (min-width: 640px) {
-          .header-search { display: block; }
+        .header-search-container:focus-within {
+          border-color: var(--color-brown);
+          background: white;
+        }
+
+        .header-search-input {
+          border: none;
+          background: transparent;
+          outline: none;
+          padding: 4px 8px;
+          font-family: 'Quicksand', sans-serif;
+          font-size: 0.875rem;
+          color: var(--color-brown-dark);
+          width: 0;
+          opacity: 0;
+          transition: all var(--transition-base);
+        }
+        
+        .header-search-container.active .header-search-input {
+          width: 200px;
+          opacity: 1;
+        }
+
+        .header-search-btn {
+          background: none;
+          border: none;
+          padding: 4px;
+          cursor: pointer;
+          color: var(--color-brown);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        /* Search Preview Dropdown */
+        .search-preview-dropdown {
+          position: absolute;
+          top: calc(100% + 12px);
+          right: 0;
+          width: 320px;
+          background: white;
+          border: 1px solid var(--color-nude);
+          border-radius: var(--radius-md);
+          box-shadow: var(--shadow-lg);
+          z-index: 100;
+          overflow: hidden;
+          padding: var(--space-2) 0;
+        }
+
+        .search-preview-item {
+          display: flex;
+          align-items: center;
+          gap: var(--space-3);
+          width: 100%;
+          padding: var(--space-2) var(--space-4);
+          background: none;
+          border: none;
+          text-align: left;
+          cursor: pointer;
+          transition: background var(--transition-fast);
+        }
+
+        .search-preview-item:hover {
+          background: var(--color-cream-dark);
+        }
+
+        .search-preview-image {
+          width: 40px;
+          height: 50px;
+          border-radius: var(--radius-sm);
+          overflow: hidden;
+          background: var(--color-nude-light);
+          flex-shrink: 0;
+        }
+
+        .search-preview-image img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .search-preview-info {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          overflow: hidden;
+        }
+
+        .search-preview-name {
+          font-family: 'Quicksand', sans-serif;
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: var(--color-brown-dark);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .search-preview-price {
+          font-family: 'Quicksand', sans-serif;
+          font-size: 0.8125rem;
+          color: var(--color-coral);
+          font-weight: 700;
         }
 
         .header-cart-btn {

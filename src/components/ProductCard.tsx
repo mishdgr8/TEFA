@@ -42,10 +42,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </div>
 
       <div className="product-card-content">
-        <div className="product-card-info">
-          <h3 className="product-card-title">{product.name}</h3>
-          <p className="product-card-category">{getCategoryName(product.categoryId, categories)}</p>
-        </div>
+        <h3 className="product-card-title">
+          {product.name} <span className="separator">-</span> {getCategoryName(product.categoryId, categories)}
+        </h3>
         <p className="product-card-price">{formatPrice(product.price, currency)}</p>
       </div>
 
@@ -63,7 +62,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           position: relative;
           aspect-ratio: 3 / 4;
           overflow: hidden;
-          border-radius: var(--radius-xl);
+          /* border-radius: 0; Removed rounded corners */
           background: var(--color-nude-light);
         }
 
@@ -118,45 +117,36 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         }
 
         .product-card-content {
-          margin-top: var(--space-4);
+          margin-top: var(--space-3);
           display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: var(--space-4);
-        }
-
-        .product-card-info {
-          flex: 1;
-          min-width: 0;
+          flex-direction: column; /* Stack vertically */
+          gap: 4px; /* Space between title and price */
         }
 
         .product-card-title {
           font-family: 'Quicksand', sans-serif;
-          font-size: 1.0625rem;
-          font-weight: 600;
+          font-size: 0.875rem; /* Reduced size slightly to match elegant look */
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
           color: var(--color-brown-dark);
           transition: color var(--transition-fast);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
+          line-height: 1.4;
+        }
+
+        .separator {
+          opacity: 0.6;
         }
 
         .product-card:hover .product-card-title {
           color: var(--color-coral);
         }
 
-        .product-card-category {
-          font-size: 0.8125rem;
-          color: var(--color-text-muted);
-          margin-top: 2px;
-        }
-
         .product-card-price {
           font-family: 'Quicksand', sans-serif;
-          font-size: 1rem;
-          font-weight: 700;
-          color: var(--color-coral);
-          white-space: nowrap;
+          font-size: 0.875rem;
+          font-weight: 400;
+          color: var(--color-text-muted);
         }
       `}</style>
     </motion.div>

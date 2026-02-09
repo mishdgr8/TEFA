@@ -20,11 +20,14 @@ export const Footer: React.FC = () => {
               Premium Africana fashion for the bold and the beautiful. Rooted in Lagos, inspired by the world.
             </p>
             <div className="footer-social">
-              <a href="https://instagram.com/tefa_africana" target="_blank" rel="noopener noreferrer" className="footer-social-link">
+              <a href="https://www.instagram.com/shop.tefa" target="_blank" rel="noopener noreferrer" className="footer-social-link" aria-label="Instagram">
                 <Instagram size={20} />
               </a>
-              <a href="https://wa.me/2340000000000" target="_blank" rel="noopener noreferrer" className="footer-social-link">
-                <MessageCircle size={20} />
+              <a href="https://www.tiktok.com/@shop.tefa" target="_blank" rel="noopener noreferrer" className="footer-social-link" aria-label="TikTok">
+                {/* Custom TikTok Icon matching Lucide style */}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+                </svg>
               </a>
             </div>
           </div>
