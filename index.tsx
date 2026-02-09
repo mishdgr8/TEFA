@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
-import { 
-  ShoppingBag, 
-  Menu, 
-  X, 
-  ChevronRight, 
-  ArrowRight, 
-  Instagram, 
-  MessageCircle, 
-  Trash2, 
-  Plus, 
-  Minus, 
+import {
+  ShoppingBag,
+  Menu,
+  X,
+  ChevronRight,
+  ArrowRight,
+  Instagram,
+  MessageCircle,
+  Trash2,
+  Plus,
+  Minus,
   Search,
   ChevronLeft,
   Sparkles,
@@ -177,12 +177,12 @@ const GeometricPattern = ({ className = "" }: { className?: string }) => (
  * --- COMPONENTS ---
  */
 
-const Header = ({ 
-  onNavigate, 
-  cartCount, 
-  onOpenCart 
-}: { 
-  onNavigate: (page: string, params?: any) => void; 
+const Header = ({
+  onNavigate,
+  cartCount,
+  onOpenCart
+}: {
+  onNavigate: (page: string, params?: any) => void;
   cartCount: number;
   onOpenCart: () => void;
 }) => {
@@ -201,10 +201,10 @@ const Header = ({
           </div>
         </div>
 
-        <button onClick={() => onNavigate('home')} className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center">
+        {/* <button onClick={() => onNavigate('home')} className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center">
           <span className="text-3xl font-serif font-black tracking-[0.2em] italic">TÉFA</span>
           <span className="text-[10px] uppercase tracking-[0.4em] font-light mt-[-4px]">Africana</span>
-        </button>
+        </button> */}
 
         <div className="flex items-center gap-4">
           <button className="p-2 hidden sm:block">
@@ -221,12 +221,12 @@ const Header = ({
       <AnimatePresence>
         {isMenuOpen && (
           <>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setIsMenuOpen(false)}
               className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60]"
             />
-            <motion.div 
+            <motion.div
               initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className={`fixed top-0 left-0 bottom-0 w-[80%] max-w-sm ${THEME.bg} z-[70] p-8 flex flex-col`}
@@ -244,8 +244,8 @@ const Header = ({
                 </button>
                 <div className="pt-4 mt-4 border-t border-gray-100 flex flex-col gap-4">
                   {CATEGORIES.map(cat => (
-                    <button 
-                      key={cat.id} 
+                    <button
+                      key={cat.id}
                       onClick={() => { onNavigate('shop', { categoryId: cat.id }); setIsMenuOpen(false); }}
                       className="text-gray-500 hover:text-black transition-colors"
                     >
@@ -265,7 +265,7 @@ const Header = ({
 /* Fix: Explicitly typing ProductCard as React.FC ensures that React intrinsic attributes like 'key' are allowed in JSX. */
 const ProductCard: React.FC<{ product: Product; onNavigate: (page: string, params?: any) => void }> = ({ product, onNavigate }) => {
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -273,8 +273,8 @@ const ProductCard: React.FC<{ product: Product; onNavigate: (page: string, param
       onClick={() => onNavigate('product', { slug: product.slug })}
     >
       <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-gray-100">
-        <img 
-          src={product.images[0]} 
+        <img
+          src={product.images[0]}
           alt={product.name}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
@@ -297,15 +297,15 @@ const ProductCard: React.FC<{ product: Product; onNavigate: (page: string, param
   );
 };
 
-const CartDrawer = ({ 
-  isOpen, 
-  onClose, 
-  items, 
-  onUpdateQty, 
+const CartDrawer = ({
+  isOpen,
+  onClose,
+  items,
+  onUpdateQty,
   onRemove,
   onCheckout
-}: { 
-  isOpen: boolean; 
+}: {
+  isOpen: boolean;
   onClose: () => void;
   items: CartItem[];
   onUpdateQty: (variantId: string, delta: number) => void;
@@ -318,12 +318,12 @@ const CartDrawer = ({
     <AnimatePresence>
       {isOpen && (
         <>
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={onClose}
             className="fixed inset-0 bg-black/30 backdrop-blur-[2px] z-[100]"
           />
-          <motion.div 
+          <motion.div
             initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className={`fixed top-0 right-0 bottom-0 w-full max-w-md ${THEME.bg} z-[110] flex flex-col shadow-2xl`}
@@ -340,7 +340,7 @@ const CartDrawer = ({
                 <div className="h-full flex flex-col items-center justify-center text-center py-12">
                   <ShoppingBag size={48} className="text-gray-200 mb-4" />
                   <p className="text-gray-500">Your inquiry cart is empty.</p>
-                  <button 
+                  <button
                     onClick={onClose}
                     className="mt-4 text-[#E76F51] font-bold hover:underline"
                   >
@@ -385,7 +385,7 @@ const CartDrawer = ({
                   <span className="text-gray-500">Subtotal</span>
                   <span className="text-xl font-bold">{formatPrice(total)}</span>
                 </div>
-                <button 
+                <button
                   onClick={onCheckout}
                   className="w-full bg-black text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
                 >
@@ -413,14 +413,14 @@ const HomePage = ({ onNavigate }: { onNavigate: (page: string, params?: any) => 
       {/* Hero */}
       <section className="relative h-[85vh] flex items-center overflow-hidden">
         <div className="absolute inset-0">
-          <img 
-            src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&q=80&w=1920" 
+          <img
+            src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&q=80&w=1920"
             alt="Hero Background"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-black/40" />
         </div>
-        
+
         <div className="relative max-w-7xl mx-auto px-4 w-full text-white">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -428,11 +428,7 @@ const HomePage = ({ onNavigate }: { onNavigate: (page: string, params?: any) => 
             transition={{ delay: 0.2 }}
             className="max-w-2xl"
           >
-            <span className="text-sm uppercase tracking-[0.5em] font-medium mb-4 block">Modern Heritage</span>
-            <h1 className="text-6xl md:text-8xl font-serif font-black italic leading-[1.1] mb-8">
-              Soul of the <br /> <span className="text-[#F4A261]">Continent.</span>
-            </h1>
-            <button 
+            <button
               onClick={() => onNavigate('shop')}
               className="group bg-white text-black px-10 py-5 rounded-full font-bold text-lg flex items-center gap-3 hover:bg-[#E76F51] hover:text-white transition-all duration-300"
             >
@@ -477,8 +473,8 @@ const HomePage = ({ onNavigate }: { onNavigate: (page: string, params?: any) => 
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {CATEGORIES.map((cat, idx) => (
-              <motion.div 
-                key={cat.id} 
+              <motion.div
+                key={cat.id}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
@@ -507,7 +503,7 @@ const HomePage = ({ onNavigate }: { onNavigate: (page: string, params?: any) => 
           ))}
         </div>
         <div className="mt-16 text-center">
-          <button 
+          <button
             onClick={() => onNavigate('shop')}
             className="px-12 py-4 border-2 border-black rounded-full font-bold hover:bg-black hover:text-white transition-all"
           >
@@ -519,15 +515,15 @@ const HomePage = ({ onNavigate }: { onNavigate: (page: string, params?: any) => 
   );
 };
 
-const ShopPage = ({ 
-  onNavigate, 
-  categoryIdFilter 
-}: { 
+const ShopPage = ({
+  onNavigate,
+  categoryIdFilter
+}: {
   onNavigate: (page: string, params?: any) => void;
   categoryIdFilter?: string;
 }) => {
   const [activeCategory, setActiveCategory] = useState(categoryIdFilter || 'all');
-  
+
   const filteredProducts = useMemo(() => {
     if (activeCategory === 'all') return PRODUCTS;
     return PRODUCTS.filter(p => p.categoryId === activeCategory);
@@ -538,14 +534,14 @@ const ShopPage = ({
       <div className="mb-12">
         <h1 className="text-5xl font-serif font-black italic mb-8">The Collection</h1>
         <div className="flex flex-wrap gap-3">
-          <button 
+          <button
             onClick={() => setActiveCategory('all')}
             className={`px-6 py-2 rounded-full font-medium transition-all ${activeCategory === 'all' ? 'bg-black text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
           >
             All Pieces
           </button>
           {CATEGORIES.map(cat => (
-            <button 
+            <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
               className={`px-6 py-2 rounded-full font-medium transition-all ${activeCategory === cat.id ? 'bg-[#E76F51] text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
@@ -571,12 +567,12 @@ const ShopPage = ({
   );
 };
 
-const ProductDetailPage = ({ 
-  slug, 
-  onNavigate, 
-  onAddToCart 
-}: { 
-  slug: string; 
+const ProductDetailPage = ({
+  slug,
+  onNavigate,
+  onAddToCart
+}: {
+  slug: string;
   onNavigate: (page: string, params?: any) => void;
   onAddToCart: (item: CartItem) => void;
 }) => {
@@ -638,7 +634,7 @@ const ProductDetailPage = ({
           </div>
           <h1 className="text-4xl font-serif font-black italic mb-2">{product.name}</h1>
           <p className="text-2xl font-bold mb-8">{formatPrice(product.price)}</p>
-          
+
           <div className="bg-[#EAE2D6]/30 p-6 rounded-2xl mb-10 leading-relaxed text-gray-700">
             {product.description}
           </div>
@@ -649,7 +645,7 @@ const ProductDetailPage = ({
               <label className="text-xs uppercase tracking-widest font-black block mb-4">Color: <span className="text-gray-500 font-normal">{selectedColor}</span></label>
               <div className="flex gap-3">
                 {product.colors.map(color => (
-                  <button 
+                  <button
                     key={color.name}
                     onClick={() => setSelectedColor(color.name)}
                     className={`w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center ${selectedColor === color.name ? 'border-black' : 'border-transparent'}`}
@@ -668,7 +664,7 @@ const ProductDetailPage = ({
               </div>
               <div className="grid grid-cols-4 gap-3">
                 {product.sizes.map(size => (
-                  <button 
+                  <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
                     className={`py-3 rounded-xl border-2 font-bold transition-all ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-100 hover:border-gray-300'}`}
@@ -691,13 +687,13 @@ const ProductDetailPage = ({
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <button 
+            <button
               onClick={handleAddToCart}
               className="flex-1 bg-black text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
             >
               <ShoppingBag size={20} /> Add to Inquiry
             </button>
-            <button 
+            <button
               onClick={() => {
                 if (!selectedSize) return alert("Select size first");
                 const msg = encodeURIComponent(`Hi TÉFA! I want to order the ${product.name} (Size: ${selectedSize}, Color: ${selectedColor}). Is it available?`);
@@ -710,14 +706,14 @@ const ProductDetailPage = ({
           </div>
 
           <div className="mt-12 space-y-4">
-             <div className="flex items-center gap-3 text-sm text-gray-500">
-               <div className="p-2 bg-green-50 text-green-600 rounded-lg"><Sparkles size={16} /></div>
-               <span>Hand-crafted by master artisans in Lagos.</span>
-             </div>
-             <div className="flex items-center gap-3 text-sm text-gray-500">
-               <div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Info size={16} /></div>
-               <span>Ships worldwide within 5-7 business days.</span>
-             </div>
+            <div className="flex items-center gap-3 text-sm text-gray-500">
+              <div className="p-2 bg-green-50 text-green-600 rounded-lg"><Sparkles size={16} /></div>
+              <span>Hand-crafted by master artisans in Lagos.</span>
+            </div>
+            <div className="flex items-center gap-3 text-sm text-gray-500">
+              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Info size={16} /></div>
+              <span>Ships worldwide within 5-7 business days.</span>
+            </div>
           </div>
         </div>
       </div>
@@ -765,11 +761,11 @@ const CheckoutPage = ({ items, onNavigate }: { items: CartItem[]; onNavigate: (p
   return (
     <div className="pt-32 pb-24 max-w-3xl mx-auto px-4">
       <h1 className="text-4xl font-serif font-black italic mb-8">Confirm Your Inquiry</h1>
-      
+
       <div className="space-y-8">
         <div className="bg-white p-8 rounded-3xl border shadow-sm">
           <h3 className="font-bold text-xl mb-6 flex items-center gap-2 italic">
-            <span className="bg-[#F4A261] text-white w-8 h-8 rounded-full flex items-center justify-center text-xs not-italic">1</span> 
+            <span className="bg-[#F4A261] text-white w-8 h-8 rounded-full flex items-center justify-center text-xs not-italic">1</span>
             Order Summary
           </h3>
           <div className="space-y-4 mb-6">
@@ -788,30 +784,30 @@ const CheckoutPage = ({ items, onNavigate }: { items: CartItem[]; onNavigate: (p
 
         <div className="bg-white p-8 rounded-3xl border shadow-sm">
           <h3 className="font-bold text-xl mb-6 flex items-center gap-2 italic">
-            <span className="bg-[#E76F51] text-white w-8 h-8 rounded-full flex items-center justify-center text-xs not-italic">2</span> 
+            <span className="bg-[#E76F51] text-white w-8 h-8 rounded-full flex items-center justify-center text-xs not-italic">2</span>
             Your Details (Optional)
           </h3>
           <div className="grid md:grid-cols-2 gap-4 mb-4">
-            <input 
-              type="text" placeholder="Full Name" 
+            <input
+              type="text" placeholder="Full Name"
               className="w-full p-4 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-black transition-all outline-none"
-              value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
+              value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
             />
-            <input 
-              type="text" placeholder="Phone Number" 
+            <input
+              type="text" placeholder="Phone Number"
               className="w-full p-4 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-black transition-all outline-none"
-              value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})}
+              value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })}
             />
           </div>
-          <input 
-            type="text" placeholder="Delivery City/Country" 
+          <input
+            type="text" placeholder="Delivery City/Country"
             className="w-full p-4 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-black transition-all outline-none mb-4"
-            value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})}
+            value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })}
           />
-          <textarea 
+          <textarea
             placeholder="Special notes or questions..." rows={3}
             className="w-full p-4 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-black transition-all outline-none"
-            value={formData.note} onChange={e => setFormData({...formData, note: e.target.value})}
+            value={formData.note} onChange={e => setFormData({ ...formData, note: e.target.value })}
           />
         </div>
 
@@ -821,13 +817,13 @@ const CheckoutPage = ({ items, onNavigate }: { items: CartItem[]; onNavigate: (p
             <p className="text-gray-400 text-sm">Choose your preferred channel to send this inquiry.</p>
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
-            <button 
+            <button
               onClick={handleSendWhatsApp}
               className="bg-[#25D366] text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
             >
               <MessageCircle size={20} /> Send on WhatsApp
             </button>
-            <button 
+            <button
               onClick={handleSendInstagram}
               className="bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
             >
@@ -857,7 +853,7 @@ const Footer = ({ onNavigate }: { onNavigate: (page: string) => void }) => (
           <button className="p-3 bg-white/10 rounded-full hover:bg-white/20 transition-colors"><MessageCircle size={20} /></button>
         </div>
       </div>
-      
+
       <div>
         <h4 className="font-bold uppercase tracking-widest text-sm mb-6">Explore</h4>
         <div className="flex flex-col gap-4 text-gray-400">
@@ -882,9 +878,9 @@ const Footer = ({ onNavigate }: { onNavigate: (page: string) => void }) => (
         <h4 className="font-bold uppercase tracking-widest text-sm mb-6">Newsletter</h4>
         <p className="text-gray-400 text-sm mb-4">Get early access to drops and stories.</p>
         <div className="flex border-b border-gray-700 py-2">
-          <input 
-            type="email" 
-            placeholder="Your Email" 
+          <input
+            type="email"
+            placeholder="Your Email"
             className="bg-transparent border-none outline-none flex-1 text-sm"
           />
           <button className="text-[#F4A261] font-bold"><ChevronRight size={20} /></button>
@@ -981,9 +977,9 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#1A1A1A] selection:bg-[#E76F51] selection:text-white overflow-x-hidden">
-      <Header 
-        onNavigate={navigate} 
-        cartCount={cart.reduce((sum, i) => sum + i.qty, 0)} 
+      <Header
+        onNavigate={navigate}
+        cartCount={cart.reduce((sum, i) => sum + i.qty, 0)}
         onOpenCart={() => setIsCartOpen(true)}
       />
 
@@ -1001,9 +997,9 @@ const App = () => {
 
       <Footer onNavigate={navigate} />
 
-      <CartDrawer 
-        isOpen={isCartOpen} 
-        onClose={() => setIsCartOpen(false)} 
+      <CartDrawer
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
         items={cart}
         onUpdateQty={updateCartQty}
         onRemove={removeFromCart}
@@ -1014,7 +1010,7 @@ const App = () => {
       />
 
       {/* Floating Inquiry Button (Sticky on Mobile) */}
-      <button 
+      <button
         onClick={() => setIsCartOpen(true)}
         className="fixed bottom-6 right-6 z-40 bg-[#E76F51] text-white p-4 rounded-full shadow-2xl lg:hidden flex items-center gap-2 font-bold"
       >

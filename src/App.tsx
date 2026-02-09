@@ -22,95 +22,95 @@ import { ProductForm } from './pages/admin/ProductForm';
 import { useStore } from './data/store';
 
 export const App: React.FC = () => {
-    const navigate = useNavigate();
-    const location = useLocation();
-    const [isCartOpen, setIsCartOpen] = useState(false);
-    const [editingProductId, setEditingProductId] = useState<string | undefined>(undefined);
-    const [isProductFormOpen, setIsProductFormOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<string | undefined>(undefined);
+  const [isProductFormOpen, setIsProductFormOpen] = useState(false);
 
-    const { cart, updateCartQty, removeFromCart, currency } = useStore();
+  const { cart, updateCartQty, removeFromCart, currency } = useStore();
 
-    const openProductForm = (productId?: string) => {
-        setEditingProductId(productId);
-        setIsProductFormOpen(true);
-    };
+  const openProductForm = (productId?: string) => {
+    setEditingProductId(productId);
+    setIsProductFormOpen(true);
+  };
 
-    const closeProductForm = () => {
-        setEditingProductId(undefined);
-        setIsProductFormOpen(false);
-    };
+  const closeProductForm = () => {
+    setEditingProductId(undefined);
+    setIsProductFormOpen(false);
+  };
 
-    const isAdminRoute = location.pathname.startsWith('/admin');
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
-    return (
-        <div className="app-wrapper">
-            <Header
-                onOpenCart={() => setIsCartOpen(true)}
-            />
+  return (
+    <div className="app-wrapper">
+      <Header
+        onOpenCart={() => setIsCartOpen(true)}
+      />
 
-            <AnimatePresence mode="wait">
-                <motion.main
-                    key={location.pathname}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3 }}
-                >
-                    <Routes location={location}>
-                        <Route path="/" element={<HomePage />} />
-                        <Route path="/shop" element={<ShopPage />} />
-                        <Route path="/shop/:categoryId" element={<ShopPage />} />
-                        <Route path="/product/:slug" element={<ProductDetailPage />} />
-                        <Route path="/checkout" element={<CheckoutPage />} />
-                        <Route path="/about" element={<AboutPage />} />
-                        <Route path="/admin" element={<AdminDashboard onOpenProductForm={openProductForm} />} />
-                        <Route path="*" element={<HomePage />} />
-                    </Routes>
-                </motion.main>
-            </AnimatePresence>
+      <AnimatePresence mode="wait">
+        <motion.main
+          key={location.pathname}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Routes location={location}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/shop" element={<ShopPage />} />
+            <Route path="/shop/:categoryId" element={<ShopPage />} />
+            <Route path="/product/:slug" element={<ProductDetailPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/admin" element={<AdminDashboard onOpenProductForm={openProductForm} />} />
+            <Route path="*" element={<HomePage />} />
+          </Routes>
+        </motion.main>
+      </AnimatePresence>
 
-            {!isAdminRoute && <Footer />}
+      {!isAdminRoute && <Footer />}
 
-            <CartDrawer
-                isOpen={isCartOpen}
-                onClose={() => setIsCartOpen(false)}
-                items={cart}
-                currency={currency}
-                onUpdateQty={updateCartQty}
-                onRemove={removeFromCart}
-                onCheckout={() => {
-                    setIsCartOpen(false);
-                    navigate('/checkout');
-                }}
-            />
+      <CartDrawer
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        items={cart}
+        currency={currency}
+        onUpdateQty={updateCartQty}
+        onRemove={removeFromCart}
+        onCheckout={() => {
+          setIsCartOpen(false);
+          navigate('/checkout');
+        }}
+      />
 
-            {/* Floating Cart Button (Mobile) */}
-            {!isAdminRoute && location.pathname !== '/checkout' && (
-                <button
-                    onClick={() => setIsCartOpen(true)}
-                    className="floating-cart-btn"
-                >
-                    <ShoppingBag size={24} />
-                    {cart.length > 0 && (
-                        <span className="floating-cart-badge">
-                            {cart.reduce((a, b) => a + b.qty, 0)}
-                        </span>
-                    )}
-                </button>
-            )}
+      {/* Floating Cart Button (Mobile) */}
+      {!isAdminRoute && location.pathname !== '/checkout' && (
+        <button
+          onClick={() => setIsCartOpen(true)}
+          className="floating-cart-btn"
+        >
+          <ShoppingBag size={24} />
+          {cart.length > 0 && (
+            <span className="floating-cart-badge">
+              {cart.reduce((a, b) => a + b.qty, 0)}
+            </span>
+          )}
+        </button>
+      )}
 
-            {/* Product Form Modal */}
-            {isProductFormOpen && (
-                <ProductForm
-                    productId={editingProductId}
-                    onClose={closeProductForm}
-                />
-            )}
+      {/* Product Form Modal */}
+      {isProductFormOpen && (
+        <ProductForm
+          productId={editingProductId}
+          onClose={closeProductForm}
+        />
+      )}
 
-            {/* Chat Widget */}
-            {!isAdminRoute && <ChatWidget />}
+      {/* Chat Widget */}
+      {!isAdminRoute && <ChatWidget />}
 
-            <style>{`
+      <style>{`
         .app-wrapper {
           min-height: 100vh;
           background: var(--color-cream);
@@ -160,6 +160,6 @@ export const App: React.FC = () => {
           font-weight: 700;
         }
       `}</style>
-        </div>
-    );
+    </div>
+  );
 };

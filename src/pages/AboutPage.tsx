@@ -8,7 +8,7 @@ export const AboutPage: React.FC = () => {
       <div className="about-content">
         <h1>Our Manifesto</h1>
         <div className="about-text">
-          <p>"TÉFA is more than a brand. It is an exploration of the intricate patterns of our identity."</p>
+          <p>"<span className="font-brand">TÉFA</span> is more than a brand. It is an exploration of the intricate patterns of our identity."</p>
           <p>We believe that luxury should be meaningful. We believe that heritage is a living thing, meant to be worn, shared, and evolved.</p>
           <p>By blending ancestral dyeing techniques with contemporary silhouettes, we create a dialogue between the past and the future.</p>
         </div>

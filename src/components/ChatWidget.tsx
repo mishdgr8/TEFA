@@ -3,164 +3,164 @@ import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Message {
-    id: string;
-    text: string;
-    isUser: boolean;
-    timestamp: Date;
+  id: string;
+  text: string;
+  isUser: boolean;
+  timestamp: Date;
 }
 
 export const ChatWidget: React.FC = () => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            id: '1',
-            text: 'Hello! 👋 Welcome to TÉFA. How can we help you today?',
-            isUser: false,
-            timestamp: new Date(),
-        },
-    ]);
-    const [inputValue, setInputValue] = useState('');
-    const [isTyping, setIsTyping] = useState(false);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      text: 'Hello! 👋 Welcome to TÉFA. How can we help you today?',
+      isUser: false,
+      timestamp: new Date(),
+    },
+  ]);
+  const [inputValue, setInputValue] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSend = () => {
+    if (!inputValue.trim()) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: inputValue,
+      isUser: true,
+      timestamp: new Date(),
     };
 
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
+    setMessages(prev => [...prev, userMessage]);
+    setInputValue('');
+    setIsTyping(true);
 
-    const handleSend = () => {
-        if (!inputValue.trim()) return;
+    // Simulate typing response
+    setTimeout(() => {
+      const botResponses = [
+        "Thank you for your message! Our team will get back to you shortly. 💫",
+        "Great question! For sizing queries, please check our size guide on the product page.",
+        "We offer free shipping on orders over ₦100,000! 🚚",
+        "Our customer service team is available Monday to Saturday, 9am - 6pm WAT.",
+      ];
 
-        const userMessage: Message = {
-            id: Date.now().toString(),
-            text: inputValue,
-            isUser: true,
-            timestamp: new Date(),
-        };
+      const botMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: botResponses[Math.floor(Math.random() * botResponses.length)],
+        isUser: false,
+        timestamp: new Date(),
+      };
 
-        setMessages(prev => [...prev, userMessage]);
-        setInputValue('');
-        setIsTyping(true);
+      setMessages(prev => [...prev, botMessage]);
+      setIsTyping(false);
+    }, 1500);
+  };
 
-        // Simulate typing response
-        setTimeout(() => {
-            const botResponses = [
-                "Thank you for your message! Our team will get back to you shortly. 💫",
-                "Great question! For sizing queries, please check our size guide on the product page.",
-                "We offer free shipping on orders over ₦100,000! 🚚",
-                "Our customer service team is available Monday to Saturday, 9am - 6pm WAT.",
-            ];
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
 
-            const botMessage: Message = {
-                id: (Date.now() + 1).toString(),
-                text: botResponses[Math.floor(Math.random() * botResponses.length)],
-                isUser: false,
-                timestamp: new Date(),
-            };
+  return (
+    <>
+      {/* Chat Button */}
+      <motion.button
+        className="chat-widget-btn"
+        onClick={() => setIsOpen(!isOpen)}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
+      </motion.button>
 
-            setMessages(prev => [...prev, botMessage]);
-            setIsTyping(false);
-        }, 1500);
-    };
+      {/* Chat Window */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className="chat-widget-window"
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+          >
+            {/* Header */}
+            <div className="chat-header">
+              <div className="chat-header-info">
+                <div className="chat-header-avatar">T</div>
+                <div>
+                  <h4><span className="font-brand">TÉFA</span> Support</h4>
+                  <span className="chat-status">
+                    <span className="chat-status-dot"></span>
+                    Online
+                  </span>
+                </div>
+              </div>
+              <button className="chat-close-btn" onClick={() => setIsOpen(false)}>
+                <X size={20} />
+              </button>
+            </div>
 
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSend();
-        }
-    };
+            {/* Messages */}
+            <div className="chat-messages">
+              {messages.map(message => (
+                <div
+                  key={message.id}
+                  className={`chat-message ${message.isUser ? 'user' : 'bot'}`}
+                >
+                  <div className="chat-bubble">
+                    {message.text}
+                  </div>
+                  <span className="chat-time">
+                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+              ))}
+              {isTyping && (
+                <div className="chat-message bot">
+                  <div className="chat-bubble typing">
+                    <Loader2 size={16} className="spin" />
+                    <span>Typing...</span>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
 
-    return (
-        <>
-            {/* Chat Button */}
-            <motion.button
-                className="chat-widget-btn"
-                onClick={() => setIsOpen(!isOpen)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-            >
-                {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
-            </motion.button>
+            {/* Input */}
+            <div className="chat-input-container">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={e => setInputValue(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Type a message..."
+                className="chat-input"
+              />
+              <button
+                onClick={handleSend}
+                disabled={!inputValue.trim()}
+                className="chat-send-btn"
+              >
+                <Send size={18} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-            {/* Chat Window */}
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div
-                        className="chat-widget-window"
-                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        {/* Header */}
-                        <div className="chat-header">
-                            <div className="chat-header-info">
-                                <div className="chat-header-avatar">T</div>
-                                <div>
-                                    <h4>TÉFA Support</h4>
-                                    <span className="chat-status">
-                                        <span className="chat-status-dot"></span>
-                                        Online
-                                    </span>
-                                </div>
-                            </div>
-                            <button className="chat-close-btn" onClick={() => setIsOpen(false)}>
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        {/* Messages */}
-                        <div className="chat-messages">
-                            {messages.map(message => (
-                                <div
-                                    key={message.id}
-                                    className={`chat-message ${message.isUser ? 'user' : 'bot'}`}
-                                >
-                                    <div className="chat-bubble">
-                                        {message.text}
-                                    </div>
-                                    <span className="chat-time">
-                                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </span>
-                                </div>
-                            ))}
-                            {isTyping && (
-                                <div className="chat-message bot">
-                                    <div className="chat-bubble typing">
-                                        <Loader2 size={16} className="spin" />
-                                        <span>Typing...</span>
-                                    </div>
-                                </div>
-                            )}
-                            <div ref={messagesEndRef} />
-                        </div>
-
-                        {/* Input */}
-                        <div className="chat-input-container">
-                            <input
-                                type="text"
-                                value={inputValue}
-                                onChange={e => setInputValue(e.target.value)}
-                                onKeyPress={handleKeyPress}
-                                placeholder="Type a message..."
-                                className="chat-input"
-                            />
-                            <button
-                                onClick={handleSend}
-                                disabled={!inputValue.trim()}
-                                className="chat-send-btn"
-                            >
-                                <Send size={18} />
-                            </button>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            <style>{`
+      <style>{`
         .chat-widget-btn {
           position: fixed;
           bottom: var(--space-6);
@@ -369,6 +369,6 @@ export const ChatWidget: React.FC = () => {
           to { transform: rotate(360deg); }
         }
       `}</style>
-        </>
-    );
+    </>
+  );
 };

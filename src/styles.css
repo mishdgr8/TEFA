@@ -136,6 +136,11 @@ h6 {
   font-family: 'Inter', sans-serif;
 }
 
+.font-brand {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+}
+
 .text-display {
   font-size: clamp(2.5rem, 6vw, 5rem);
   font-weight: 700;

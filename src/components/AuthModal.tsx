@@ -125,7 +125,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                             <p>
                                 {mode === 'signin'
                                     ? 'Sign in to manage your inquiries'
-                                    : 'Join TÉFA to save your favorites'}
+                                    : <>Join <span className="font-brand">TÉFA</span> to save your favorites</>}
                             </p>
                         </div>
 
@@ -238,25 +238,46 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
               display: flex;
               align-items: center;
               justify-content: center;
+              padding: 16px;
             }
 
             .auth-modal {
-              position: fixed;
-              top: 0;
-              left: 0;
-              right: 0;
-              bottom: 0;
-              margin: auto;
-              width: 90%;
+              position: relative;
+              width: 100%;
               max-width: 420px;
-              height: fit-content;
-              max-height: 90vh;
+              max-height: calc(100vh - 32px);
               overflow-y: auto;
               background: white;
               border-radius: var(--radius-xl);
-              padding: var(--space-8);
+              padding: var(--space-6);
               z-index: 101;
               box-shadow: var(--shadow-xl);
+            }
+
+            @media (max-width: 480px) {
+              .auth-modal-overlay {
+                padding: 12px;
+              }
+
+              .auth-modal {
+                max-height: calc(100vh - 24px);
+                padding: var(--space-5);
+                border-radius: var(--radius-lg);
+              }
+
+              .auth-modal-header h2 {
+                font-size: 1.5rem;
+              }
+
+              .auth-field input {
+                padding: var(--space-3);
+                font-size: 0.9375rem;
+              }
+
+              .auth-submit,
+              .auth-google-btn {
+                padding: var(--space-3);
+              }
             }
 
             .auth-modal-close {

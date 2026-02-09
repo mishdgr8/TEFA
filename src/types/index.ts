@@ -83,6 +83,7 @@ export interface StoreState {
   cart: CartItem[];
   user: AuthUser | null;
   loading: boolean;
+  isSearchOpen: boolean;
 }
 
 export interface AuthUser {
@@ -110,6 +111,7 @@ export interface StoreActions {
   clearCart: () => void;
   refreshProducts: () => Promise<void>;
   setCurrency: (currency: CurrencyCode) => void;
+  setIsSearchOpen: (isOpen: boolean) => void;
 }
 
 // Currency types

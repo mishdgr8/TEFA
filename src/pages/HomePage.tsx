@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, Truck, Tag, Globe, Play, Instagram, X, ExternalLink } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
 import { useStore } from '../data/store';
@@ -31,7 +31,7 @@ const instagramReviews: CustomerReview[] = [
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { products, categories, reviews, loading, currency } = useStore();
+  const { products, categories, reviews, loading, currency, isSearchOpen } = useStore();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [storyStack, setStoryStack] = useState(storyImages);
   const [hoveredCategoryId, setHoveredCategoryId] = useState<string | null>(null);
@@ -52,6 +52,65 @@ export const HomePage: React.FC = () => {
       }
     }
   };
+
+  const { scrollY } = useScroll();
+  const [rects, setRects] = useState<{ hero: DOMRect | null; nav: DOMRect | null }>({ hero: null, nav: null });
+
+  // Recalculate rects for FLIP morph
+  const updateRects = () => {
+    const heroTarget = document.getElementById('hero-logo-target');
+    const navTarget = document.getElementById('nav-logo-target');
+    if (heroTarget && navTarget) {
+      setRects({
+        hero: heroTarget.getBoundingClientRect(),
+        nav: navTarget.getBoundingClientRect()
+      });
+      return true;
+    }
+    return false;
+  };
+
+  useEffect(() => {
+    let retries = 0;
+    const measure = () => {
+      if (!updateRects() && retries < 10) {
+        retries++;
+        requestAnimationFrame(measure);
+      }
+    };
+    measure();
+
+    window.addEventListener('resize', updateRects);
+    return () => window.removeEventListener('resize', updateRects);
+  }, []);
+
+  // Gucci-style threshold
+  const threshold = 200;
+
+  // Eased progress (easeInOutCubic)
+  const rawProgress = useTransform(scrollY, [0, threshold], [0, 1]);
+  const scrollProgress = useTransform(rawProgress, (p) => {
+    // easeInOutCubic implementation
+    return p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+  });
+
+  // Interpolate position and scale
+  const logoX = useTransform(scrollProgress, [0, 1], [
+    rects.hero ? rects.hero.left + rects.hero.width / 2 : 0,
+    rects.nav ? rects.nav.left + rects.nav.width / 2 : 0
+  ]);
+
+  const logoY = useTransform(scrollProgress, [0, 1], [
+    rects.hero ? rects.hero.top + rects.hero.height / 2 : 0,
+    rects.nav ? rects.nav.top + rects.nav.height / 2 : 0
+  ]);
+
+  const logoScale = useTransform(scrollProgress, [0, 1], [
+    1,
+    rects.hero && rects.nav ? rects.nav.width / rects.hero.width : 0.18
+  ]);
+
+  const logoColor = useTransform(scrollProgress, [0, 0.8, 1], ['#FFFFFF', '#FFFFFF', '#111111']);
 
   // Auto-slide hero every 5 seconds
   useEffect(() => {
@@ -93,24 +152,64 @@ export const HomePage: React.FC = () => {
           <div className="hero-overlay" />
         </div>
 
-        <div className="hero-content">
-          <motion.span
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="hero-eyebrow"
+        {/* Hero Logo Target (Measurement Only) */}
+        <div
+          id="hero-logo-target"
+          style={{
+            position: 'absolute',
+            top: '40%', // Exact Gucci placement
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            visibility: 'hidden',
+            pointerEvents: 'none',
+            fontFamily: "'Montserrat', sans-serif",
+            fontSize: 'clamp(4rem, 15vw, 12rem)',
+            fontWeight: 500,
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          TÉFA
+        </div>
+
+        {/* Moving Wordmark (The actual animated element) */}
+        {rects.hero && !isSearchOpen && (
+          <motion.div
+            style={{
+              position: 'fixed',
+              left: 0,
+              top: 0,
+              x: logoX,
+              y: logoY,
+              translateX: '-50%',
+              translateY: '-50%',
+              scale: logoScale,
+              color: logoColor,
+              zIndex: 100, // Very high z-index
+              pointerEvents: 'none',
+              fontFamily: "'Montserrat', sans-serif",
+              fontSize: 'clamp(4rem, 15vw, 12rem)',
+              fontWeight: 500,
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              lineHeight: 0.9,
+              whiteSpace: 'nowrap',
+              willChange: 'transform',
+            }}
           >
-            HOUSE OF TEFA
-          </motion.span>
-          <div className="hero-title-container">
-            <h1 className="hero-title">
-              Confidence in <br></br> Every Stitch
-            </h1>
-          </div>
+            TÉFA
+          </motion.div>
+        )}
+
+        <div className="hero-content">
+          {/* Spacer to push content below the logo */}
+          <div style={{ height: 'clamp(6rem, 20vw, 16rem)', marginBottom: 'var(--space-4)' }} />
+
           <motion.p
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.4, duration: 0.8 }}
             className="hero-tagline"
           >
             PROUDLY NIGERIAN
@@ -291,7 +390,7 @@ export const HomePage: React.FC = () => {
             <h2>Customer Spotlight</h2>
             <a href="https://www.instagram.com/shop.tefa" target="_blank" rel="noopener noreferrer" className="instagram-link">
               <Instagram size={20} />
-              @houseoftefa
+              @shop.tefa
             </a>
           </div>
           <p className="reviews-subtitle">See us on our customers and friends of the brand.</p>
@@ -391,88 +490,91 @@ export const HomePage: React.FC = () => {
 
       <style>{`
         .home-page {
-          padding-top: 80px;
           min-height: 100vh;
           background-color: var(--color-background);
         }
 
         /* Hero */
         .hero {
-        position: relative;
-        height: 60vh;
-        display: flex;
-        align-items: center;
-        overflow: hidden;
+          position: relative;
+          height: 100vh; /* Full screen height */
+          display: flex;
+          align-items: center;
+          justify-content: center; /* Center content */
+          overflow: hidden;
         }
 
         .hero-bg {
-        position: absolute;
-        inset: 0;
+          position: absolute;
+          inset: 0;
         }
 
         .hero-bg img {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
 
+        /* Darker overlay to make white text pop against any background */
         .hero-overlay {
-        display: none;
+          display: block;
+          position: absolute;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.3); 
+          z-index: 1;
         }
 
         .hero-content {
-        position: relative;
-        max-width: 1280px;
-        margin: 0 auto;
-        padding: 0 var(--space-4);
-        width: 100%;
-        color: #111111;
+          position: relative;
+          z-index: 2;
+          max-width: 1280px;
+          margin: 0 auto;
+          padding: 0 var(--space-4);
+          padding-top: 15vh; /* Push content lower */
+          width: 100%;
+          color: #FFFFFF;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          justify-content: flex-start;
+          margin-top: auto; /* Push to bottom portion of hero */
         }
 
         .hero-eyebrow {
-        display: block;
-        font-family: 'Inter', sans-serif;
-        font-size: 1.25rem;
-        text-transform: uppercase;
-        letter-spacing: 0.4em;
-        font-weight: 800;
-        margin-bottom: var(--space-4);
-        color: #FFFFFF;
-        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        opacity: 1;
+          display: block;
+          font-family: 'Montserrat', sans-serif;
+          font-size: clamp(4rem, 15vw, 12rem); /* Massive responsive size */
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          font-weight: 800;
+          margin-bottom: var(--space-2);
+          color: #FFFFFF;
+          line-height: 0.9;
+          text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
         .hero-title {
-        font-family: 'LC SAC', 'Inter', sans-serif;
-        font-size: clamp(3rem, 8vw, 5.5rem);
-        font-weight: 700;
-        font-style: normal;
-        line-height: 1.1;
-        margin-bottom: var(--space-6);
-        color: #111111;
-        text-shadow:
-        -2px -2px 0 rgba(255,255,255,0.9),
-        2px -2px 0 rgba(255,255,255,0.9),
-        -2px 2px 0 rgba(255,255,255,0.9),
-        2px 2px 0 rgba(255,255,255,0.9),
-        0 0 30px rgba(255,255,255,1);
+          display: none; /* Hiding the old title structure */
         }
 
         .hero-title-container {
-        color: #111111;
+          display: contents;
         }
 
         .hero-tagline {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: var(--space-10);
-        color: #FFFFFF;
-        letter-spacing: 0.2em;
-        text-transform: uppercase;
-        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        opacity: 1;
+          font-family: 'Rethena', serif;
+          font-size: clamp(1.5rem, 4vw, 3rem);
+          font-weight: 500;
+          margin-bottom: var(--space-10);
+          color: #FFFFFF;
+          letter-spacing: 0.05em;
+          text-transform: none;
+          font-style: italic;
+          text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+          opacity: 0.95;
         }
 
         .hero-indicators {
@@ -502,28 +604,31 @@ export const HomePage: React.FC = () => {
         }
 
         .new-arrival-button {
-        display: flex;
-        cursor: pointer;
-        margin-top: var(--space-4);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        border: 1px solid #111111;
-        width: fit-content;
+          display: flex;
+          cursor: pointer;
+          margin-top: var(--space-4);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+          border: 1px solid #FFFFFF;
+          width: fit-content;
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(4px);
+          margin-bottom: 6rem;
         }
 
         .new-arrival-button .box {
-        width: 40px;
-        height: 50px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 14px;
-        font-weight: 700;
-        color: #111111;
-        transition: all .6s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        background: rgba(206, 135, 13, 1);
-        overflow: hidden;
-        font-family: 'Inter', sans-serif;
+          width: 40px;
+          height: 50px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 14px;
+          font-weight: 700;
+          color: #FFFFFF;
+          transition: all .6s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          background: transparent;
+          overflow: hidden;
+          font-family: 'Inter', sans-serif;
         }
 
         .new-arrival-button .box:before {

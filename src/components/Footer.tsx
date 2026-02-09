@@ -13,11 +13,10 @@ export const Footer: React.FC = () => {
           {/* Brand Column */}
           <div className="footer-brand">
             <div className="footer-logo-container">
-              <span className="footer-logo-top">HOUSE OF</span>
               <span className="footer-logo-main">TÉFA</span>
             </div>
             <p className="footer-tagline">
-              Premium Africana fashion for the bold and the beautiful. Rooted in Lagos, inspired by the world.
+              Premium fashion for the bold and the beautiful. Rooted in Lagos, inspired by the world.
             </p>
             <div className="footer-social">
               <a href="https://www.instagram.com/shop.tefa" target="_blank" rel="noopener noreferrer" className="footer-social-link" aria-label="Instagram">
@@ -69,7 +68,7 @@ export const Footer: React.FC = () => {
 
         {/* Bottom Bar */}
         <div className="footer-bottom">
-          <p>© 2024 TÉFA Africana Studio. All rights reserved.</p>
+          <p>© 2024 <span className="font-brand">TÉFA</span> Studio. All rights reserved.</p>
           <div className="footer-bottom-links">
             <span>Terms</span>
             <span>Privacy</span>
@@ -141,11 +140,11 @@ export const Footer: React.FC = () => {
         }
 
         .footer-logo-main {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 2.25rem;
-          font-weight: 700;
-          font-style: italic;
-          letter-spacing: 0.15em;
+          font-family: 'Montserrat', sans-serif;
+          font-size: 2.5rem;
+          font-weight: 800;
+          font-style: normal;
+          letter-spacing: 0.1em;
           color: #FFFFFF;
           line-height: 1;
         }

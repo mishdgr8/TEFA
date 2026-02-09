@@ -81,6 +81,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
   const [currency, setCurrencyState] = useState<CurrencyCode>(() =>
     loadFromStorage(STORAGE_KEYS.CURRENCY, 'NGN') as CurrencyCode
   );
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Subscribe to auth state changes
@@ -339,6 +340,8 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     clearCart,
     refreshProducts,
     setCurrency,
+    isSearchOpen,
+    setIsSearchOpen,
   };
 
   return (

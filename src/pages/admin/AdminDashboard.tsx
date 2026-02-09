@@ -198,7 +198,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="admin-header">
           <div>
             <h1>Admin Dashboard</h1>
-            <p>Manage your TÉFA products and inventory</p>
+            <p>Manage your <span className="font-brand">TÉFA</span> products and inventory</p>
           </div>
           <div className="admin-header-actions">
             <button onClick={() => navigate('/')} className="admin-back-btn">

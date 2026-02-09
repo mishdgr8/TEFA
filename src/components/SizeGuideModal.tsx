@@ -136,19 +136,100 @@ export const SizeGuideModal: React.FC<SizeGuideModalProps> = ({ isOpen, onClose 
                     <li><strong>Waist:</strong> Measure around your natural waistline (narrowest part).</li>
                     <li><strong>Hips:</strong> Measure around the fullest part of your hips.</li>
                   </ul>
-                  <p className="note">Note: Most of our pieces are designed for a relaxed, comfortable fit. If you're between sizes, we recommend sizing down for a more tailored look or staying with your size for the signature TÉFA flow.</p>
+                  <p className="note">Note: Most of our pieces are designed for a relaxed, comfortable fit. If you're between sizes, we recommend sizing down for a more tailored look or staying with your size for the signature <span className="font-brand">TÉFA</span> flow.</p>
                 </div>
               </div>
             </div>
           </motion.div>
 
           <style>{`
+            /* Base modal styles */
+            .modal-overlay {
+              position: fixed;
+              inset: 0;
+              background: rgba(0, 0, 0, 0.5);
+              backdrop-filter: blur(4px);
+              z-index: 100;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              padding: 16px;
+            }
+
+            .modal-content {
+              position: relative;
+              background: white;
+              border-radius: var(--radius-xl);
+              padding: var(--space-6);
+              box-shadow: var(--shadow-xl);
+              overflow-y: auto;
+            }
+
+            .modal-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: var(--space-4);
+            }
+
+            .modal-header h2 {
+              font-family: 'Cormorant Garamond', serif;
+              font-size: 1.5rem;
+              font-weight: 700;
+              font-style: italic;
+              color: var(--color-brown-dark);
+            }
+
+            .modal-close {
+              background: none;
+              border: none;
+              color: var(--color-text-muted);
+              cursor: pointer;
+              padding: var(--space-1);
+            }
+
+            .modal-close:hover {
+              color: var(--color-brown);
+            }
+
             .size-guide-modal {
               max-width: 800px !important;
+              width: 100%;
+              max-height: calc(100vh - 32px);
             }
 
             .size-guide-container {
               padding: var(--space-2);
+              overflow-x: auto;
+            }
+
+            @media (max-width: 600px) {
+              .modal-overlay {
+                padding: 12px;
+              }
+
+              .size-guide-modal {
+                max-height: calc(100vh - 24px);
+                padding: var(--space-4) !important;
+              }
+
+              .size-table {
+                font-size: 0.8125rem;
+                min-width: 500px;
+              }
+
+              .size-table th,
+              .size-table td {
+                padding: var(--space-2) var(--space-3);
+              }
+
+              .size-guide-notes {
+                padding: var(--space-4);
+              }
+
+              .size-guide-notes h3 {
+                font-size: 1.125rem;
+              }
             }
 
             .size-table {

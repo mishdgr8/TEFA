@@ -13,7 +13,7 @@ export const ShopPage: React.FC = () => {
 
 
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 12;
+  const ITEMS_PER_PAGE = 10; // 2 columns x 5 rows on mobile
 
   useEffect(() => {
     if (categoryId) {
@@ -69,7 +69,7 @@ export const ShopPage: React.FC = () => {
     <div className="shop-page">
       <div className="container">
         <div className="shop-header">
-          <h1>TÉFA Collection</h1>
+          <h1><span className="font-brand">TÉFA</span> Collection</h1>
 
           <div className="shop-filters">
             <button
@@ -211,16 +211,10 @@ export const ShopPage: React.FC = () => {
 
         .shop-grid {
           display: grid;
-          grid-template-columns: 1fr;
+          grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
           column-gap: 4px; /* Reduced horizontal gap */
           row-gap: var(--space-12); /* Increased vertical gap to separate items */
           margin: var(--space-8) 0; /* Add top/bottom margin to the grid container */
-        }
-
-        @media (min-width: 640px) {
-          .shop-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
         }
 
         @media (min-width: 1024px) {

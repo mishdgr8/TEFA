@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { ShoppingBag, Menu, X, ChevronRight, Search, User, LogOut, ChevronDown, Settings, History, Heart } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useScroll, useTransform, motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../data/store';
 import { CATEGORIES } from '../data/categories';
 import { PageName, PageParams, CURRENCIES } from '../types';
@@ -12,7 +12,31 @@ interface HeaderProps {
   onOpenCart: () => void;
 }
 
+const motionLink = motion(Link);
+
 export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
+  const { scrollY } = useScroll();
+
+  // Gucci-style thresholds
+  const threshold = 200; // Threshold for the morph completion
+  const scrollProgress = useTransform(scrollY, [0, threshold], [0, 1]);
+
+  // Header background opacity: 0 -> 1 from p = 0.55 to 1
+  const headerBgOpacity = useTransform(scrollProgress, [0, 0.55, 1], [0, 0, 1]);
+
+  // Local state for navigation items visibility: fade in from p = 0.6 to 1
+  const navItemsOpacity = useTransform(scrollProgress, [0, 0.6, 1], [0, 0, 1]);
+
+  // On homepage, strictly hide until the final pixel to prevent duplication
+  const logoTextOpacity = useTransform(scrollProgress, [0, 0.99, 1], [0, 0, 1]);
+  const logoVisibility = useTransform(scrollProgress, p => p < 0.99 ? 'hidden' : 'visible');
+
+  const headerBgColor = useTransform(
+    headerBgOpacity,
+    [0, 1],
+    ['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 0.95)']
+  );
+
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
-  const { cart, user, currency, setCurrency, products } = useStore();
+  const { cart, user, currency, setCurrency, products, isSearchOpen, setIsSearchOpen } = useStore();
   const cartCount = cart.reduce((sum, i) => sum + i.qty, 0);
 
   const currentCurrency = CURRENCIES.find(c => c.code === currency) || CURRENCIES[0];
@@ -45,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
     }
   };
 
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -81,48 +105,93 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
     setIsUserDropdownOpen(false);
   };
 
+  // Scroll detection for transparent header
+  const [isScrolled, setIsScrolled] = useState(false);
+  const isHome = location.pathname === '/';
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Header classes
+  const headerClass = `header ${isHome && !isScrolled ? 'header-transparent' : 'header-solid'}`;
+
   return (
-    <nav className="header">
+    <motion.nav
+      className={headerClass}
+      style={{
+        backgroundColor: isHome ? headerBgColor : undefined,
+        zIndex: isMenuOpen ? 200 : 50
+      }}
+    >
       <div className="header-inner">
-        {/* Mobile Menu Button */}
         <button
           onClick={() => setIsMenuOpen(true)}
           className="header-menu-btn"
           aria-label="Open menu"
         >
-          <Menu size={24} />
+          <Menu size={24} color={isHome && !isScrolled ? 'white' : '#111111'} />
         </button>
 
         {/* Desktop Navigation */}
         <div className="header-nav-desktop">
-          <Link to="/shop" className="header-link">
+          <Link to="/shop" className="header-link" style={{ color: isHome && !isScrolled ? 'white' : undefined }}>
             Shop
           </Link>
-          <Link to="/about" className="header-link">
+          <Link to="/about" className="header-link" style={{ color: isHome && !isScrolled ? 'white' : undefined }}>
             About
           </Link>
           {user?.isAdmin && (
-            <Link to="/admin" className="header-link header-admin-link">
+            <Link to="/admin" className="header-link header-admin-link" style={{ color: isHome && !isScrolled ? 'rgba(255,255,255,0.7)' : undefined }}>
               Admin
             </Link>
           )}
         </div>
 
-        {/* Logo (Centered) */}
-        <Link
-          to="/"
-          className="header-logo"
+        {/* Logo (Centered) - The Target for FLIP morph */}
+        <motion.div
+          id="nav-logo-target"
+          style={{
+            opacity: isHome ? logoTextOpacity : 1,
+            visibility: isHome ? logoVisibility : 'visible'
+          }}
+          className={`header-logo-container ${isSearchOpen ? 'search-active' : ''}`}
         >
-          <span className="header-logo-top">HOUSE OF</span>
-          <span className="header-logo-main">TÉFA</span>
-        </Link>
+          <Link
+            to="/"
+            className="header-logo"
+          >
+            {/* Visible logo for non-home pages, invisible measurement target for home page FLIP animation */}
+            <span
+              style={{
+                visibility: isHome ? 'hidden' : 'visible',
+                pointerEvents: isHome ? 'none' : 'auto',
+                fontFamily: "'Montserrat', sans-serif",
+                fontSize: '1.75rem',
+                fontWeight: 600,
+                letterSpacing: '0.15em',
+                textTransform: 'uppercase',
+                color: isHome && !isScrolled ? 'white' : '#111111',
+              }}
+            >TÉFA</span>
+          </Link>
+        </motion.div>
 
         {/* Right Actions */}
         <div className="header-actions">
           {/* Currency Selector */}
           <div className="currency-selector">
             <button
-              className="currency-btn"
+              className={`currency-btn ${isHome && !isScrolled ? 'transparent-mode' : ''}`}
               onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
             >
               <span className="currency-symbol">{currentCurrency.symbol}</span>
@@ -149,7 +218,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
             )}
           </div>
 
-          <div className={`header-search-container ${isSearchOpen ? 'active' : ''}`}>
+          <div className={`header-search-container ${isSearchOpen ? 'active' : ''} ${isHome && !isScrolled && !isSearchOpen ? 'transparent-mode' : ''}`}>
             <input
               type="text"
               placeholder="Search..."
@@ -172,7 +241,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
                 }
               }}
             >
-              <Search size={20} />
+              <Search size={20} color={isHome && !isScrolled && !isSearchOpen ? 'white' : '#111111'} />
             </button>
 
             {/* Search Previews Dropdown */}
@@ -200,18 +269,23 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
             )}
           </div>
 
-          {user ? (
-            <div className="user-dropdown-container" ref={userDropdownRef}>
-              <button
-                className="header-icon-btn user-icon-btn"
-                onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                title="Profile"
-              >
-                <User size={22} />
-              </button>
+          <div className="user-dropdown-container" ref={userDropdownRef}>
+            <button
+              className="header-icon-btn user-icon-btn"
+              onClick={() => user ? setIsUserDropdownOpen(!isUserDropdownOpen) : setIsAuthModalOpen(true)}
+              title={user ? "Profile" : "Sign In"}
+            >
+              <User size={22} color={isHome && !isScrolled ? 'white' : '#111111'} />
+            </button>
 
-              {isUserDropdownOpen && (
-                <div className="user-dropdown">
+            <AnimatePresence>
+              {isUserDropdownOpen && user && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="user-dropdown"
+                >
                   <div className="user-dropdown-header">
                     <div className="user-avatar">
                       <User size={20} />
@@ -239,25 +313,20 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
                     <LogOut size={16} />
                     <span>Sign Out</span>
                   </button>
-                </div>
+                </motion.div>
               )}
-            </div>
-          ) : (
-            <button
-              onClick={() => setIsAuthModalOpen(true)}
-              className="header-icon-btn"
-              title="Sign In"
-            >
-              <User size={22} />
-            </button>
-          )}
+            </AnimatePresence>
+          </div>
 
           <button
             onClick={onOpenCart}
-            className="header-cart-btn"
+            className="header-icon-btn header-cart-icon"
+            title="Cart"
           >
-            <ShoppingBag size={18} />
-            <span>{cartCount}</span>
+            <ShoppingBag size={20} color={isHome && !isScrolled ? 'white' : '#111111'} />
+            {cartCount > 0 && (
+              <span className="cart-badge">{cartCount}</span>
+            )}
           </button>
         </div>
       </div>
@@ -288,7 +357,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
               className="mobile-menu"
             >
               <div className="mobile-menu-header">
-                <span className="mobile-menu-logo">TÉFA</span>
                 <button onClick={() => setIsMenuOpen(false)}>
                   <X size={24} />
                 </button>
@@ -322,6 +390,23 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
                   ))}
                 </div>
 
+                {/* Currency Selector in Mobile Menu */}
+                <div className="mobile-menu-currency">
+                  <span className="mobile-menu-currency-label">Currency</span>
+                  <div className="mobile-menu-currency-options">
+                    {CURRENCIES.map(curr => (
+                      <button
+                        key={curr.code}
+                        className={`mobile-currency-btn ${currency === curr.code ? 'active' : ''}`}
+                        onClick={() => setCurrency(curr.code)}
+                      >
+                        <span>{curr.symbol}</span>
+                        <span>{curr.code}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {user?.isAdmin && (
                   <div className="mobile-menu-footer">
                     <button
@@ -345,51 +430,88 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
           left: 0;
           right: 0;
           z-index: 50;
-          background: #FFFFFF;
-          border-bottom: 1px solid #EEEEEE;
+          transition: background-color var(--transition-base), box-shadow var(--transition-base), padding var(--transition-base);
+        }
+
+        .header-transparent {
+          background-color: transparent;
+          box-shadow: none;
+          padding: var(--space-3) 0;
+          border-bottom: none;
+        }
+
+        .header-solid {
+          background-color: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(10px);
+          box-shadow: var(--shadow-sm);
+          padding: var(--space-2) 0;
+          border-bottom: 1px solid var(--color-nude-light);
         }
 
         .header-inner {
-          max-width: 1280px;
+          max-width: 1440px;
           margin: 0 auto;
-          padding: 0 var(--space-4);
-          height: 80px;
+          padding: 0 var(--space-6);
           display: flex;
           align-items: center;
           justify-content: space-between;
+          height: 60px;
+          position: relative;
         }
 
+        /* Mobile Menu Button */
         .header-menu-btn {
-          padding: var(--space-2);
+          display: block;
           background: none;
           border: none;
-          color: #111111;
           cursor: pointer;
+          color: #111111;
+        }
+
+        .header-menu-btn.text-white {
+          color: white;
         }
 
         @media (min-width: 1024px) {
-          .header-menu-btn { display: none; }
+          .header-menu-btn {
+            display: none;
+          }
         }
 
+        /* Desktop Nav */
         .header-nav-desktop {
           display: none;
+          align-items: center;
           gap: var(--space-8);
+          position: absolute;
+          left: var(--space-6);
+        }
+
+        .header-nav-desktop.nav-hidden {
+          opacity: 0;
+          pointer-events: none;
         }
 
         @media (min-width: 1024px) {
-          .header-nav-desktop { display: flex; }
+          .header-nav-desktop {
+            display: flex;
+            transition: opacity var(--transition-base);
+          }
         }
 
         .header-link {
+          font-family: 'Quicksand', sans-serif;
+          font-size: 0.875rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: #111111;
+          text-decoration: none;
+          position: relative;
           background: none;
           border: none;
-          font-family: 'Rethena', serif;
-          font-size: 0.9375rem;
-          font-weight: 600;
-          color: #111111;
           cursor: pointer;
-          transition: all var(--transition-fast);
-          position: relative;
+          padding: 0;
         }
 
         .header-link::after {
@@ -412,10 +534,25 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
           font-size: 0.8125rem;
         }
 
-        .header-logo {
+        .header-logo-container {
           position: absolute;
           left: 50%;
           transform: translateX(-50%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 10;
+          transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        /* Hide logo when search is active */
+        .header-logo-container.search-active {
+          opacity: 0 !important;
+          visibility: hidden !important;
+          pointer-events: none;
+        }
+
+        .header-logo {
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -425,29 +562,15 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
           gap: 2px;
         }
 
-        .header-logo-top {
-          font-family: 'Rethena', serif;
-          font-size: 0.625rem;
-          text-transform: uppercase;
-          letter-spacing: 0.3em;
-          color: #666666;
-          line-height: 1;
-        }
-
-        .header-logo-main {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 1.75rem;
-          font-weight: 700;
-          font-style: italic;
-          letter-spacing: 0.15em;
-          color: #111111;
-          line-height: 1;
+        .header-logo.hidden {
+          display: none;
         }
 
         .header-actions {
           display: flex;
           align-items: center;
           gap: var(--space-3);
+          margin-left: auto;
         }
 
         .currency-selector {
@@ -468,6 +591,12 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
           color: var(--color-brown);
           cursor: pointer;
           transition: all var(--transition-fast);
+        }
+
+        .currency-btn.transparent-mode {
+          background: rgba(255, 255, 255, 0.2);
+          border-color: rgba(255, 255, 255, 0.3);
+          color: white;
         }
 
         .currency-btn:hover {
@@ -561,10 +690,18 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
           transition: all var(--transition-fast);
           position: relative;
         }
+        
+        .header-search-container.active {
+           background: rgba(255, 255, 255, 1);
+           backdrop-filter: blur(20px);
+           border-color: var(--color-brown);
+           z-index: 25;
+           position: relative;
+        }
 
         .header-search-container:focus-within {
           border-color: var(--color-brown);
-          background: white;
+          background: rgba(255, 255, 255, 1);
         }
 
         .header-search-input {
@@ -585,6 +722,21 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
           opacity: 1;
         }
 
+        /* Expand search on mobile to take more space */
+        @media (max-width: 767px) {
+          .header-search-container.active {
+            position: absolute;
+            left: 60px;
+            right: 60px;
+            width: auto;
+          }
+
+          .header-search-container.active .header-search-input {
+            width: 100%;
+            flex: 1;
+          }
+        }
+
         .header-search-btn {
           background: none;
           border: none;
@@ -594,6 +746,26 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
           display: flex;
           align-items: center;
           justify-content: center;
+        }
+
+        /* Transparent mode for search container before scroll */
+        .header-search-container.transparent-mode {
+          background: transparent;
+          border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Hide currency selector on mobile */
+        @media (max-width: 767px) {
+          .currency-selector {
+            display: none;
+          }
+        }
+
+        /* Hide cart icon on mobile (using floating cart instead) */
+        @media (max-width: 1023px) {
+          .header-cart-icon {
+            display: none;
+          }
         }
 
         /* Search Preview Dropdown */
@@ -690,25 +862,30 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
 
         /* Mobile Menu */
         .mobile-menu-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(0, 0, 0, 0.4);
-          backdrop-filter: blur(4px);
-          z-index: 60;
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background: rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(8px);
+          z-index: 150;
         }
 
         .mobile-menu {
-          position: fixed;
+          position: absolute;
           top: 0;
           left: 0;
-          bottom: 0;
+          height: 100vh;
           width: 80%;
           max-width: 320px;
-          background: #FFFFFF;
-          z-index: 70;
+          background-color: #FFFFFF !important;
+          z-index: 160;
           padding: var(--space-8);
           display: flex;
           flex-direction: column;
+          box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+          overflow-y: auto;
         }
 
         .mobile-menu-header {
@@ -726,10 +903,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
         }
 
         .mobile-menu-logo {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 1.75rem;
-          font-weight: 700;
-          font-style: italic;
+          font-family: 'Montserrat', sans-serif;
+          font-size: 2rem;
+          font-weight: 800;
+          font-style: normal;
           color: #111111;
         }
 
@@ -800,6 +977,57 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
         .mobile-menu-admin-link:hover {
           color: var(--color-coral);
         }
+
+        /* Mobile Menu Currency Selector */
+        .mobile-menu-currency {
+          margin-top: var(--space-6);
+          padding-top: var(--space-6);
+          border-top: 1px solid #EEEEEE;
+        }
+
+        .mobile-menu-currency-label {
+          display: block;
+          font-family: 'Rethena', serif;
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.15em;
+          color: #666666;
+          margin-bottom: var(--space-3);
+        }
+
+        .mobile-menu-currency-options {
+          display: flex;
+          flex-wrap: wrap;
+          gap: var(--space-2);
+        }
+
+        .mobile-currency-btn {
+          display: flex;
+          align-items: center;
+          gap: var(--space-1);
+          padding: var(--space-2) var(--space-3);
+          background: var(--color-cream-dark);
+          border: 1px solid var(--color-nude);
+          border-radius: var(--radius-md);
+          font-family: 'Quicksand', sans-serif;
+          font-size: 0.8125rem;
+          font-weight: 600;
+          color: var(--color-brown);
+          cursor: pointer;
+          transition: all var(--transition-fast);
+        }
+
+        .mobile-currency-btn:hover {
+          background: var(--color-nude-light);
+        }
+
+        .mobile-currency-btn.active {
+          background: var(--color-coral);
+          color: white;
+          border-color: var(--color-coral);
+        }
+
 
         /* User Dropdown Styles */
         .user-dropdown-container {
@@ -904,6 +1132,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
           background: #FEE2E2;
         }
       `}</style>
-    </nav>
+    </motion.nav>
   );
 };
