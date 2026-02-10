@@ -33,13 +33,13 @@ export const CheckoutPage: React.FC = () => {
 
   const handleSendWhatsApp = () => {
     const encoded = encodeURIComponent(generateMessage());
-    window.open(`https://wa.me/2340000000000?text=${encoded}`, '_blank');
+    window.open(`https://wa.me/2348135407871?text=${encoded}`, '_blank');
   };
 
   const handleSendInstagram = () => {
     navigator.clipboard.writeText(generateMessage());
     alert("Order summary copied to clipboard! Redirecting to Instagram...");
-    window.open(`https://instagram.com/tefa_africana/`, '_blank');
+    window.open(`https://www.instagram.com/shop.tefa/`, '_blank');
   };
 
   if (cart.length === 0) {

@@ -72,7 +72,7 @@ export const ProductDetailPage: React.FC = () => {
     const msg = encodeURIComponent(
       `Hi TÉFA! I want to order the ${product.name} (Size: ${selectedSize}, Color: ${selectedColor}). Is it available?`
     );
-    window.open(`https://wa.me/2340000000000?text=${msg}`, '_blank');
+    window.open(`https://wa.me/2348135407871?text=${msg}`, '_blank');
   };
 
   return (
