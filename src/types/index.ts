@@ -84,6 +84,7 @@ export interface StoreState {
   user: AuthUser | null;
   loading: boolean;
   isSearchOpen: boolean;
+  isAuthModalOpen: boolean;
 }
 
 export interface AuthUser {
@@ -112,6 +113,7 @@ export interface StoreActions {
   refreshProducts: () => Promise<void>;
   setCurrency: (currency: CurrencyCode) => void;
   setIsSearchOpen: (isOpen: boolean) => void;
+  setIsAuthModalOpen: (isOpen: boolean) => void;
 }
 
 // Currency types

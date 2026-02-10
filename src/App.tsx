@@ -8,6 +8,7 @@ import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { CartDrawer } from './components/CartDrawer';
 import { ChatWidget } from './components/ChatWidget';
+import { AuthModal } from './components/AuthModal';
 
 // Pages
 import { HomePage } from './pages/HomePage';
@@ -17,6 +18,12 @@ import { CheckoutPage } from './pages/CheckoutPage';
 import { AboutPage } from './pages/AboutPage';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { ProductForm } from './pages/admin/ProductForm';
+
+// Support Pages
+import { ContactPage } from './pages/ContactPage';
+import { ShippingPage } from './pages/ShippingPage';
+import { SizeGuidePage } from './pages/SizeGuidePage';
+import { FAQPage } from './pages/FAQPage';
 
 // Data
 import { useStore } from './data/store';
@@ -28,7 +35,7 @@ export const App: React.FC = () => {
   const [editingProductId, setEditingProductId] = useState<string | undefined>(undefined);
   const [isProductFormOpen, setIsProductFormOpen] = useState(false);
 
-  const { cart, updateCartQty, removeFromCart, currency } = useStore();
+  const { cart, updateCartQty, removeFromCart, currency, isAuthModalOpen, setIsAuthModalOpen } = useStore();
 
   const openProductForm = (productId?: string) => {
     setEditingProductId(productId);
@@ -63,6 +70,10 @@ export const App: React.FC = () => {
             <Route path="/product/:slug" element={<ProductDetailPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/shipping" element={<ShippingPage />} />
+            <Route path="/size-guide" element={<SizeGuidePage />} />
+            <Route path="/faq" element={<FAQPage />} />
             <Route path="/admin" element={<AdminDashboard onOpenProductForm={openProductForm} />} />
             <Route path="*" element={<HomePage />} />
           </Routes>
@@ -109,6 +120,13 @@ export const App: React.FC = () => {
 
       {/* Chat Widget */}
       {!isAdminRoute && <ChatWidget />}
+
+      {/* Global Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={() => setIsAuthModalOpen(false)}
+      />
 
       <style>{`
         .app-wrapper {

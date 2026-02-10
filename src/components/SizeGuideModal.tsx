@@ -37,94 +37,55 @@ export const SizeGuideModal: React.FC<SizeGuideModalProps> = ({ isOpen, onClose 
                 <table className="size-table">
                   <thead>
                     <tr>
-                      <th>UK</th>
-                      <th>US</th>
-                      <th>EU</th>
+                      <th>Label Size</th>
                       <th>Bust (in)</th>
                       <th>Waist (in)</th>
                       <th>Hip (in)</th>
+                      <th>Height</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td>4</td>
-                      <td>0</td>
-                      <td>32</td>
-                      <td>34</td>
-                      <td>26</td>
-                      <td>37</td>
+                      <td>XS</td>
+                      <td>32 - 33.5</td>
+                      <td>24 - 25.5</td>
+                      <td>34 - 35.5</td>
+                      <td>5'3" - 5'5"</td>
                     </tr>
                     <tr>
-                      <td>6</td>
-                      <td>2</td>
-                      <td>34</td>
-                      <td>35</td>
-                      <td>27</td>
-                      <td>38</td>
+                      <td>S</td>
+                      <td>33.9 - 35.5</td>
+                      <td>26 - 27.6</td>
+                      <td>35.9 - 37.4</td>
+                      <td>5'5" - 5'7"</td>
                     </tr>
                     <tr>
-                      <td>8</td>
-                      <td>4</td>
-                      <td>36</td>
-                      <td>36</td>
-                      <td>28</td>
-                      <td>39</td>
+                      <td>M</td>
+                      <td>35.5 - 37.4</td>
+                      <td>27.6 - 29.2</td>
+                      <td>37.4 - 39</td>
+                      <td>5'7" - 5'9"</td>
                     </tr>
                     <tr>
-                      <td>10</td>
-                      <td>6</td>
-                      <td>38</td>
-                      <td>37</td>
-                      <td>29</td>
-                      <td>41</td>
+                      <td>L</td>
+                      <td>37.4 - 39.4</td>
+                      <td>29.2 - 31.9</td>
+                      <td>39.4 - 41.8</td>
+                      <td>5'9" - 5'11"</td>
                     </tr>
                     <tr>
-                      <td>12</td>
-                      <td>8</td>
-                      <td>40</td>
-                      <td>38</td>
-                      <td>32</td>
-                      <td>43</td>
+                      <td>XL</td>
+                      <td>39.4 - 41.8</td>
+                      <td>31.9 - 34.3</td>
+                      <td>41.8 - 44.1</td>
+                      <td>5'9" - 5'11"</td>
                     </tr>
                     <tr>
-                      <td>14</td>
-                      <td>10</td>
-                      <td>42</td>
-                      <td>41</td>
-                      <td>34</td>
-                      <td>45</td>
-                    </tr>
-                    <tr>
-                      <td>16</td>
-                      <td>12</td>
-                      <td>44</td>
-                      <td>43</td>
-                      <td>35</td>
-                      <td>47</td>
-                    </tr>
-                    <tr>
-                      <td>18</td>
-                      <td>14</td>
-                      <td>46</td>
-                      <td>45</td>
-                      <td>37</td>
-                      <td>49</td>
-                    </tr>
-                    <tr>
-                      <td>20</td>
-                      <td>16</td>
-                      <td>48</td>
-                      <td>47</td>
-                      <td>39</td>
-                      <td>51</td>
-                    </tr>
-                    <tr>
-                      <td>22</td>
-                      <td>18</td>
-                      <td>50</td>
-                      <td>49</td>
-                      <td>41</td>
-                      <td>53</td>
+                      <td>XXL</td>
+                      <td>41.8 - 44.1</td>
+                      <td>34.3 - 36.7</td>
+                      <td>44.1 - 46.5</td>
+                      <td>5'11" - 6'1"</td>
                     </tr>
                   </tbody>
                 </table>

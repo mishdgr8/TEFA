@@ -22,6 +22,16 @@ export const ProductDetailPage: React.FC = () => {
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [isExpress, setIsExpress] = useState(false);
 
+  const sizeRanges: Record<string, string> = {
+    'XS': '24-25.5"',
+    'S': '26-27.6"',
+    'M': '27.6-29.2"',
+    'L': '29.2-31.9"',
+    'XL': '31.9-34.3"',
+    'XXL': '34.3-36.7"',
+    'OS': 'One Size'
+  };
+
   if (!product) {
     return (
       <div className="product-not-found">
@@ -187,7 +197,8 @@ export const ProductDetailPage: React.FC = () => {
                     onClick={() => setSelectedSize(size)}
                     className={`size-btn ${selectedSize === size ? 'active' : ''}`}
                   >
-                    {size}
+                    <span className="size-label">{size}</span>
+                    <span className="size-range">{sizeRanges[size] || ''}</span>
                   </button>
                 ))}
               </div>
@@ -610,15 +621,30 @@ export const ProductDetailPage: React.FC = () => {
         }
 
         .size-btn {
-          padding: var(--space-3);
+          padding: var(--space-2) var(--space-3);
           background: none;
           border: 2px solid var(--color-nude-light);
           border-radius: var(--radius-md);
           font-family: 'Quicksand', sans-serif;
-          font-weight: 700;
           color: var(--color-brown);
           cursor: pointer;
           transition: all var(--transition-fast);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 2px;
+        }
+
+        .size-label {
+          font-weight: 700;
+          font-size: 1rem;
+        }
+
+        .size-range {
+          font-size: 0.625rem;
+          font-weight: 500;
+          opacity: 0.8;
+          white-space: nowrap;
         }
 
         .size-btn:hover {

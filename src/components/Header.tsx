@@ -40,11 +40,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
-  const { cart, user, currency, setCurrency, products, isSearchOpen, setIsSearchOpen } = useStore();
+  const { cart, user, currency, setCurrency, products, isSearchOpen, setIsSearchOpen, isAuthModalOpen, setIsAuthModalOpen } = useStore();
   const cartCount = cart.reduce((sum, i) => sum + i.qty, 0);
 
   const currentCurrency = CURRENCIES.find(c => c.code === currency) || CURRENCIES[0];
@@ -130,7 +129,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
       className={headerClass}
       style={{
         backgroundColor: isHome ? headerBgColor : undefined,
-        zIndex: isMenuOpen ? 200 : 50
+        zIndex: isMenuOpen || isAuthModalOpen ? 10000 : 50
       }}
     >
       <div className="header-inner">
@@ -143,7 +142,13 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
         </button>
 
         {/* Desktop Navigation */}
-        <div className="header-nav-desktop">
+        <motion.div
+          className="header-nav-desktop"
+          style={{
+            opacity: 1,
+            pointerEvents: 'auto'
+          }}
+        >
           <Link to="/shop" className="header-link" style={{ color: isHome && !isScrolled ? 'white' : undefined }}>
             Shop
           </Link>
@@ -155,7 +160,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
               Admin
             </Link>
           )}
-        </div>
+        </motion.div>
 
         {/* Logo (Centered) - The Target for FLIP morph */}
         <motion.div
@@ -331,12 +336,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
         </div>
       </div>
 
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onSuccess={() => setIsAuthModalOpen(false)}
-      />
+      {/* Auth Modal - No longer rendered here, moved to App.tsx */}
 
       {/* Mobile Menu Drawer */}
       <AnimatePresence>

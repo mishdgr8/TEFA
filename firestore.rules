@@ -30,6 +30,14 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     
+    // Chats collection: Allow public read/write for session-based chats
+    match /chats/{chatId} {
+      allow read, write: if true;
+      match /messages/{messageId} {
+        allow read, write: if true;
+      }
+    }
+
     // Default fallback: Block everything else
     match /{document=**} {
       allow read, write: if false;

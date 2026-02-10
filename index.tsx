@@ -201,10 +201,10 @@ const Header = ({
           </div>
         </div>
 
-        {/* <button onClick={() => onNavigate('home')} className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center">
+        <button onClick={() => onNavigate('home')} className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center">
           <span className="text-3xl font-serif font-black tracking-[0.2em] italic">TÉFA</span>
           <span className="text-[10px] uppercase tracking-[0.4em] font-light mt-[-4px]">Africana</span>
-        </button> */}
+        </button>
 
         <div className="flex items-center gap-4">
           <button className="p-2 hidden sm:block">

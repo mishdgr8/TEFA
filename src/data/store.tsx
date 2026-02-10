@@ -82,6 +82,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     loadFromStorage(STORAGE_KEYS.CURRENCY, 'NGN') as CurrencyCode
   );
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Subscribe to auth state changes
@@ -342,6 +343,8 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     setCurrency,
     isSearchOpen,
     setIsSearchOpen,
+    isAuthModalOpen,
+    setIsAuthModalOpen,
   };
 
   return (

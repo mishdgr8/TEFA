@@ -46,10 +46,10 @@ export const Footer: React.FC = () => {
           <div className="footer-column">
             <h4 className="footer-heading">Support</h4>
             <div className="footer-links">
-              <button>Contact Us</button>
-              <button>Shipping Info</button>
-              <button>Size Guide</button>
-              <button>FAQs</button>
+              <Link to="/contact">Contact Us</Link>
+              <Link to="/shipping">Shipping Info</Link>
+              <Link to="/size-guide">Size Guide</Link>
+              <Link to="/faq">FAQs</Link>
             </div>
           </div>
 
