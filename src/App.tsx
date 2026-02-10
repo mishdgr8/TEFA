@@ -9,6 +9,7 @@ import { Footer } from './components/Footer';
 import { CartDrawer } from './components/CartDrawer';
 import { ChatWidget } from './components/ChatWidget';
 import { AuthModal } from './components/AuthModal';
+import { ProfileModal } from './components/ProfileModal';
 
 // Pages - Lazy loaded for performance
 const HomePage = React.lazy(() => import('./pages/HomePage').then(m => ({ default: m.HomePage })));
@@ -136,6 +137,9 @@ export const App: React.FC = () => {
         onClose={() => setIsAuthModalOpen(false)}
         onSuccess={() => setIsAuthModalOpen(false)}
       />
+
+      {/* Global Profile Modal */}
+      <ProfileModal />
 
       <style>{`
         .app-wrapper {

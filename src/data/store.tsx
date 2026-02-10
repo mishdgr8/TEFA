@@ -86,6 +86,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
   );
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Subscribe to auth state changes
@@ -388,6 +389,8 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     setIsSearchOpen,
     isAuthModalOpen,
     setIsAuthModalOpen,
+    isProfileModalOpen,
+    setIsProfileModalOpen,
   };
 
   return (

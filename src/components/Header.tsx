@@ -41,32 +41,19 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
-  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  const userDropdownRef = useRef<HTMLDivElement>(null);
-  const { cart, user, currency, setCurrency, products, isSearchOpen, setIsSearchOpen, isAuthModalOpen, setIsAuthModalOpen } = useStore();
+  const { cart, user, currency, setCurrency, products, isSearchOpen, setIsSearchOpen, isAuthModalOpen, setIsAuthModalOpen, isProfileModalOpen, setIsProfileModalOpen } = useStore();
   const cartCount = cart.reduce((sum, i) => sum + i.qty, 0);
 
   const currentCurrency = CURRENCIES.find(c => c.code === currency) || CURRENCIES[0];
 
-  // Close dropdown when clicking outside
+  // Currency selector outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
-        setIsUserDropdownOpen(false);
-      }
+      // Empty placeholder or handle currency click outside if needed
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    // ...
   }, []);
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      setIsUserDropdownOpen(false);
-    } catch (error) {
-      console.error('Sign out failed:', error);
-    }
-  };
 
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -101,7 +88,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
   const handleNavigate = (path: string) => {
     navigate(path);
     setIsMenuOpen(false);
-    setIsUserDropdownOpen(false);
   };
 
   // Scroll detection for transparent header
@@ -274,53 +260,14 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
             )}
           </div>
 
-          <div className="user-dropdown-container" ref={userDropdownRef}>
+          <div className="user-dropdown-container">
             <button
               className="header-icon-btn user-icon-btn"
-              onClick={() => user ? setIsUserDropdownOpen(!isUserDropdownOpen) : setIsAuthModalOpen(true)}
+              onClick={() => user ? setIsProfileModalOpen(true) : setIsAuthModalOpen(true)}
               title={user ? "Profile" : "Sign In"}
             >
               <User size={22} color={isHome && !isScrolled ? 'white' : '#111111'} />
             </button>
-
-            <AnimatePresence>
-              {isUserDropdownOpen && user && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="user-dropdown"
-                >
-                  <div className="user-dropdown-header">
-                    <div className="user-avatar">
-                      <User size={20} />
-                    </div>
-                    <div className="user-info">
-                      <span className="user-name">{user.email?.split('@')[0]}</span>
-                      <span className="user-email">{user.email}</span>
-                    </div>
-                  </div>
-                  <div className="user-dropdown-divider" />
-                  <button className="user-dropdown-item" onClick={() => handleNavigate('/account')}>
-                    <Settings size={16} />
-                    <span>Account Settings</span>
-                  </button>
-                  <button className="user-dropdown-item" onClick={() => handleNavigate('/orders')}>
-                    <History size={16} />
-                    <span>Purchase History</span>
-                  </button>
-                  <button className="user-dropdown-item" onClick={() => handleNavigate('/wishlist')}>
-                    <Heart size={16} />
-                    <span>Wishlist</span>
-                  </button>
-                  <div className="user-dropdown-divider" />
-                  <button className="user-dropdown-item user-dropdown-signout" onClick={handleSignOut}>
-                    <LogOut size={16} />
-                    <span>Sign Out</span>
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
 
           <button
