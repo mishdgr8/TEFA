@@ -97,6 +97,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           gap: var(--space-2);
         }
 
+        @media (max-width: 768px) {
+          .product-card-tags {
+            display: none;
+          }
+        }
+
         .product-card-tag {
           font-size: 0.5625rem;
           font-weight: 700;
