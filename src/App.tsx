@@ -10,20 +10,27 @@ import { CartDrawer } from './components/CartDrawer';
 import { ChatWidget } from './components/ChatWidget';
 import { AuthModal } from './components/AuthModal';
 
-// Pages
-import { HomePage } from './pages/HomePage';
-import { ShopPage } from './pages/ShopPage';
-import { ProductDetailPage } from './pages/ProductDetailPage';
-import { CheckoutPage } from './pages/CheckoutPage';
-import { AboutPage } from './pages/AboutPage';
-import { AdminDashboard } from './pages/admin/AdminDashboard';
-import { ProductForm } from './pages/admin/ProductForm';
+// Pages - Lazy loaded for performance
+const HomePage = React.lazy(() => import('./pages/HomePage').then(m => ({ default: m.HomePage })));
+const ShopPage = React.lazy(() => import('./pages/ShopPage').then(m => ({ default: m.ShopPage })));
+const ProductDetailPage = React.lazy(() => import('./pages/ProductDetailPage').then(m => ({ default: m.ProductDetailPage })));
+const CheckoutPage = React.lazy(() => import('./pages/CheckoutPage').then(m => ({ default: m.CheckoutPage })));
+const AboutPage = React.lazy(() => import('./pages/AboutPage').then(m => ({ default: m.AboutPage })));
+const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const ProductForm = React.lazy(() => import('./pages/admin/ProductForm').then(m => ({ default: m.ProductForm })));
 
-// Support Pages
-import { ContactPage } from './pages/ContactPage';
-import { ShippingPage } from './pages/ShippingPage';
-import { SizeGuidePage } from './pages/SizeGuidePage';
-import { FAQPage } from './pages/FAQPage';
+// Support Pages - Lazy loaded
+const ContactPage = React.lazy(() => import('./pages/ContactPage').then(m => ({ default: m.ContactPage })));
+const ShippingPage = React.lazy(() => import('./pages/ShippingPage').then(m => ({ default: m.ShippingPage })));
+const SizeGuidePage = React.lazy(() => import('./pages/SizeGuidePage').then(m => ({ default: m.SizeGuidePage })));
+const FAQPage = React.lazy(() => import('./pages/FAQPage').then(m => ({ default: m.FAQPage })));
+
+// Loading Component
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-[60vh]">
+    <div className="w-8 h-8 border-4 border-coral border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
 
 // Data
 import { useStore } from './data/store';
@@ -63,20 +70,22 @@ export const App: React.FC = () => {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.3 }}
         >
-          <Routes location={location}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/shop" element={<ShopPage />} />
-            <Route path="/shop/:categoryId" element={<ShopPage />} />
-            <Route path="/product/:slug" element={<ProductDetailPage />} />
-            <Route path="/checkout" element={<CheckoutPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/shipping" element={<ShippingPage />} />
-            <Route path="/size-guide" element={<SizeGuidePage />} />
-            <Route path="/faq" element={<FAQPage />} />
-            <Route path="/admin" element={<AdminDashboard onOpenProductForm={openProductForm} />} />
-            <Route path="*" element={<HomePage />} />
-          </Routes>
+          <React.Suspense fallback={<PageLoader />}>
+            <Routes location={location}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/shop" element={<ShopPage />} />
+              <Route path="/shop/:categoryId" element={<ShopPage />} />
+              <Route path="/product/:slug" element={<ProductDetailPage />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/shipping" element={<ShippingPage />} />
+              <Route path="/size-guide" element={<SizeGuidePage />} />
+              <Route path="/faq" element={<FAQPage />} />
+              <Route path="/admin" element={<AdminDashboard onOpenProductForm={openProductForm} />} />
+              <Route path="*" element={<HomePage />} />
+            </Routes>
+          </React.Suspense>
         </motion.main>
       </AnimatePresence>
 
