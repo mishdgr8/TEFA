@@ -6,7 +6,7 @@
 /* ─── Custom Fonts ─── */
 @font-face {
   font-family: 'LC SAC';
-  src: url('/assets/fonts/LCSac Trial-Regular.ttf') format('truetype');
+  src: url('/assets/lc_sac/LCSacTrial-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -14,7 +14,7 @@
 
 @font-face {
   font-family: 'Rethena';
-  src: url('/assets/rethena/Rethena Demo.ttf') format('truetype');
+  src: url('/assets/rethena/RethenaDemo.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
