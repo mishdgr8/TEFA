@@ -848,7 +848,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
           color: #FFFFFF;
           border: 1px solid #111111;
           border-radius: var(--radius-full);
-          font-family: 'Rethena', serif;
           font-size: 0.875rem;
           font-weight: 600;
           cursor: pointer;
@@ -922,7 +921,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
           align-items: center;
           background: none;
           border: none;
-          font-family: 'Rethena', serif;
           font-size: 1.125rem;
           font-weight: 600;
           color: #111111;
@@ -987,7 +985,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
 
         .mobile-menu-currency-label {
           display: block;
-          font-family: 'Rethena', serif;
           font-size: 0.75rem;
           font-weight: 700;
           text-transform: uppercase;

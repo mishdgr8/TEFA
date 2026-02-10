@@ -84,6 +84,7 @@ export const Footer: React.FC = () => {
           background: #111111;
           color: #FFFFFF;
           padding: var(--space-24) var(--space-4);
+          padding-bottom: 2rem;
           position: relative;
           overflow: hidden;
         }
@@ -187,7 +188,6 @@ export const Footer: React.FC = () => {
         }
 
         .footer-heading {
-          font-family: 'Rethena', serif;
           font-size: 0.75rem;
           font-weight: 700;
           text-transform: uppercase;
@@ -207,7 +207,6 @@ export const Footer: React.FC = () => {
           background: none;
           border: none;
           color: rgba(255, 255, 255, 0.7);
-          font-family: 'Rethena', serif;
           font-size: 0.9375rem;
           cursor: pointer;
           text-align: left;
@@ -239,7 +238,6 @@ export const Footer: React.FC = () => {
           border: none;
           outline: none;
           color: #FFFFFF;
-          font-family: 'Rethena', serif;
           font-size: 0.9375rem;
         }
 
@@ -303,13 +301,14 @@ export const Footer: React.FC = () => {
 
         .footer-giant-logo {
           font-family: 'Montserrat', sans-serif;
-          font-size: clamp(2rem, 15vw, 18rem);
-          font-weight: 800;
+          font-size: clamp(2rem, 20vw, 20rem);
+          font-weight: 400;
           text-align: center;
           line-height: 1.1;
           text-transform: uppercase;
-          letter-spacing: 0.35em;
-          padding-left: 0.35em; /* Offset for centered tracking */
+          letter-spacing: 0.3em;
+          padding-left: 0.45em;
+          
           color: #FFFFFF;
           opacity: 0.95;
           user-select: none;
@@ -329,7 +328,7 @@ export const Footer: React.FC = () => {
             letter-spacing: 0.45em;
             padding-left: 0.45em;
             margin-top: var(--space-6);
-            font-size: clamp(4rem, 25vw, 30rem);
+            font-size: clamp(2rem, 20vw, 20rem);
           }
         }
       `}</style>

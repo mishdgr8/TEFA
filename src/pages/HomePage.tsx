@@ -133,6 +133,44 @@ export const HomePage: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Auto-scroll categories every 5 seconds
+  useEffect(() => {
+    const section = document.querySelector('.categories');
+    if (!section) return;
+
+    let intervalId: NodeJS.Timeout;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          intervalId = setInterval(() => {
+            if (categoriesRef.current) {
+              const { scrollLeft, scrollWidth, clientWidth } = categoriesRef.current;
+              const maxScroll = scrollWidth - clientWidth;
+              const nextScroll = scrollLeft + 300;
+
+              if (nextScroll >= maxScroll) {
+                categoriesRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+              } else {
+                categoriesRef.current.scrollTo({ left: nextScroll, behavior: 'smooth' });
+              }
+            }
+          }, 5000);
+        } else {
+          clearInterval(intervalId);
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(section);
+
+    return () => {
+      observer.disconnect();
+      clearInterval(intervalId);
+    };
+  }, []);
+
   return (
     <div className="home-page">
       {/* Hero Section with Sliding Images */}
@@ -210,7 +248,7 @@ export const HomePage: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.8 }}
-            className="hero-tagline"
+            className="hero-tagline font-decorative"
           >
             PROUDLY NIGERIAN
           </motion.p>
@@ -275,8 +313,19 @@ export const HomePage: React.FC = () => {
               {showScrollHint && (
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  animate={{
+                    opacity: 1,
+                    x: [0, -10, 0],
+                  }}
                   exit={{ opacity: 0, x: 20 }}
+                  transition={{
+                    x: {
+                      repeat: Infinity,
+                      duration: 1.5,
+                      ease: "easeInOut"
+                    },
+                    opacity: { duration: 0.3 }
+                  }}
                   className="scroll-hint"
                 >
                   <span>Scroll to explore</span>
@@ -328,34 +377,38 @@ export const HomePage: React.FC = () => {
               <div className="image-stack">
                 <AnimatePresence mode="popLayout">
                   {storyStack.map((src, index) => {
-                    const isFront = index === storyStack.length - 1;
-                    const isMiddle = index === storyStack.length - 2;
-                    const isBack = index === storyStack.length - 3;
+                    const isCenter = index === storyStack.length - 1;
+                    const isLeft = index === storyStack.length - 2;
+                    const isRight = index === storyStack.length - 3;
 
                     if (index < storyStack.length - 3) return null;
 
                     return (
                       <motion.div
                         key={src}
-                        className={`stack-card ${isFront ? 'front' : isMiddle ? 'middle' : 'back'}`}
-                        initial={{ x: 300, opacity: 0, scale: 0.8 }}
+                        className={`stack-card ${isCenter ? 'center' : isLeft ? 'left' : 'right'}`}
+                        initial={{ opacity: 0, scale: 0.5, y: 50 }}
                         animate={{
-                          x: isFront ? 0 : isMiddle ? -40 : -80,
-                          y: isFront ? 0 : isMiddle ? 10 : 20,
-                          rotate: isFront ? 0 : isMiddle ? -5 : -10,
-                          scale: isFront ? 1 : isMiddle ? 0.9 : 0.8,
-                          zIndex: index,
+                          x: isCenter ? 0 : isLeft ? -120 : 120,
+                          y: isCenter ? 0 : 30,
+                          rotate: isCenter ? 0 : isLeft ? -15 : 15,
+                          scale: isCenter ? 1 : 0.85,
+                          zIndex: isCenter ? 10 : 5,
                           opacity: 1
                         }}
-                        exit={{ x: -300, opacity: 0, scale: 0.8 }}
+                        exit={{
+                          opacity: 0,
+                          scale: 0.5,
+                          x: isCenter ? 200 : isLeft ? -200 : 0,
+                          y: 100
+                        }}
                         transition={{
-                          type: 'spring',
+                          type: "spring",
                           stiffness: 260,
-                          damping: 20,
-                          opacity: { duration: 0.2 }
+                          damping: 20
                         }}
                       >
-                        <img src={src} alt="Story Stack" />
+                        <img src={src} alt="Brand Story" />
                       </motion.div>
                     );
                   })}
@@ -565,7 +618,6 @@ export const HomePage: React.FC = () => {
         }
 
         .hero-tagline {
-          font-family: 'Rethena', serif;
           font-size: clamp(1.5rem, 4vw, 3rem);
           font-weight: 500;
           margin-bottom: var(--space-10);
@@ -721,9 +773,8 @@ export const HomePage: React.FC = () => {
         }
 
         .story-title {
-        font-family: 'Rethena', serif;
-        font-size: clamp(2rem, 4vw, 2.5rem);
-        font-weight: 700;
+          font-size: clamp(2rem, 4vw, 2.5rem);
+          font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         line-height: 1.1;
@@ -745,7 +796,6 @@ export const HomePage: React.FC = () => {
         color: #F5E6D3;
         border: 1px solid #2C1810;
         padding: 15px 45px;
-        font-family: 'Rethena', serif;
         font-size: 1rem;
         font-weight: 600;
         width: fit-content;
