@@ -77,6 +77,8 @@ export const Footer: React.FC = () => {
         </div>
       </div>
 
+      <div className="footer-giant-logo">TÉFA</div>
+
       <style>{`
         .footer {
           background: #111111;
@@ -298,7 +300,33 @@ export const Footer: React.FC = () => {
         .footer-bottom-links span:hover {
           color: #FFFFFF;
         }
+
+        .footer-giant-logo {
+          font-family: 'Montserrat', sans-serif;
+          font-size: clamp(4rem, 20vw, 24rem);
+          font-weight: 800;
+          text-align: center;
+          line-height: 0.8;
+          text-transform: uppercase;
+          letter-spacing: -0.05em;
+          color: #FFFFFF;
+          opacity: 0.95;
+          user-select: none;
+          pointer-events: none;
+          margin-top: var(--space-8);
+          padding-bottom: var(--space-4);
+          width: 100%;
+          position: relative;
+          z-index: 0;
+        }
+
+        @media (min-width: 1024px) {
+          .footer-giant-logo {
+            letter-spacing: -0.08em;
+            margin-top: var(--space-12);
+          }
+        }
       `}</style>
-    </footer>
+    </footer >
   );
 };
