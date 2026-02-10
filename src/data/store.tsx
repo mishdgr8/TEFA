@@ -18,7 +18,9 @@ import {
   updateReviewInFirestore,
   deleteReviewFromFirestore,
   seedCategories,
-  seedProducts
+  seedProducts,
+  subscribeToUserProfile,
+  ensureUserProfile
 } from '../lib/firestore';
 
 // ═══════════════════════════════════════════════════════════════════════════
