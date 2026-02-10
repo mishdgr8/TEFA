@@ -124,16 +124,26 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
   useEffect(() => {
     console.log('Starting products subscription...');
     setLoading(true);
-    const unsubscribe = subscribeToProducts((firestoreProducts) => {
-      console.log('Subscription data received:', firestoreProducts.length, 'products');
-      setProducts(firestoreProducts);
-      setLoading(false);
-    }, (error) => {
-      console.error('Store subscription error:', error);
-      setLoading(false);
-    });
 
-    return () => unsubscribe();
+    let unsubscribe: (() => void) | null = null;
+    try {
+      unsubscribe = subscribeToProducts((firestoreProducts) => {
+        console.log('Subscription data received:', firestoreProducts.length, 'products');
+        setProducts(firestoreProducts);
+        setLoading(false);
+      }, (error) => {
+        console.error('Store subscription error:', error);
+        setLoading(false);
+        // Fallback to default products if they exist or remain unchanged
+      });
+    } catch (err) {
+      console.error('Failed to set up products subscription:', err);
+      setLoading(false);
+    }
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   // Subscribe to categories and auto-seed if empty

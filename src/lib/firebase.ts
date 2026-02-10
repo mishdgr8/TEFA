@@ -13,8 +13,15 @@ const firebaseConfig = {
     appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Safety check for production environments: Verify config exists before initialization
+const isConfigValid = !!firebaseConfig.apiKey && !!firebaseConfig.projectId;
+
+if (!isConfigValid) {
+    console.warn('Firebase configuration is incomplete. Authentication and database features may be disabled.');
+}
+
+// Initialize Firebase (if config exists, or with empty object if not - initializeApp handles it)
+const app = initializeApp(isConfigValid ? firebaseConfig : {});
 
 // Initialize services
 export const auth = getAuth(app);
