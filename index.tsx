@@ -888,7 +888,7 @@ const Footer = ({ onNavigate }: { onNavigate: (page: string) => void }) => (
       </div>
     </div>
     <div className="max-w-7xl mx-auto mt-24 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] uppercase tracking-widest text-gray-600 font-bold">
-      <p>&copy; 2024 TÉFA Africana Studio. All rights reserved.</p>
+      <p>&copy; 2026 Golfwang Studio. Developed for TÉFA Africana. All rights reserved.</p>
       <div className="flex gap-6">
         <span>Terms</span>
         <span>Privacy</span>

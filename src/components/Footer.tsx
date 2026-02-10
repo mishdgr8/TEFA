@@ -68,7 +68,7 @@ export const Footer: React.FC = () => {
 
         {/* Bottom Bar */}
         <div className="footer-bottom">
-          <p>© 2024 <span className="font-brand">TÉFA</span> Studio. All rights reserved.</p>
+          <p>© 2026 <span className="font-brand">TÉFA</span>. Built by <span className="font-brand">Golfwang</span> Studio. All rights reserved.</p>
           <div className="footer-bottom-links">
             <span>Terms</span>
             <span>Privacy</span>
