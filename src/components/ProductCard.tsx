@@ -98,7 +98,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         }
 
         @media (max-width: 768px) {
-          .product-card-tags {
+          .product-card-tag:not(.sold-out-tag) {
             display: none;
           }
         }
