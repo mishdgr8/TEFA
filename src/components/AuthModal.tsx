@@ -15,6 +15,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,6 +39,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
         await signIn(email, password);
       } else {
         await signUp(email, password);
+        setSuccess('Account created! Sign in to continue.');
+        setMode('signin');
+        setPassword('');
+        setConfirmPassword('');
+        setLoading(false);
+        return; // Don't close immediately if we want to show success
       }
       onSuccess();
       onClose();
@@ -76,6 +83,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
   const toggleMode = () => {
     setMode(mode === 'signin' ? 'signup' : 'signin');
     setError('');
+    setSuccess('');
   };
 
   const handleGoogleSignIn = async () => {
@@ -133,6 +141,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
               <div className="auth-error">
                 <AlertCircle size={16} />
                 <span>{error}</span>
+              </div>
+            )}
+
+            {success && (
+              <div className="auth-success">
+                <AlertCircle size={16} className="rotate-180" />
+                <span>{success}</span>
               </div>
             )}
 
@@ -342,6 +357,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
               border-radius: var(--radius-md);
               margin-bottom: var(--space-4);
               font-size: 0.875rem;
+            }
+
+            .auth-success {
+              display: flex;
+              align-items: center;
+              gap: var(--space-2);
+              padding: var(--space-3) var(--space-4);
+              background: #ECFDF5;
+              color: #059669;
+              border-radius: var(--radius-md);
+              margin-bottom: var(--space-4);
+              font-size: 0.875rem;
+            }
+
+            .rotate-180 {
+              transform: rotate(180deg);
             }
 
             .auth-form {

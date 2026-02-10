@@ -1,5 +1,7 @@
 const { onCall, HttpsError, onRequest } = require('firebase-functions/v2/https');
+const functions = require('firebase-functions/v1');
 const admin = require('firebase-admin');
+const nodemailer = require('nodemailer');
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -142,5 +144,62 @@ exports.whatsappWebhook = onRequest({ cors: true }, async (req, res) => {
             return res.status(200).send('EVENT_RECEIVED');
         }
         return res.status(200).send('OK'); // Always return 200 to Meta
+    }
+});
+
+/**
+ * Welcome Email Trigger.
+ */
+exports.sendWelcomeEmail = functions.auth.user().onCreate(async (user) => {
+    const email = user.email;
+    const displayName = email?.split('@')[0] || 'Member';
+
+    console.log(`Sending welcome email to: ${email}`);
+
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+        }
+    });
+
+    const mailOptions = {
+        from: '"TÉFA Luxury" <no-reply@houseoftefa.com>',
+        to: email,
+        subject: 'Welcome to TÉFA Luxury 🥂',
+        html: `
+            <div style="font-family: 'Georgia', serif; max-width: 600px; margin: 0 auto; padding: 40px; color: #111;">
+                <h1 style="text-align: center; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 300;">Welcome to TÉFA</h1>
+                <p style="font-size: 1.1rem; line-height: 1.6; margin-top: 40px;">
+                    Dear ${displayName},
+                </p>
+                <p style="font-size: 1.1rem; line-height: 1.6;">
+                    We are delighted to have you join our exclusive community. At TÉFA, we believe in the art of storytelling through fashion.
+                </p>
+                <p style="font-size: 1.1rem; line-height: 1.6;">
+                    Your account has been successfully created. You can now save your favorite pieces, track your inquiries, and experience personalized concierge service.
+                </p>
+                <div style="text-align: center; margin-top: 60px;">
+                    <a href="https://tefa.com" style="background: #111; color: #fff; padding: 15px 40px; text-decoration: none; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.9rem;">Visit the Shop</a>
+                </div>
+                <p style="font-size: 0.9rem; color: #666; margin-top: 60px; text-align: center;">
+                    If you have any questions, simply reply to this email or reach us via Live Chat on our website.
+                </p>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 40px 0;" />
+                <p style="text-align: center; font-style: italic; color: #999;">TÉFA — House of African Luxury</p>
+            </div>
+        `
+    };
+
+    try {
+        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+            console.warn('Email credentials not configured. Skipping email send.');
+            return;
+        }
+        await transporter.sendMail(mailOptions);
+        console.log('Welcome email sent successfully');
+    } catch (error) {
+        console.error('Error sending welcome email:', error);
     }
 });

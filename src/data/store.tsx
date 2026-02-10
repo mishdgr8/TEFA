@@ -87,7 +87,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
   // Subscribe to auth state changes
   useEffect(() => {
-    const adminEmails = ['admin@houseoftefa.com', 'mishdgr8@gmail.com', 'golfwang0x@gmail.com', 'mishaelmordi@gmail.com'];
+    const adminEmails = ['golfwang0x@gmail.com', 'admin@houseoftefa.com', 'mishaelmordi@gmail.com'];
 
     const unsubscribe = onAuthChange((firebaseUser: User | null) => {
       if (firebaseUser) {
