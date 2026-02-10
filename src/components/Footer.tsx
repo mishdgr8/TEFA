@@ -303,27 +303,33 @@ export const Footer: React.FC = () => {
 
         .footer-giant-logo {
           font-family: 'Montserrat', sans-serif;
-          font-size: clamp(4rem, 20vw, 24rem);
+          font-size: clamp(2rem, 15vw, 18rem);
           font-weight: 800;
           text-align: center;
-          line-height: 0.8;
+          line-height: 1.1;
           text-transform: uppercase;
-          letter-spacing: -0.05em;
+          letter-spacing: 0.35em;
+          padding-left: 0.35em; /* Offset for centered tracking */
           color: #FFFFFF;
           opacity: 0.95;
           user-select: none;
           pointer-events: none;
-          margin-top: var(--space-8);
-          padding-bottom: var(--space-4);
+          margin-top: var(--space-4);
+          padding-bottom: var(--space-2);
           width: 100%;
           position: relative;
           z-index: 0;
+          display: flex;
+          justify-content: center;
+          white-space: nowrap;
         }
 
         @media (min-width: 1024px) {
           .footer-giant-logo {
-            letter-spacing: -0.08em;
-            margin-top: var(--space-12);
+            letter-spacing: 0.45em;
+            padding-left: 0.45em;
+            margin-top: var(--space-6);
+            font-size: clamp(4rem, 25vw, 30rem);
           }
         }
       `}</style>
