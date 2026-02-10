@@ -15,14 +15,14 @@ const firebaseConfig = {
 
 // Safety check for production environments: Verify config exists before initialization
 // Firebase requires at least an apiKey and projectId to initialize without throwing a top-level crash.
-const isConfigValid = !!firebaseConfig.apiKey && !!firebaseConfig.projectId;
+export const isFirebaseConfigValid = !!firebaseConfig.apiKey && !!firebaseConfig.projectId;
 
-if (!isConfigValid) {
+if (!isFirebaseConfigValid) {
     console.warn('Firebase configuration is incomplete. All authentication and database features will be disabled. Please set VITE_FIREBASE_API_KEY and VITE_FIREBASE_PROJECT_ID in your environment.');
 }
 
 // Initialize Firebase with the real config or a "safe" dummy to prevent the whole app from crashing.
-const app = initializeApp(isConfigValid ? firebaseConfig : {
+const app = initializeApp(isFirebaseConfigValid ? firebaseConfig : {
     apiKey: "missing-api-key",
     projectId: "missing-project-id",
     authDomain: "missing-domain",

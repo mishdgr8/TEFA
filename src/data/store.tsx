@@ -3,6 +3,7 @@ import { Product, CartItem, Category, StoreContextType, AuthUser, CurrencyCode, 
 import { DEFAULT_PRODUCTS } from './products';
 import { CATEGORIES } from './categories';
 import { onAuthChange, User } from '../lib/auth';
+import { isFirebaseConfigValid } from '../lib/firebase';
 import {
   getProducts,
   subscribeToProducts,
@@ -89,6 +90,11 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
   // Subscribe to auth state changes
   useEffect(() => {
+    if (!isFirebaseConfigValid) {
+      console.warn('Auth subscription skipped: Firebase config is missing.');
+      return;
+    }
+
     let profileUnsubscribe: (() => void) | null = null;
 
     const authUnsubscribe = onAuthChange(async (firebaseUser: User | null) => {
@@ -122,6 +128,12 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
   // Load products from Firestore in real-time
   useEffect(() => {
+    if (!isFirebaseConfigValid) {
+      console.warn('Products subscription skipped: Firebase config is missing.');
+      setLoading(false);
+      return;
+    }
+
     console.log('Starting products subscription...');
     setLoading(true);
 
@@ -148,6 +160,11 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
   // Subscribe to categories and auto-seed if empty
   useEffect(() => {
+    if (!isFirebaseConfigValid) {
+      console.warn('Categories subscription skipped: Firebase config is missing.');
+      return;
+    }
+
     const unsubscribe = subscribeToCategories(async (firestoreCategories) => {
       if (firestoreCategories.length > 0) {
         setCategories(firestoreCategories);
