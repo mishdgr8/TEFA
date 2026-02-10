@@ -87,21 +87,35 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
   // Subscribe to auth state changes
   useEffect(() => {
-    const adminEmails = ['golfwang0x@gmail.com', 'admin@houseoftefa.com', 'mishaelmordi@gmail.com'];
+    let profileUnsubscribe: (() => void) | null = null;
 
-    const unsubscribe = onAuthChange((firebaseUser: User | null) => {
+    const authUnsubscribe = onAuthChange(async (firebaseUser: User | null) => {
+      if (profileUnsubscribe) {
+        profileUnsubscribe();
+        profileUnsubscribe = null;
+      }
+
       if (firebaseUser) {
-        setUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          isAdmin: firebaseUser.email ? adminEmails.includes(firebaseUser.email.toLowerCase()) : false
+        // Ensure user document exists in Firestore
+        await ensureUserProfile(firebaseUser.uid, firebaseUser.email);
+
+        // Subscribe to user profile for Real-time admin/role updates
+        profileUnsubscribe = subscribeToUserProfile(firebaseUser.uid, (profileData) => {
+          setUser({
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            isAdmin: profileData.isAdmin || false
+          });
         });
       } else {
         setUser(null);
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      authUnsubscribe();
+      if (profileUnsubscribe) profileUnsubscribe();
+    };
   }, []);
 
   // Load products from Firestore in real-time

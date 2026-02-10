@@ -2,14 +2,11 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Function to check if user is an admin
+    // Function to check if user is an admin in the database
     function isAdmin() {
-      return request.auth != null && (
-        request.auth.token.email == 'admin@houseoftefa.com' || 
-        request.auth.token.email == 'mishdgr8@gmail.com' ||
-        request.auth.token.email == 'golfwang0x@gmail.com' ||
-        request.auth.token.email == 'mishaelmordi@gmail.com'
-      );
+      return request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
     // Products collection: Public read, Admin write
@@ -36,6 +33,12 @@ service cloud.firestore {
       match /messages/{messageId} {
         allow read, write: if true;
       }
+    }
+
+    // User profiles: User can read/initiate own, Admin can read
+    match /users/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
 
     // Default fallback: Block everything else

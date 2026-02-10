@@ -20,6 +20,7 @@ import { Product, Category, CustomerReview } from '../types';
 const PRODUCTS_COLLECTION = 'products';
 const CATEGORIES_COLLECTION = 'categories';
 const REVIEWS_COLLECTION = 'reviews';
+const USERS_COLLECTION = 'users';
 
 // Generate slug from name
 const generateSlug = (name: string): string => {
@@ -262,6 +263,40 @@ export const seedCategories = async (categories: Category[]): Promise<void> => {
         const { id, ...data } = cat;
         await setDoc(doc(db, CATEGORIES_COLLECTION, id), {
             ...data,
+            createdAt: serverTimestamp()
+        });
+    }
+};
+
+// --- USER PROFILE OPERATIONS ---
+
+export const subscribeToUserProfile = (
+    uid: string,
+    callback: (userData: any) => void,
+    onError?: (error: Error) => void
+) => {
+    const docRef = doc(db, USERS_COLLECTION, uid);
+    return onSnapshot(docRef, (docSnap) => {
+        if (docSnap.exists()) {
+            callback(docSnap.data());
+        } else {
+            // Initial profile if it doesn't exist
+            callback({ isAdmin: false });
+        }
+    }, (error) => {
+        console.error('User profile subscription error:', error);
+        if (onError) onError(error);
+    });
+};
+
+export const ensureUserProfile = async (uid: string, email: string | null) => {
+    const docRef = doc(db, USERS_COLLECTION, uid);
+    const docSnap = await getDoc(docRef);
+
+    if (!docSnap.exists()) {
+        await setDoc(docRef, {
+            email,
+            isAdmin: false,
             createdAt: serverTimestamp()
         });
     }
