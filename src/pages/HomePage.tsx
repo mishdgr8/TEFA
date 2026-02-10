@@ -24,10 +24,86 @@ const storyImages = [
 // Instagram review videos (placeholders - replace with real embed URLs)
 const instagramReviews: CustomerReview[] = [
   { id: '1', thumbnail: '/assets/images/Screenshot 2026-02-07 at 11.32.55.jpg', username: '@tefa_customer1', platform: 'instagram', videoUrl: '' },
-  { id: '2', thumbnail: '/assets/images/Screenshot 2026-02-07 at 11.33.18.jpg', username: '@tefa_lover', platform: 'instagram', videoUrl: '' },
-  { id: '3', thumbnail: '/assets/images/Screenshot 2026-02-07 at 11.51.16.png', username: '@adire_queen', platform: 'instagram', videoUrl: '' },
+  { id: '2', thumbnail: '/assets/images/Screenshot 2026-02-07 at 11.33.18.jpg', username: '@mish_mordi', platform: 'instagram', videoUrl: '' },
+  { id: '3', thumbnail: '/assets/images/Screenshot 2026-02-07 at 11.51.16.png', username: '@fashion_ng', platform: 'instagram', videoUrl: '' },
   { id: '4', thumbnail: '/assets/Hero/Screenshot 2026-02-06 at 13.44.48.png', username: '@fashion_ng', platform: 'instagram', videoUrl: '' },
 ];
+
+const ReviewCard: React.FC<{ review: CustomerReview; idx: number }> = ({ review, idx }) => {
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const [isInView, setIsInView] = useState(false);
+  const cardRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting);
+      },
+      { threshold: 0.6 } // Play when 60% of the card is visible
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      if (isInView) {
+        videoRef.current.play().catch(() => {
+          // Autoplay might be blocked if not muted/interacted with
+          // but we have muted/playsInline so it should work
+        });
+      } else {
+        videoRef.current.pause();
+      }
+    }
+  }, [isInView]);
+
+  return (
+    <motion.div
+      ref={cardRef}
+      className="review-card"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: idx * 0.1 }}
+      onClick={() => {
+        if (review.externalLink) {
+          window.open(review.externalLink, '_blank');
+        } else if (review.username.startsWith('@')) {
+          const handle = review.username.substring(1);
+          window.open(`https://instagram.com/${handle}`, '_blank');
+        }
+      }}
+    >
+      <div className="review-thumbnail">
+        {review.videoUrl ? (
+          <video
+            ref={videoRef}
+            src={review.videoUrl}
+            poster={review.thumbnail}
+            muted
+            loop
+            playsInline
+            className="review-video"
+            onMouseEnter={(e) => e.currentTarget.play()}
+            onMouseLeave={(e) => {
+              if (!isInView) {
+                e.currentTarget.pause();
+              }
+            }}
+          />
+        ) : (
+          <img src={review.thumbnail} alt={`Customer review from ${review.username}`} />
+        )}
+      </div>
+      <span className="review-username">{review.username}</span>
+    </motion.div>
+  );
+};
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -449,42 +525,7 @@ export const HomePage: React.FC = () => {
           <p className="reviews-subtitle">See us on our customers and friends of the brand.</p>
           <div className="reviews-grid">
             {(reviews.length > 0 ? reviews : instagramReviews).map((review, idx) => (
-              <motion.div
-                key={review.id}
-                className="review-card"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                onClick={() => {
-                  if (review.externalLink) {
-                    window.open(review.externalLink, '_blank');
-                  } else if (review.username.startsWith('@')) {
-                    const handle = review.username.substring(1);
-                    window.open(`https://instagram.com/${handle}`, '_blank');
-                  }
-                }}
-              >
-                <div className="review-thumbnail">
-                  {review.videoUrl ? (
-                    <video
-                      src={review.videoUrl}
-                      muted
-                      loop
-                      playsInline
-                      className="review-video"
-                      onMouseEnter={(e) => e.currentTarget.play()}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.pause();
-                        e.currentTarget.currentTime = 0;
-                      }}
-                    />
-                  ) : (
-                    <img src={review.thumbnail} alt={`Customer review from ${review.username}`} />
-                  )}
-                </div>
-                <span className="review-username">{review.username}</span>
-              </motion.div>
+              <ReviewCard key={review.id} review={review} idx={idx} />
             ))}
           </div>
         </div>
