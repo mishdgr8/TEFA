@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
+import { SEOHead } from '../components/SEOHead';
 import { useStore } from '../data/store';
 
 export const ShopPage: React.FC = () => {
@@ -67,6 +68,11 @@ export const ShopPage: React.FC = () => {
 
   return (
     <div className="shop-page">
+      <SEOHead
+        title={activeCategory !== 'all' ? `${categories.find(c => c.id === activeCategory)?.name || 'Shop'} Collection` : 'Shop All Collections'}
+        description="Browse the full TÉFA collection — handcrafted kaftans, ankara sets, gowns, and accessories. Premium African fashion from Lagos, Nigeria."
+        path={categoryId ? `/shop/${categoryId}` : '/shop'}
+      />
       <div className="container">
         <div className="shop-header">
           <h1><span className="font-brand">TÉFA</span> Collection</h1>

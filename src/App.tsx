@@ -25,6 +25,7 @@ const ContactPage = React.lazy(() => import('./pages/ContactPage').then(m => ({ 
 const ShippingPage = React.lazy(() => import('./pages/ShippingPage').then(m => ({ default: m.ShippingPage })));
 const SizeGuidePage = React.lazy(() => import('./pages/SizeGuidePage').then(m => ({ default: m.SizeGuidePage })));
 const FAQPage = React.lazy(() => import('./pages/FAQPage').then(m => ({ default: m.FAQPage })));
+const NotFoundPage = React.lazy(() => import('./pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 
 // Loading Component
 const PageLoader = () => (
@@ -84,7 +85,7 @@ export const App: React.FC = () => {
               <Route path="/size-guide" element={<SizeGuidePage />} />
               <Route path="/faq" element={<FAQPage />} />
               <Route path="/admin" element={<AdminDashboard onOpenProductForm={openProductForm} />} />
-              <Route path="*" element={<HomePage />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </React.Suspense>
         </motion.main>

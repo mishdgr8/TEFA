@@ -1,10 +1,16 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SEOHead } from '../components/SEOHead';
 
 export const AboutPage: React.FC = () => {
   const navigate = useNavigate();
   return (
     <div className="about-page">
+      <SEOHead
+        title="Our Manifesto"
+        description="TÉFA is more than a brand. It is an exploration of the intricate patterns of our identity. Blending ancestral dyeing techniques with contemporary silhouettes."
+        path="/about"
+      />
       <div className="about-content">
         <h1>Our Manifesto</h1>
         <div className="about-text">

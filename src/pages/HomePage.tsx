@@ -4,6 +4,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { ArrowRight, Truck, Tag, Globe, Play, Instagram, X, ExternalLink } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
 import { OptimizedImage } from '../components/OptimizedImage';
+import { SEOHead } from '../components/SEOHead';
 import { useStore } from '../data/store';
 import { DEFAULT_PRODUCTS } from '../data/products';
 import { CustomerReview } from '../types';
@@ -258,6 +259,12 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="home-page">
+      <SEOHead
+        title="Premium African Fashion | Handcrafted in Lagos"
+        description="Discover TÉFA — premium African fashion for the bold and beautiful. Handcrafted kaftans, ankara sets, gowns, and accessories from Lagos, Nigeria. Free worldwide shipping."
+        path="/"
+      />
+      <h1 className="visually-hidden">TÉFA — Premium African Fashion Boutique</h1>
       {/* Hero Section with Sliding Images */}
       <section className="hero">
         <div className="hero-bg">

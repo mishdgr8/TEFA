@@ -1,8 +1,14 @@
 import React from 'react';
+import { SEOHead } from '../components/SEOHead';
 
 export const SizeGuidePage: React.FC = () => {
     return (
         <div className="support-page size-page">
+            <SEOHead
+                title="Size Guide"
+                description="Find your perfect TÉFA fit with our detailed size charts. Measurements for XS to XXL including bust, waist, hip, and height guides."
+                path="/size-guide"
+            />
             <div className="container">
                 <div className="support-header">
                     <h1>Size Guide</h1>

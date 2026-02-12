@@ -5,6 +5,8 @@ import { useStore, formatPrice } from '../data/store';
 import { CartItem } from '../types';
 import { SizeGuideModal } from '../components/SizeGuideModal';
 import { OptimizedImage } from '../components/OptimizedImage';
+import { SEOHead } from '../components/SEOHead';
+import { ProductJsonLd } from '../components/ProductJsonLd';
 import './ProductDetailPage.css';
 
 export const ProductDetailPage: React.FC = () => {
@@ -37,11 +39,14 @@ export const ProductDetailPage: React.FC = () => {
   if (!product) {
     return (
       <div className="product-not-found">
+        <SEOHead title="Product Not Found" noindex={true} path={`/product/${slug}`} />
         <p>Product not found.</p>
         <button onClick={() => navigate('/shop')}>Back to Shop</button>
       </div>
     );
   }
+
+  const productDescription = product.description?.slice(0, 160) || `Shop ${product.name} from TÉFA. Premium handcrafted African fashion from Lagos, Nigeria.`;
 
   const handleAddToCart = () => {
     if (!selectedSize) {
@@ -79,6 +84,14 @@ export const ProductDetailPage: React.FC = () => {
 
   return (
     <div className="product-detail">
+      <SEOHead
+        title={product.name}
+        description={productDescription}
+        path={`/product/${slug}`}
+        image={product.images[0]}
+        type="product"
+      />
+      <ProductJsonLd product={product} slug={slug || ''} />
       <div className="container">
         <button onClick={() => navigate('/shop')} className="back-btn">
           <ChevronLeft size={16} /> Back to Collection

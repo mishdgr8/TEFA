@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, Plus, Minus } from 'lucide-react';
+import { SEOHead } from '../components/SEOHead';
 
 interface FAQItem {
     question: string;
@@ -50,6 +51,11 @@ export const FAQPage: React.FC = () => {
 
     return (
         <div className="support-page faq-page">
+            <SEOHead
+                title="Frequently Asked Questions"
+                description="Find answers to common questions about TÉFA orders, payment, shipping, returns, and product care. Everything you need for the TÉFA experience."
+                path="/faq"
+            />
             <div className="container">
                 <div className="support-header">
                     <h1>FAQs</h1>

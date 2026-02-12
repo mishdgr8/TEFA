@@ -1,9 +1,15 @@
 import React from 'react';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { SEOHead } from '../components/SEOHead';
 
 export const ContactPage: React.FC = () => {
     return (
         <div className="support-page contact-page">
+            <SEOHead
+                title="Contact Us"
+                description="Get in touch with TÉFA — premium African fashion from Lagos. Email hello@houseoftefa.com, WhatsApp, or visit our studio in Victoria Island, Lagos."
+                path="/contact"
+            />
             <div className="container">
                 <div className="support-header">
                     <h1>Contact Us</h1>

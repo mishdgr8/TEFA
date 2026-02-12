@@ -1,9 +1,15 @@
 import React from 'react';
 import { Truck, Globe, Clock, ShieldCheck } from 'lucide-react';
+import { SEOHead } from '../components/SEOHead';
 
 export const ShippingPage: React.FC = () => {
     return (
         <div className="support-page shipping-page">
+            <SEOHead
+                title="Shipping & Delivery"
+                description="TÉFA shipping information — domestic delivery across Nigeria, international shipping via DHL Express to USA, UK, Canada, and Europe. Processing times and returns policy."
+                path="/shipping"
+            />
             <div className="container">
                 <div className="support-header">
                     <h1>Shipping Info</h1>

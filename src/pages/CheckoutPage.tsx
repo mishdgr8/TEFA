@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Instagram, MessageCircle } from 'lucide-react';
 import { useStore, formatPrice } from '../data/store';
 import { CustomerInfo } from '../types';
+import { SEOHead } from '../components/SEOHead';
 
 export const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
@@ -71,6 +72,12 @@ export const CheckoutPage: React.FC = () => {
 
   return (
     <div className="checkout-page">
+      <SEOHead
+        title="Checkout"
+        description="Confirm your TÉFA order inquiry."
+        path="/checkout"
+        noindex={true}
+      />
       <div className="checkout-container">
         <h1>Confirm Your Inquiry</h1>
 
