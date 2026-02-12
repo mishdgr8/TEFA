@@ -3,15 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, Truck, Tag, Globe, Play, Instagram, X, ExternalLink } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
+import { OptimizedImage } from '../components/OptimizedImage';
 import { useStore } from '../data/store';
 import { DEFAULT_PRODUCTS } from '../data/products';
 import { CustomerReview } from '../types';
+import './HomePage.css';
 
-// Hero images
+// Hero images (using JPG for smaller file sizes)
 const heroImages = [
-  '/assets/Hero/Screenshot 2026-02-06 at 13.44.48.png',
-  '/assets/Hero/Screenshot 2026-02-07 at 09.26.26.png',
-  '/assets/Hero/Screenshot 2026-02-07 at 09.31.22.png',
+  '/assets/Hero/Screenshot 2026-02-06 at 13.44.48.jpg',
+  '/assets/Hero/Screenshot 2026-02-07 at 09.26.26.jpg',
+  '/assets/Hero/Screenshot 2026-02-07 at 09.31.22.jpg',
 ];
 
 // Story Stack Images
@@ -97,7 +99,7 @@ const ReviewCard: React.FC<{ review: CustomerReview; idx: number }> = ({ review,
             }}
           />
         ) : (
-          <img src={review.thumbnail} alt={`Customer review from ${review.username}`} />
+          <OptimizedImage src={review.thumbnail} alt={`Customer review from ${review.username}`} sizes="(max-width: 768px) 50vw, 25vw" quality={70} />
         )}
       </div>
       <span className="review-username">{review.username}</span>
@@ -196,6 +198,13 @@ export const HomePage: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Preload next hero slide for seamless transitions
+  useEffect(() => {
+    const nextIndex = (currentSlide + 1) % heroImages.length;
+    const img = new Image();
+    img.src = heroImages[nextIndex];
+  }, [currentSlide]);
+
   // Shuffle story stack every 4 seconds
   useEffect(() => {
     const interval = setInterval(() => {
@@ -253,15 +262,23 @@ export const HomePage: React.FC = () => {
       <section className="hero">
         <div className="hero-bg">
           <AnimatePresence>
-            <motion.img
+            <motion.div
               key={currentSlide}
-              src={heroImages[currentSlide]}
-              alt={`Hero Slide ${currentSlide + 1}`}
-              initial={{ opacity: 0, scale: 1 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={{ duration: 1, ease: 'easeInOut' }}
-            />
+              style={{ position: 'absolute', inset: 0 }}
+            >
+              <OptimizedImage
+                src={heroImages[currentSlide]}
+                alt={`Hero Slide ${currentSlide + 1}`}
+                priority
+                sizes="100vw"
+                quality={80}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </motion.div>
           </AnimatePresence>
           <div className="hero-overlay" />
         </div>
@@ -369,12 +386,18 @@ export const HomePage: React.FC = () => {
                   onMouseLeave={() => setHoveredCategoryId(null)}
                   className="category-card"
                 >
-                  <motion.img
-                    animate={{
-                      scale: hoveredCategoryId === cat.id ? 1.05 : 1,
-                    }}
+                  <OptimizedImage
                     src={hoveredCategoryId === cat.id && cat.hoverImage ? cat.hoverImage : cat.image}
                     alt={cat.name}
+                    sizes="(max-width: 768px) 75vw, 25vw"
+                    quality={75}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      transition: 'transform 0.7s ease',
+                      transform: hoveredCategoryId === cat.id ? 'scale(1.05)' : 'scale(1)',
+                    }}
                   />
                   <div className="category-overlay" />
                   <div className="category-content">
@@ -484,7 +507,7 @@ export const HomePage: React.FC = () => {
                           damping: 20
                         }}
                       >
-                        <img src={src} alt="Brand Story" />
+                        <OptimizedImage src={src} alt="Brand Story" sizes="(max-width: 768px) 80vw, 40vw" quality={75} />
                       </motion.div>
                     );
                   })}
@@ -582,723 +605,7 @@ export const HomePage: React.FC = () => {
 
 
 
-      <style>{`
-        .home-page {
-          min-height: 100vh;
-          background-color: var(--color-background);
-        }
 
-        /* Hero */
-        .hero {
-          position: relative;
-          height: 100vh; /* Full screen height */
-          display: flex;
-          align-items: center;
-          justify-content: center; /* Center content */
-          overflow: hidden;
-        }
-
-        .hero-bg {
-          position: absolute;
-          inset: 0;
-        }
-
-        .hero-bg img {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
-        /* Darker overlay to make white text pop against any background */
-        .hero-overlay {
-          display: block;
-          position: absolute;
-          inset: 0;
-          background: rgba(0, 0, 0, 0.3); 
-          z-index: 1;
-        }
-
-        .hero-content {
-          position: relative;
-          z-index: 2;
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 0 var(--space-4);
-          padding-top: 15vh; /* Push content lower */
-          width: 100%;
-          color: #FFFFFF;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          justify-content: flex-start;
-          margin-top: auto; /* Push to bottom portion of hero */
-        }
-
-        .hero-eyebrow {
-          display: block;
-          font-family: 'Montserrat', sans-serif;
-          font-size: clamp(4rem, 15vw, 12rem); /* Massive responsive size */
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          font-weight: 800;
-          margin-bottom: var(--space-2);
-          color: #FFFFFF;
-          line-height: 0.9;
-          text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .hero-title {
-          display: none; /* Hiding the old title structure */
-        }
-
-        .hero-title-container {
-          display: contents;
-        }
-
-        .hero-tagline {
-          font-size: clamp(1.5rem, 4vw, 3rem);
-          font-weight: 500;
-          margin-bottom: var(--space-10);
-          color: #FFFFFF;
-          letter-spacing: 0.05em;
-          text-transform: none;
-          font-style: italic;
-          text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-          opacity: 0.95;
-        }
-
-        .hero-indicators {
-        display: flex;
-        gap: var(--space-3);
-        margin-top: var(--space-10);
-        }
-
-        .indicator {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        border: 2px solid white;
-        background: transparent;
-        cursor: pointer;
-        transition: all var(--transition-fast);
-        padding: 0;
-        }
-
-        .indicator:hover {
-        background: rgba(255, 255, 255, 0.5);
-        }
-
-        .indicator.active {
-        background: white;
-        transform: scale(1.2);
-        }
-
-        .new-arrival-button {
-          display: flex;
-          cursor: pointer;
-          margin-top: var(--space-4);
-          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-          border: 1px solid #FFFFFF;
-          width: fit-content;
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(4px);
-          margin-bottom: 6rem;
-        }
-
-        .new-arrival-button .box {
-          width: 40px;
-          height: 50px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          font-size: 14px;
-          font-weight: 700;
-          color: #FFFFFF;
-          transition: all .6s cubic-bezier(0.4, 0, 0.2, 1);
-          position: relative;
-          background: transparent;
-          overflow: hidden;
-          font-family: 'Inter', sans-serif;
-        }
-
-        .new-arrival-button .box:before {
-        content: "A";
-        position: absolute;
-        top: 0;
-        background: #FFFFFF;
-        color: #111111;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transform: translateY(100%);
-        transition: transform .4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .new-arrival-button .box:nth-child(2)::before {
-        transform: translateY(-100%);
-        content: 'R';
-        }
-
-        .new-arrival-button .box:nth-child(3)::before {
-        content: 'R';
-        }
-
-        .new-arrival-button .box:nth-child(4)::before {
-        transform: translateY(-100%);
-        content: 'I';
-        }
-
-        .new-arrival-button .box:nth-child(5)::before {
-        content: 'V';
-        }
-        .new-arrival-button .box:nth-child(6)::before {
-        transform: translateY(-100%);
-        content: 'A';
-        }
-
-        .new-arrival-button .box:nth-child(7)::before {
-        content: 'L';
-        }
-        .new-arrival-button .box:nth-child(8)::before {
-        transform: translateY(-100%);
-        content: 'S';
-        }
-
-        .new-arrival-button:hover .box:before {
-        transform: translateY(0);
-        }
-
-        /* Story Section */
-        .story {
-        background: #D2A55D;
-        padding: 0;
-        overflow: hidden;
-        }
-
-        .container-full {
-        width: 100%;
-        max-width: 100%;
-        }
-
-        .story-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        align-items: stretch;
-        }
-
-        @media (min-width: 768px) {
-        .story-grid {
-        grid-template-columns: 1fr 1fr;
-        }
-        }
-
-        .story-text {
-        padding: var(--space-16) var(--space-8);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        color: #111111;
-        }
-
-        @media (min-width: 1024px) {
-        .story-text {
-        padding: var(--space-20) var(--space-16);
-        max-width: 600px;
-        margin-left: auto;
-        }
-        }
-
-        .story-title {
-          font-size: clamp(2rem, 4vw, 2.5rem);
-          font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        line-height: 1.1;
-        margin-bottom: var(--space-8);
-        color: #111111;
-        }
-
-        .story-description {
-        color: rgba(0, 0, 0, 0.8);
-        font-size: 1rem;
-        line-height: 1.6;
-        margin-bottom: var(--space-10);
-        max-width: 500px;
-        }
-
-        .story-link-btn {
-        position: relative;
-        background: #2C1810;
-        color: #F5E6D3;
-        border: 1px solid #2C1810;
-        padding: 15px 45px;
-        font-size: 1rem;
-        font-weight: 600;
-        width: fit-content;
-        cursor: pointer;
-        border-radius: 8px;
-        filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.2));
-        transition: all var(--transition-fast);
-        }
-
-        .story-link-btn:hover {
-        border: 1px solid #1A0F0A;
-        background: linear-gradient(85deg, #2C1810, #3D2317, #2C1810, #3D2317, #2C1810);
-        animation: wind 2s ease-in-out infinite;
-        }
-
-        @keyframes wind {
-        0%, 100% { background-position: 0% 50%; }
-        50% {background-position: 100% 50%; }
-        }
-
-        .wheat-icon-1 {
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 25px;
-        transform-origin: 0 0;
-        transform: rotate(10deg);
-        transition: all 0.5s ease-in-out;
-        filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.3));
-        }
-
-        .story-link-btn:hover .wheat-icon-1 {
-        animation: slay-1 3s cubic-bezier(0.52, 0, 0.58, 1) infinite;
-        }
-
-        @keyframes slay-1 {
-        0%, 100% { transform: rotate(10deg); }
-        50% {transform: rotate(-5deg); }
-        }
-
-        .wheat-icon-2 {
-        position: absolute;
-        top: 0;
-        left: 25px;
-        width: 12px;
-        transform-origin: 50% 0;
-        transform: rotate(10deg);
-        transition: all 1s ease-in-out;
-        filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.5));
-        }
-
-        .story-link-btn:hover .wheat-icon-2 {
-        animation: slay-2 3s cubic-bezier(0.52, 0, 0.58, 1) 1s infinite;
-        }
-
-        @keyframes slay-2 {
-        0%, 100% { transform: rotate(0deg); }
-        50% {transform: rotate(15deg); }
-        }
-
-        .wheat-icon-3 {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 18px;
-        transform-origin: 50% 0;
-        transform: rotate(-5deg);
-        transition: all 1s ease-in-out;
-        filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.5));
-        }
-
-        .story-link-btn:hover .wheat-icon-3 {
-        animation: slay-3 2s cubic-bezier(0.52, 0, 0.58, 1) 1s infinite;
-        }
-
-        @keyframes slay-3 {
-        0%, 100% { transform: rotate(0deg); }
-        50% {transform: rotate(-5deg); }
-        }
-
-        .story-image-container {
-        position: relative;
-        height: 100%;
-        min-height: 500px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: var(--space-8);
-        overflow: visible;
-        }
-
-        @media (min-width: 768px) {
-        .story-image-container {
-        min-height: 600px;
-        }
-        }
-
-        .image-stack {
-        position: relative;
-        width: 80%;
-        height: 80%;
-        max-width: 400px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        }
-
-        .stack-card {
-        position: absolute;
-        width: 100%;
-        aspect-ratio: 4 / 5;
-        background: white;
-        padding: 8px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        }
-
-        .stack-card img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-        }
-
-        /* Categories */
-        .categories {
-        background: var(--color-cream-dark);
-        padding-bottom: 20px !important;
-        }
-
-        .categories .container {
-        max-width: 100%;
-        padding: 0 4px;
-        }
-
-        .categories-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        margin-bottom: var(--space-10);
-        }
-
-        .categories-header h2 {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: clamp(2rem, 4vw, 2.5rem);
-        font-weight: 600;
-        font-style: italic;
-        }
-
-        .categories-header button {
-        background: none;
-        border: none;
-        font-family: 'Quicksand', sans-serif;
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.15em;
-        color: var(--color-brown);
-        cursor: pointer;
-        }
-
-        .categories-header button:hover {
-        color: var(--color-coral);
-        }
-
-        .categories-grid {
-        display: flex;
-        gap: 2px;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: var(--space-4);
-        scrollbar-width: none; /* Firefox */
-        -ms-overflow-style: none; /* IE 10+ */
-        }
-
-        .categories-grid::-webkit-scrollbar {
-        display: none; /* Chrome/Safari/Webkit */
-        }
-
-        .categories-wrapper {
-        position: relative;
-        }
-
-        .scroll-hint {
-        position: absolute;
-        right: 20px;
-        bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(255, 255, 255, 0.9);
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-family: 'Inter', sans-serif;
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: #111111;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        pointer-events: none;
-        z-index: 10;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        }
-
-        .category-card {
-        position: relative;
-        flex: 0 0 calc(25% - 2px); /* 4 visible on desktop, slightly more/less depending on container */
-        min-width: 250px;
-        aspect-ratio: 3 / 4;
-        border-radius: 0;
-        overflow: hidden;
-        cursor: pointer;
-        scroll-snap-align: start;
-        }
-
-        @media (max-width: 768px) {
-        .category-card {
-        flex: 0 0 75%; /* Show part of the next one on mobile */
-        min-width: 200px;
-        }
-        }
-
-        .category-card img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.7s ease;
-        }
-
-        .category-card:hover img {
-        transform: scale(1.1);
-        }
-
-        .category-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent 50%);
-        }
-
-        .category-content {
-        position: absolute;
-        bottom: var(--space-6);
-        left: var(--space-6);
-        color: white;
-        }
-
-        .category-content h3 {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: white;
-        }
-
-        .category-line {
-        height: 2px;
-        width: 0;
-        background: var(--color-coral-light);
-        transition: width var(--transition-base);
-        }
-
-        .category-card:hover .category-line {
-        width: 100%;
-        }
-
-        /* Brand Story Section overrides */
-        .story.section {
-        padding-top: 20px !important;
-        }
-
-        /* Featured */
-        .featured-title {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: clamp(2rem, 4vw, 2.5rem);
-        font-weight: 600;
-        font-style: italic;
-        text-align: center;
-        margin-bottom: var(--space-10);
-        }
-
-        .featured-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: var(--space-8);
-        }
-
-        @media (min-width: 640px) {
-        .featured-grid {
-        grid-template-columns: repeat(2, 1fr);
-        }
-        }
-
-        @media (min-width: 1024px) {
-        .featured-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: var(--space-10);
-        }
-        }
-
-        .featured-cta {
-        text-align: center;
-        margin-top: var(--space-12);
-        }
-
-        .featured-cta button {
-        padding: var(--space-4) var(--space-10);
-        background: transparent;
-        color: var(--color-brown-dark);
-        border: 2px solid var(--color-brown-dark);
-        border-radius: var(--radius-full);
-        font-family: 'Quicksand', sans-serif;
-        font-size: 0.9375rem;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all var(--transition-base);
-        }
-
-        .featured-cta button:hover {
-        background: var(--color-brown-dark);
-        color: white;
-        }
-
-        /* Instagram Reviews Section */
-        .instagram-reviews {
-        background: var(--color-cream-dark);
-        }
-
-        .reviews-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--space-2);
-        }
-
-        .reviews-header h2 {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: clamp(2rem, 4vw, 2.5rem);
-        font-weight: 600;
-        font-style: italic;
-        }
-
-        .instagram-link {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-family: 'Inter', sans-serif;
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: #E1306C;
-        text-decoration: none;
-        transition: opacity var(--transition-fast);
-        }
-
-        .instagram-link:hover {
-        opacity: 0.8;
-        }
-
-        .reviews-subtitle {
-        color: var(--color-text-muted);
-        margin-bottom: var(--space-10);
-        font-size: 1rem;
-        }
-
-        .reviews-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-4);
-        }
-
-        @media (min-width: 768px) {
-        .reviews-grid {
-        grid-template-columns: repeat(4, 1fr);
-        }
-        }
-
-        .review-card {
-        cursor: pointer;
-        }
-
-        .review-thumbnail {
-        position: relative;
-        aspect-ratio: 9 / 16;
-        border-radius: var(--radius-md);
-        overflow: hidden;
-        margin-bottom: var(--space-2);
-        }
-
-        .review-thumbnail img,
-        .review-video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform var(--transition-slow);
-        }
-
-        .review-card:hover .review-thumbnail img,
-        .review-card:hover .review-video {
-        transform: scale(1.05);
-        }
-
-        .review-username {
-        font-family: 'Inter', sans-serif;
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: var(--color-text-muted);
-        }
-
-        /* Promo Icons Section */
-        .promo-icons {
-        background: #F7F3ED;
-        padding: var(--space-16) 0;
-        }
-
-        .promo-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: var(--space-10);
-        text-align: center;
-        }
-
-        @media (min-width: 768px) {
-        .promo-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: var(--space-8);
-        }
-        }
-
-        .promo-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        }
-
-        .promo-icon {
-        width: 80px;
-        height: 80px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: var(--space-4);
-        color: #666666;
-        }
-
-        .promo-item h3 {
-        font-family: 'Inter', sans-serif;
-        font-size: 0.9375rem;
-        font-weight: 700;
-        letter-spacing: 0.05em;
-        margin-bottom: var(--space-1);
-        color: #333333;
-        }
-
-        .promo-item p {
-        font-family: 'Inter', sans-serif;
-        font-size: 0.8125rem;
-        color: #666666;
-        }
-
-
-      `}</style>
     </div>
   );
 };
