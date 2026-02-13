@@ -18,6 +18,7 @@ exports.sendWhatsAppNotification = onCall({ cors: true }, async (request) => {
     const recipientNumber = process.env.WHATSAPP_RECIPIENT;
 
     if (!accessToken || !phoneNumberId || !recipientNumber) {
+        console.error('WhatsApp API Config Missing:', { phoneNumberId, recipientNumber: recipientNumber ? 'SET' : 'MISSING' });
         throw new HttpsError('failed-precondition', 'WhatsApp API not configured.');
     }
 
@@ -49,8 +50,17 @@ exports.sendWhatsAppNotification = onCall({ cors: true }, async (request) => {
         });
 
         const result = await response.json();
-        console.log('Meta Send Result:', JSON.stringify(result));
 
+        if (!response.ok) {
+            console.error('Meta API Error Response:', JSON.stringify(result));
+            // Specifically identify 24-hour window errors
+            const isWindowError = result.error?.code === 131047 || result.error?.message?.includes('24 hours');
+            throw new HttpsError('internal', isWindowError
+                ? 'WhatsApp 24-hour window is closed. Business must use a template or wait for owner to reply.'
+                : (result.error?.message || 'Failed to send WhatsApp message'));
+        }
+
+        console.log('Meta Send Success:', JSON.stringify(result));
         const waMessageId = result.messages?.[0]?.id;
 
         if (waMessageId && chatId) {
@@ -63,7 +73,8 @@ exports.sendWhatsAppNotification = onCall({ cors: true }, async (request) => {
 
         return { success: true, messageId: waMessageId };
     } catch (error) {
-        console.error('WhatsApp Send Error:', error);
+        console.error('WhatsApp Send Exception:', error);
+        if (error instanceof HttpsError) throw error;
         throw new HttpsError('internal', error.message);
     }
 });
@@ -116,8 +127,11 @@ exports.whatsappWebhook = onRequest({ cors: true }, async (req, res) => {
                     }
 
                     // Fallback: If it's your number and there's a recent mapping, use it
-                    if (!targetChatId && from === process.env.WHATSAPP_RECIPIENT) {
+                    if (!targetChatId && from === recipientNumber) {
+                        // Look for mappings from the last 2 hours to avoid ancient chats
+                        const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
                         const recent = await db.collection('wa_mappings')
+                            .where('timestamp', '>', twoHoursAgo)
                             .orderBy('timestamp', 'desc')
                             .limit(1)
                             .get();
@@ -135,7 +149,7 @@ exports.whatsappWebhook = onRequest({ cors: true }, async (req, res) => {
                         });
                         console.log('SAVED TO FIRESTORE:', targetChatId);
                     } else {
-                        console.warn('COULD NOT ROUTE MESSAGE - NO CHAT ID FOUND');
+                        console.warn('COULD NOT ROUTE MESSAGE - NO RECENT CHAT ID FOUND FOR:', from);
                     }
                 }
             } catch (err) {
