@@ -12,7 +12,7 @@ interface HeaderProps {
   onOpenCart: () => void;
 }
 
-const motionLink = motion(Link);
+const motionLink = motion.create(Link);
 
 export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
   const { scrollY } = useScroll();

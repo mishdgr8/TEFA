@@ -21,6 +21,7 @@ const PRODUCTS_COLLECTION = 'products';
 const CATEGORIES_COLLECTION = 'categories';
 const REVIEWS_COLLECTION = 'reviews';
 const USERS_COLLECTION = 'users';
+const SUBSCRIBERS_COLLECTION = 'subscribers';
 
 // Generate slug from name
 const generateSlug = (name: string): string => {
@@ -40,7 +41,9 @@ const docToProduct = (doc: any): Product => {
         name: data.name,
         description: data.description,
         price: data.price,
+        salePrice: data.salePrice,
         currency: data.currency || '₦',
+
         images: data.images || [],
         galleryImages: data.galleryImages || [],
         videoUrl: data.videoUrl || '',
@@ -301,3 +304,23 @@ export const ensureUserProfile = async (uid: string, email: string | null) => {
         });
     }
 };
+
+// --- NEWSLETTER OPERATIONS ---
+
+export const subscribeToNewsletter = async (email: string): Promise<string> => {
+    console.log('firestore.ts: subscribeToNewsletter started', email);
+    try {
+        const docRef = await addDoc(collection(db, SUBSCRIBERS_COLLECTION), {
+            email,
+            source: 'homepage_modal',
+            createdAt: serverTimestamp(),
+            discountSent: false
+        });
+        console.log('firestore.ts: subscribeToNewsletter success, ID:', docRef.id);
+        return docRef.id;
+    } catch (error) {
+        console.error('firestore.ts: subscribeToNewsletter error:', error);
+        throw error;
+    }
+};
+

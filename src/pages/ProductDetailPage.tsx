@@ -54,7 +54,9 @@ export const ProductDetailPage: React.FC = () => {
       return;
     }
 
-    const price = isExpress ? product.price * 1.2 : product.price;
+    const effectivePrice = product.salePrice && product.salePrice < product.price ? product.salePrice : product.price;
+    const price = isExpress ? effectivePrice * 1.2 : effectivePrice;
+
 
     const item: CartItem = {
       productId: product.id,
@@ -170,13 +172,27 @@ export const ProductDetailPage: React.FC = () => {
             <p className="product-price">
               {isExpress ? (
                 <>
-                  <span className="original-price">{formatPrice(product.price, currency)}</span>
-                  <span className="express-price">{formatPrice(product.price * 1.2, currency)}</span>
+                  <span className="original-price">{formatPrice((product.salePrice || product.price), currency)}</span>
+                  <span className="express-price">
+                    {formatPrice((product.salePrice || product.price) * 1.2, currency)}
+                    <span className="express-tag"> (Express +20%)</span>
+                  </span>
                 </>
               ) : (
-                formatPrice(product.price, currency)
+                product.salePrice && product.salePrice < product.price ? (
+                  <>
+                    <span className="original-price-strike">{formatPrice(product.price, currency)}</span>
+                    <span className="sale-price-large">{formatPrice(product.salePrice, currency)}</span>
+                    <span className="sale-badge-large">
+                      {Math.round(((product.price - product.salePrice) / product.price) * 100)}% OFF
+                    </span>
+                  </>
+                ) : (
+                  formatPrice(product.price, currency)
+                )
               )}
             </p>
+
 
             <div className="product-description">
               <p>{product.description}</p>

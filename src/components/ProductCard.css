@@ -74,6 +74,25 @@
     padding: 6px 10px;
 }
 
+.sale-tag {
+    background-color: #D32F2F !important;
+    /* Red for sale */
+    color: white !important;
+}
+
+.original-price-strike {
+    text-decoration: line-through;
+    color: var(--color-text-muted);
+    font-size: 0.9em;
+    margin-right: 8px;
+}
+
+.sale-price {
+    color: #D32F2F;
+    font-weight: 700;
+}
+
+
 .product-card-content {
     margin-top: var(--space-3);
     display: flex;

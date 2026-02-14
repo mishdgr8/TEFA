@@ -13,7 +13,11 @@ interface FormData {
   name: string;
   description: string;
   price: string;
+  salePrice: string;
+  discountPercentage: string;
   categoryId: string;
+
+
   imageUrl: string;
   galleryImages: string[];
   videoUrl: string;
@@ -28,7 +32,11 @@ const initialFormData: FormData = {
   name: '',
   description: '',
   price: '',
+  salePrice: '',
+  discountPercentage: '',
   categoryId: '1',
+
+
   imageUrl: '',
   galleryImages: [],
   videoUrl: '',
@@ -136,7 +144,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({ productId, onClose }) 
         name: existingProduct.name,
         description: existingProduct.description,
         price: existingProduct.price.toString(),
+        salePrice: existingProduct.salePrice ? existingProduct.salePrice.toString() : '',
+        discountPercentage: existingProduct.salePrice
+          ? Math.round(((existingProduct.price - existingProduct.salePrice) / existingProduct.price) * 100).toString()
+          : '',
         categoryId: existingProduct.categoryId,
+
+
         imageUrl: existingProduct.images[0] || '',
         galleryImages: existingProduct.galleryImages || [],
         videoUrl: existingProduct.videoUrl || '',
@@ -161,7 +175,15 @@ export const ProductForm: React.FC<ProductFormProps> = ({ productId, onClose }) 
     if (!formData.price || isNaN(Number(formData.price)) || Number(formData.price) <= 0) {
       newErrors.price = 'Valid price is required';
     }
+    if (formData.salePrice && (isNaN(Number(formData.salePrice)) || Number(formData.salePrice) < 0)) {
+      newErrors.discountPercentage = 'Valid discount is required';
+    }
+    if (formData.salePrice && Number(formData.salePrice) >= Number(formData.price)) {
+      newErrors.discountPercentage = 'Discount must result in lower price';
+    }
+
     if (!formData.imageUrl.trim()) {
+
       newErrors.imageUrl = 'Image URL is required';
     }
 
@@ -179,7 +201,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({ productId, onClose }) 
         name: formData.name.trim(),
         description: formData.description.trim(),
         price: Number(formData.price),
+        salePrice: formData.salePrice ? Number(formData.salePrice) : undefined,
         currency: '₦',
+
         categoryId: formData.categoryId,
         images: [formData.imageUrl.trim()],
         galleryImages: formData.galleryImages.filter(url => url.trim()),
@@ -199,6 +223,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ productId, onClose }) 
         console.log('Adding new product:', productData);
         await addProduct(productData);
       }
+
+
 
       console.log('Product saved successfully, closing form.');
       alert('Product saved successfully!');
@@ -281,12 +307,62 @@ export const ProductForm: React.FC<ProductFormProps> = ({ productId, onClose }) 
                     id="price"
                     type="number"
                     value={formData.price}
-                    onChange={e => setFormData({ ...formData, price: e.target.value })}
+                    onChange={e => {
+                      const newPrice = e.target.value;
+                      const pct = formData.discountPercentage;
+                      let newSalePrice = formData.salePrice;
+
+                      if (pct && !isNaN(Number(pct)) && newPrice && !isNaN(Number(newPrice))) {
+                        newSalePrice = Math.round(Number(newPrice) * (1 - Number(pct) / 100)).toString();
+                      }
+
+                      setFormData({
+                        ...formData,
+                        price: newPrice,
+                        salePrice: newSalePrice
+                      });
+                    }}
                     placeholder="45000"
                     className={errors.price ? 'error' : ''}
                   />
+
                   {errors.price && <span className="error-text">{errors.price}</span>}
                 </div>
+
+                <div className="form-group">
+                  <label htmlFor="discountPercentage">Discount (%) <span style={{ fontWeight: 'normal', color: '#666' }}>(Optional)</span></label>
+                  <input
+                    id="discountPercentage"
+                    type="number"
+                    min="0"
+                    max="99"
+                    value={formData.discountPercentage}
+                    onChange={e => {
+                      const pct = e.target.value;
+                      const price = Number(formData.price);
+                      let newSalePrice = '';
+
+                      if (pct && !isNaN(Number(pct)) && price) {
+                        newSalePrice = Math.round(price * (1 - Number(pct) / 100)).toString();
+                      }
+
+                      setFormData({
+                        ...formData,
+                        discountPercentage: pct,
+                        salePrice: newSalePrice
+                      });
+                    }}
+                    placeholder="e.g. 20"
+                    className={errors.discountPercentage ? 'error' : ''}
+                  />
+                  {formData.salePrice && (
+                    <span className="helper-text" style={{ fontSize: '0.8rem', color: '#22c55e', marginTop: '4px', display: 'block' }}>
+                      Sale Price: ₦{Number(formData.salePrice).toLocaleString()}
+                    </span>
+                  )}
+                  {errors.discountPercentage && <span className="error-text">{errors.discountPercentage}</span>}
+                </div>
+
 
                 <div className="form-group">
                   <label htmlFor="category">Category</label>

@@ -243,7 +243,32 @@
 .original-price {
     text-decoration: line-through;
     color: var(--color-text-muted);
-    font-size: 1.125rem;
+    font-size: 1rem;
+    margin-right: var(--space-3);
+    font-weight: 400;
+}
+
+.original-price-strike {
+    text-decoration: line-through;
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+    margin-right: var(--space-3);
+}
+
+.sale-price-large {
+    color: #D32F2F;
+    font-weight: 700;
+    margin-right: var(--space-3);
+}
+
+.sale-badge-large {
+    background-color: #D32F2F;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    vertical-align: middle;
 }
 
 .express-price {

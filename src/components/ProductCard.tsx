@@ -36,20 +36,36 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {product.soldOut && (
             <span className="product-card-tag sold-out-tag">SOLD OUT</span>
           )}
-          {!product.soldOut && product.tags.length > 0 && (
+          {!product.soldOut && product.salePrice && product.salePrice < product.price && (
+            <span className="product-card-tag sale-tag">
+              {Math.round(((product.price - product.salePrice) / product.price) * 100)}% OFF
+            </span>
+          )}
+          {!product.soldOut && !product.salePrice && product.tags.length > 0 && (
             product.tags.slice(0, 2).map(tag => (
               <span key={tag} className="product-card-tag">{tag}</span>
             ))
           )}
         </div>
+
       </div>
 
       <div className="product-card-content">
         <h3 className="product-card-title">
           {product.name} <span className="separator">-</span> {getCategoryName(product.categoryId, categories)}
         </h3>
-        <p className="product-card-price">{formatPrice(product.price, currency)}</p>
+        <p className="product-card-price">
+          {product.salePrice && product.salePrice < product.price ? (
+            <>
+              <span className="original-price-strike">{formatPrice(product.price, currency)}</span>
+              <span className="sale-price">{formatPrice(product.salePrice, currency)}</span>
+            </>
+          ) : (
+            formatPrice(product.price, currency)
+          )}
+        </p>
       </div>
+
 
 
     </motion.div>

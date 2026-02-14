@@ -5,7 +5,9 @@ import { ArrowRight, Truck, Tag, Globe, Play, Instagram, X, ExternalLink } from 
 import { ProductCard } from '../components/ProductCard';
 import { OptimizedImage } from '../components/OptimizedImage';
 import { SEOHead } from '../components/SEOHead';
+import { NewsletterModal } from '../components/NewsletterModal';
 import { useStore } from '../data/store';
+
 import { DEFAULT_PRODUCTS } from '../data/products';
 import { CustomerReview } from '../types';
 import './HomePage.css';
@@ -115,6 +117,8 @@ export const HomePage: React.FC = () => {
   const [storyStack, setStoryStack] = useState(storyImages);
   const [hoveredCategoryId, setHoveredCategoryId] = useState<string | null>(null);
   const [showScrollHint, setShowScrollHint] = useState(true);
+  const [isNewsletterOpen, setIsNewsletterOpen] = useState(false);
+
 
   const categoriesRef = React.useRef<HTMLDivElement>(null);
 
@@ -256,6 +260,23 @@ export const HomePage: React.FC = () => {
       clearInterval(intervalId);
     };
   }, []);
+
+  // Newsletter Trigger
+  useEffect(() => {
+    // Wait 6 seconds before showing newsletter modal
+    const timer = setTimeout(() => {
+      const hasSubscribed = localStorage.getItem('tefa_newsletter_subscribed');
+      const hasSeenModal = sessionStorage.getItem('tefa_newsletter_seen');
+
+      if (!hasSubscribed && !hasSeenModal) {
+        setIsNewsletterOpen(true);
+        sessionStorage.setItem('tefa_newsletter_seen', 'true');
+      }
+    }, 6000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
 
   return (
     <div className="home-page">
@@ -609,10 +630,11 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
       </section>
-
-
-
-
+      <NewsletterModal
+        isOpen={isNewsletterOpen}
+        onClose={() => setIsNewsletterOpen(false)}
+      />
     </div>
   );
 };
+

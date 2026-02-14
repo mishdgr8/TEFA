@@ -15,7 +15,25 @@ export const CheckoutPage: React.FC = () => {
     note: ''
   });
 
-  const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; amount: number } | null>(null);
+  const [couponError, setCouponError] = useState('');
+
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  const total = appliedDiscount ? subtotal - appliedDiscount.amount : subtotal;
+
+  const handleApplyCoupon = () => {
+    if (!couponCode.trim()) return;
+
+    if (couponCode.toUpperCase() === 'TEFA10') {
+      const discount = subtotal * 0.10;
+      setAppliedDiscount({ code: 'TEFA10', amount: discount });
+      setCouponError('');
+    } else {
+      setCouponError('Invalid coupon code');
+      setAppliedDiscount(null);
+    }
+  };
 
   const generateMessage = () => {
     let message = `Hi TÉFA! I'd like to place an order:\n\n`;
@@ -23,7 +41,13 @@ export const CheckoutPage: React.FC = () => {
       const expressTag = item.isExpress ? ' [EXPRESS REQUEST]' : '';
       message += `${idx + 1}) ${item.name}${expressTag}\n   Size: ${item.selectedSize}\n   Color: ${item.selectedColor}\n   Qty: ${item.qty}\n   Price: ${formatPrice(item.price * item.qty)}\n\n`;
     });
+
+    message += `Subtotal: ${formatPrice(subtotal)}\n`;
+    if (appliedDiscount) {
+      message += `Discount (${appliedDiscount.code}): -${formatPrice(appliedDiscount.amount)}\n`;
+    }
     message += `Total Estimate: ${formatPrice(total)}\n\n`;
+
     message += `Customer Info:\n`;
     message += `- Name: ${formData.name || 'Not provided'}\n`;
     message += `- Location: ${formData.location || 'Not provided'}\n`;
@@ -94,9 +118,44 @@ export const CheckoutPage: React.FC = () => {
                 <span className="order-item-price">{formatPrice(item.price * item.qty)}</span>
               </div>
             ))}
-            <div className="order-total">
-              <span>Estimated Total</span>
-              <span>{formatPrice(total)}</span>
+
+            <div className="coupon-section">
+              <div className="coupon-input-group">
+                <input
+                  type="text"
+                  placeholder="Promo Code"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  disabled={!!appliedDiscount}
+                />
+                {!appliedDiscount ? (
+                  <button onClick={handleApplyCoupon}>Apply</button>
+                ) : (
+                  <button onClick={() => {
+                    setAppliedDiscount(null);
+                    setCouponCode('');
+                  }} className="remove-btn">Remove</button>
+                )}
+              </div>
+              {couponError && <p className="coupon-error">{couponError}</p>}
+              {appliedDiscount && <p className="coupon-success">Code {appliedDiscount.code} applied!</p>}
+            </div>
+
+            <div className="order-totals">
+              <div className="total-row">
+                <span>Subtotal</span>
+                <span>{formatPrice(subtotal)}</span>
+              </div>
+              {appliedDiscount && (
+                <div className="total-row discount">
+                  <span>Discount ({appliedDiscount.code})</span>
+                  <span>-{formatPrice(appliedDiscount.amount)}</span>
+                </div>
+              )}
+              <div className="total-row final">
+                <span>Estimated Total</span>
+                <span>{formatPrice(total)}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -234,17 +293,78 @@ export const CheckoutPage: React.FC = () => {
           font-weight: 700;
         }
 
-        .order-total {
+        .coupon-section {
+          margin-top: var(--space-4);
+          padding-top: var(--space-4);
+          border-top: 1px dashed var(--color-nude);
+        }
+
+        .coupon-input-group {
           display: flex;
-          justify-content: space-between;
-          align-items: center;
+          gap: var(--space-2);
+        }
+
+        .coupon-input-group input {
+          flex: 1;
+          padding: 8px 12px;
+          border: 1px solid var(--color-nude);
+          border-radius: var(--radius-md);
+          font-family: 'Quicksand', sans-serif;
+        }
+
+        .coupon-input-group button {
+          padding: 8px 16px;
+          background: var(--color-brown);
+          color: white;
+          border: none;
+          border-radius: var(--radius-md);
+          cursor: pointer;
+          font-weight: 600;
+        }
+
+        .coupon-input-group button.remove-btn {
+          background: #ef4444;
+        }
+
+        .coupon-error {
+          color: #ef4444;
+          font-size: 0.8rem;
+          margin-top: 4px;
+        }
+
+        .coupon-success {
+          color: #22c55e;
+          font-size: 0.8rem;
+          margin-top: 4px;
+        }
+
+        .order-totals {
+          margin-top: var(--space-4);
           padding-top: var(--space-4);
           border-top: 1px solid var(--color-nude-light);
-          margin-top: var(--space-3);
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-2);
+        }
+
+        .total-row {
+          display: flex;
+          justify-content: space-between;
+          font-size: 0.9rem;
+        }
+
+        .total-row.discount {
+          color: #22c55e;
+        }
+
+        .total-row.final {
           font-family: 'Cormorant Garamond', serif;
           font-size: 1.25rem;
           font-weight: 700;
           font-style: italic;
+          margin-top: var(--space-2);
+          padding-top: var(--space-2);
+          border-top: 1px solid var(--color-nude-light);
         }
 
         .checkout-form {

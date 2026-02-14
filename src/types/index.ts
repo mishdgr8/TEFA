@@ -8,7 +8,9 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  salePrice?: number; // Discounted price
   currency: string;
+
   images: string[];
   galleryImages?: string[];  // Additional product views
   videoUrl?: string;         // Optional product video
