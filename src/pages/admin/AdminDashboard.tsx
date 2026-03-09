@@ -18,6 +18,9 @@ import { useStore } from '../../data/store';
 import { CategoryForm } from './CategoryForm';
 import { ReviewForm } from './ReviewForm';
 import { Category, CustomerReview } from '../../types';
+import { seedProducts, seedCategories } from '../../lib/firestore';
+import { DEFAULT_PRODUCTS } from '../../data/products';
+import { CATEGORIES } from '../../data/categories';
 
 interface AdminDashboardProps {
   onOpenProductForm: (productId?: string) => void;
@@ -40,6 +43,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'reviews'>('products');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [repairing, setRepairing] = useState(false);
 
   // Modals for Categories and Reviews
   const [isCategoryFormOpen, setIsCategoryFormOpen] = useState(false);
@@ -85,6 +89,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         alert('Failed to delete review.');
       } finally {
         setDeletingId(null);
+      }
+    }
+  };
+
+  const handleRepair = async () => {
+    if (confirm('This will synchronize all Firestore images and data with your local stable files to fix missing images. Continue?')) {
+      setRepairing(true);
+      try {
+        console.log('Starting manual database repair...');
+        await seedCategories(CATEGORIES);
+        await seedProducts(DEFAULT_PRODUCTS);
+        alert('Database repair complete! Images should now appear correctly.');
+        window.location.reload();
+      } catch (error) {
+        console.error('Database repair failed:', error);
+        alert('Failed to repair database. Please check console for errors.');
+      } finally {
+        setRepairing(false);
       }
     }
   };
@@ -201,6 +223,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <p>Manage your <span className="font-brand">TÉFA</span> products and inventory</p>
           </div>
           <div className="admin-header-actions">
+            <button
+              onClick={handleRepair}
+              className="admin-repair-btn"
+              disabled={repairing}
+              title="Fix missing images by syncing database with local files"
+            >
+              {repairing ? <Loader2 size={18} className="spin" /> : <Settings size={18} />}
+              {repairing ? 'Repairing...' : 'Fix Sync'}
+            </button>
             <button onClick={() => navigate('/')} className="admin-back-btn">
               <Home size={18} /> View Store
             </button>
@@ -430,6 +461,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           background: white;
           color: #2C1810;
           border: 1px solid #eee;
+        }
+
+        .admin-repair-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 20px;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          background: #fdfaf7;
+          border: 1px solid #ef4444;
+          color: #ef4444;
+          transition: all 0.2s;
+        }
+
+        .admin-repair-btn:hover:not(:disabled) {
+          background: #ef4444;
+          color: white;
+        }
+
+        .admin-repair-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
         }
 
         .admin-add-btn {

@@ -147,7 +147,6 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
       }, (error) => {
         console.error('Store subscription error:', error);
         setLoading(false);
-        // Fallback to default products if they exist or remain unchanged
       });
     } catch (err) {
       console.error('Failed to set up products subscription:', err);
@@ -167,6 +166,14 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     }
 
     const unsubscribe = subscribeToCategories(async (firestoreCategories) => {
+      // Force re-seeding to restore correct image paths after today's rollback
+      try {
+        await seedCategories(CATEGORIES);
+        console.log('Categories re-seeded to restore stable image paths.');
+      } catch (error) {
+        console.error('Failed to re-seed categories:', error);
+      }
+
       if (firestoreCategories.length > 0) {
         setCategories(firestoreCategories);
       } else {
