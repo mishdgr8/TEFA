@@ -143,17 +143,24 @@ export const deleteProductFromFirestore = async (id: string): Promise<void> => {
     await deleteDoc(docRef);
 };
 
-// Seed initial products (for migration from localStorage)
+// Seed initial products (using batch for performance and atomicity)
 export const seedProducts = async (products: Product[]): Promise<void> => {
-    for (const product of products) {
+    const { writeBatch } = await import('firebase/firestore');
+    const batch = writeBatch(db);
+
+    products.forEach((product) => {
         const { id, ...productData } = product;
-        await setDoc(doc(db, PRODUCTS_COLLECTION, id), {
+        const docRef = doc(db, PRODUCTS_COLLECTION, id);
+        batch.set(docRef, {
             ...productData,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp()
         });
-    }
+    });
+
+    await batch.commit();
 };
+
 // --- CATEGORY OPERATIONS ---
 
 const docToCategory = (doc: any): Category => {
@@ -208,6 +215,23 @@ export const deleteCategoryFromFirestore = async (id: string): Promise<void> => 
     await deleteDoc(docRef);
 };
 
+// Seed initial categories (using batch)
+export const seedCategories = async (categories: Category[]): Promise<void> => {
+    const { writeBatch } = await import('firebase/firestore');
+    const batch = writeBatch(db);
+
+    categories.forEach((cat) => {
+        const { id, ...data } = cat;
+        const docRef = doc(db, CATEGORIES_COLLECTION, id);
+        batch.set(docRef, {
+            ...data,
+            createdAt: serverTimestamp()
+        });
+    });
+
+    await batch.commit();
+};
+
 // --- REVIEW OPERATIONS ---
 
 const docToReview = (doc: any): CustomerReview => {
@@ -257,18 +281,6 @@ export const updateReviewInFirestore = async (
 export const deleteReviewFromFirestore = async (id: string): Promise<void> => {
     const docRef = doc(db, REVIEWS_COLLECTION, id);
     await deleteDoc(docRef);
-};
-
-// --- SEEDING ---
-
-export const seedCategories = async (categories: Category[]): Promise<void> => {
-    for (const cat of categories) {
-        const { id, ...data } = cat;
-        await setDoc(doc(db, CATEGORIES_COLLECTION, id), {
-            ...data,
-            createdAt: serverTimestamp()
-        });
-    }
 };
 
 // --- USER PROFILE OPERATIONS ---
@@ -323,4 +335,3 @@ export const subscribeToNewsletter = async (email: string): Promise<string> => {
         throw error;
     }
 };
-
