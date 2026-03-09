@@ -93,8 +93,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  const handleRepair = async () => {
-    if (confirm('This will synchronize all Firestore images and data with your local stable files to fix missing images. Continue?')) {
+  const handleRepair = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    if (window.confirm('This will synchronize all Firestore images and data with your local stable files to fix missing images. Continue?')) {
       setRepairing(true);
       try {
         console.log('Starting manual database repair...');
