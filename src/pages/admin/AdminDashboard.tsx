@@ -102,14 +102,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     if (window.confirm('This will synchronize all Firestore images and data with your local stable files to fix missing images. Continue?')) {
       setRepairing(true);
       try {
-        console.log('Starting manual database repair...');
+        console.log('REPAIR_LOG: Starting database repair session...');
+
+        console.log('REPAIR_LOG: Seeding Categories...');
         await seedCategories(CATEGORIES);
+        console.log('REPAIR_LOG: Categories seeded successfully.');
+
+        console.log('REPAIR_LOG: Seeding Products...');
         await seedProducts(DEFAULT_PRODUCTS);
+        console.log('REPAIR_LOG: Products seeded successfully.');
+
         alert('Database repair complete! Images should now appear correctly.');
         window.location.reload();
       } catch (error) {
-        console.error('Database repair failed:', error);
-        alert('Failed to repair database. Please check console for errors.');
+        console.error('REPAIR_LOG_ERROR:', error);
+        alert('Failed to repair database. Error: ' + (error instanceof Error ? error.message : String(error)));
       } finally {
         setRepairing(false);
       }
