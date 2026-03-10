@@ -89,7 +89,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Subscribe to auth state changes
+  // Subscribe to auth state changes - Delayed to improve TBT and initial LCP
   useEffect(() => {
     if (!isFirebaseConfigValid) {
       console.warn('Auth subscription skipped: Firebase config is missing.');
@@ -97,32 +97,37 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     }
 
     let profileUnsubscribe: (() => void) | null = null;
+    let authUnsubscribe: (() => void) | null = null;
 
-    const authUnsubscribe = onAuthChange(async (firebaseUser: User | null) => {
-      if (profileUnsubscribe) {
-        profileUnsubscribe();
-        profileUnsubscribe = null;
-      }
+    // Delay auth initialization to reduce initial main-thread work and network contention
+    const timeoutId = setTimeout(() => {
+      authUnsubscribe = onAuthChange(async (firebaseUser: User | null) => {
+        if (profileUnsubscribe) {
+          profileUnsubscribe();
+          profileUnsubscribe = null;
+        }
 
-      if (firebaseUser) {
-        // Ensure user document exists in Firestore
-        await ensureUserProfile(firebaseUser.uid, firebaseUser.email);
+        if (firebaseUser) {
+          // Ensure user document exists in Firestore
+          await ensureUserProfile(firebaseUser.uid, firebaseUser.email);
 
-        // Subscribe to user profile for Real-time admin/role updates
-        profileUnsubscribe = subscribeToUserProfile(firebaseUser.uid, (profileData) => {
-          setUser({
-            uid: firebaseUser.uid,
-            email: firebaseUser.email,
-            isAdmin: profileData.isAdmin || false
+          // Subscribe to user profile for Real-time admin/role updates
+          profileUnsubscribe = subscribeToUserProfile(firebaseUser.uid, (profileData) => {
+            setUser({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              isAdmin: profileData.isAdmin || false
+            });
           });
-        });
-      } else {
-        setUser(null);
-      }
-    });
+        } else {
+          setUser(null);
+        }
+      });
+    }, 2000);
 
     return () => {
-      authUnsubscribe();
+      clearTimeout(timeoutId);
+      if (authUnsubscribe) authUnsubscribe();
       if (profileUnsubscribe) profileUnsubscribe();
     };
   }, []);
