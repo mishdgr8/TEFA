@@ -229,7 +229,8 @@ export const Footer: React.FC = React.memo(() => {
         .footer-newsletter-form {
           display: flex;
           border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-          padding: var(--space-2) 0;
+          padding: 1rem 0;
+          min-height: 48px;
         }
 
         .footer-newsletter-form input {

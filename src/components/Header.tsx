@@ -177,6 +177,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
             <button
               className={`currency-btn ${isHome && !isScrolled ? 'transparent-mode' : ''}`}
               onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
+              aria-label="Select Currency"
             >
               <span className="currency-symbol">{currentCurrency.symbol}</span>
               <span className="currency-code">{currentCurrency.code}</span>
@@ -214,6 +215,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
             />
             <button
               className="header-search-btn"
+              aria-label="Search"
               onClick={() => {
                 if (isSearchOpen && searchQuery) {
                   handleSearch();
@@ -258,6 +260,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
               className="header-icon-btn user-icon-btn"
               onClick={() => user ? setIsProfileModalOpen(true) : setIsAuthModalOpen(true)}
               title={user ? "Profile" : "Sign In"}
+              aria-label={user ? "Profile" : "Sign In"}
             >
               <User size={22} color={isHome && !isScrolled ? 'white' : '#111111'} />
             </button>
@@ -267,6 +270,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
             onClick={onOpenCart}
             className="header-icon-btn header-cart-icon"
             title="Cart"
+            aria-label="View Cart"
           >
             <ShoppingBag size={20} color={isHome && !isScrolled ? 'white' : '#111111'} />
             {cartCount > 0 && (
