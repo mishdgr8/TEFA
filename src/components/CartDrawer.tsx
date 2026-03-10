@@ -48,7 +48,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <h2 className="cart-title">
                 <ShoppingBag size={20} /> Inquiry Cart
               </h2>
-              <button onClick={onClose} className="cart-close">
+              <button onClick={onClose} className="cart-close" aria-label="Close cart">
                 <X size={24} />
               </button>
             </div>
@@ -75,6 +75,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                         <button
                           onClick={() => onRemove(item.variantId)}
                           className="cart-item-remove"
+                          aria-label="Remove item"
                         >
                           <Trash2 size={16} />
                         </button>
@@ -89,11 +90,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                       )}
                       <p className="cart-item-price">{formatPrice(item.price, currency)}</p>
                       <div className="cart-item-qty">
-                        <button onClick={() => onUpdateQty(item.variantId, -1)}>
+                        <button onClick={() => onUpdateQty(item.variantId, -1)} aria-label="Decrease quantity">
                           <Minus size={14} />
                         </button>
                         <span>{item.qty}</span>
-                        <button onClick={() => onUpdateQty(item.variantId, 1)}>
+                        <button onClick={() => onUpdateQty(item.variantId, 1)} aria-label="Increase quantity">
                           <Plus size={14} />
                         </button>
                       </div>

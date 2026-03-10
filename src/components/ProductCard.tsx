@@ -20,6 +20,10 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) 
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       className="product-card"
+      role="button"
+      tabIndex={0}
+      aria-label={`View ${product.name}`}
+      onKeyDown={(e) => e.key === 'Enter' && navigate(`/product/${product.slug}`)}
       onClick={() => navigate(`/product/${product.slug}`)}
     >
       <div className="product-card-image">
