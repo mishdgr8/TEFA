@@ -8,67 +8,61 @@
         content="TÉFA — Premium African fashion for the bold and beautiful. Handcrafted kaftans, ankara sets, gowns, and accessories from Lagos, Nigeria.">
     <meta name="keywords"
         content="African fashion, TÉFA, kaftans, ankara, dresses, gowns, Lagos fashion, African boutique, African luxury, Nigerian fashion, handcrafted clothing">
-    <meta name="theme-color" content="#E07B54">
+    <meta name="theme-color" content="#111111">
     <meta name="author" content="TÉFA">
     <meta name="application-name" content="TÉFA">
     <meta name="apple-mobile-web-app-title" content="TÉFA">
 
     <title>TÉFA — Premium African Fashion | Handcrafted in Lagos</title>
 
-    <!-- Canonical -->
-    <link rel="canonical" href="https://houseoftefa.com/">
-
-    <!-- Open Graph / Facebook / Instagram / WhatsApp -->
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="TÉFA">
-    <meta property="og:title" content="TÉFA — Premium African Fashion | Handcrafted in Lagos">
-    <meta property="og:description"
-        content="Discover TÉFA — premium African fashion for the bold and beautiful. Handcrafted kaftans, ankara sets, gowns, and accessories from Lagos, Nigeria.">
-    <meta property="og:image" content="https://houseoftefa.com/assets/Hero/Screenshot 2026-02-06 at 13.44.48.jpg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:url" content="https://houseoftefa.com/">
-    <meta property="og:locale" content="en_US">
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="TÉFA — Premium African Fashion | Handcrafted in Lagos">
-    <meta name="twitter:description"
-        content="Discover TÉFA — premium African fashion for the bold and beautiful. Handcrafted kaftans, ankara sets, gowns, and accessories from Lagos, Nigeria.">
-    <meta name="twitter:image" content="https://houseoftefa.com/assets/Hero/Screenshot 2026-02-06 at 13.44.48.jpg">
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👗</text></svg>">
-
-    <!-- DNS Prefetch for external domains -->
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-    <link rel="dns-prefetch" href="https://firebaseapp.com">
-
-    <!-- Preconnect to Google Fonts and Cloudinary -->
+    <!-- Preconnect to critical domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://res.cloudinary.com">
 
-    <!-- Preload critical hero image (first slide) -->
-    <link rel="preload" as="image" href="/assets/Hero/Screenshot 2026-02-06 at 13.44.48.jpg" type="image/jpeg">
+    <!-- Preload critical fonts -->
+    <link rel="preload" href="/assets/rethena/RethenaDemo.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="/assets/lc_sac/LCSacTrial-Regular.ttf" as="font" type="font/ttf" crossorigin>
 
-    <!-- Preload critical font (Montserrat for the logo) -->
-    <link rel="preload" href="https://fonts.gstatic.com/s/montserrat/v29/JTUSjIg1_i6t8kCHKm459Wlhyw.woff2" as="font"
-        type="font/woff2" crossorigin>
+    <!-- Preload LCP Hero Image (Responsive Cloudinary SrcSet) -->
+    <link rel="preload" as="image" fetchpriority="high"
+        imagesrcset="https://res.cloudinary.com/dzfrrcacc/image/upload/f_auto,q_auto,w_640/v1/TEFA/assets/Hero/Screenshot 2026-02-06 at 13.44.48 640w, https://res.cloudinary.com/dzfrrcacc/image/upload/f_auto,q_auto,w_828/v1/TEFA/assets/Hero/Screenshot 2026-02-06 at 13.44.48 828w, https://res.cloudinary.com/dzfrrcacc/image/upload/f_auto,q_auto,w_1080/v1/TEFA/assets/Hero/Screenshot 2026-02-06 at 13.44.48 1080w"
+        imagesizes="100vw">
 
-    <!-- Google Fonts: Optimized selection (Inter, Cormorant Garamond, Montserrat) -->
+    <!-- Google Fonts: Selective loading -->
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Montserrat:wght@500;700;800&display=swap"
-        rel="stylesheet">
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@500;700&display=swap"
+        rel="stylesheet" media="print" onload="this.media='all'">
 
-    <!-- Critical CSS for Hero & Branding -->
+    <!-- Inlined Main CSS (Eliminates Render Blocking) -->
     <style>
+        /* ─── Custom Fonts ─── */
+        @font-face {
+            font-family: 'LC SAC';
+            src: url('/assets/lc_sac/LCSacTrial-Regular.ttf') format('truetype');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: 'Rethena';
+            src: url('/assets/rethena/RethenaDemo.ttf') format('truetype');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+
         :root {
+            --color-coral: #111111;
+            --color-coral-dark: #000000;
             --color-cream: #FFFFFF;
             --color-text: #111111;
-            --color-coral: #111111;
+            --color-nude: #F0F0F0;
+            --radius-full: 9999px;
+            --space-4: 16px;
+            --space-8: 32px;
+            --transition-base: 250ms ease;
         }
 
         body {
@@ -76,10 +70,12 @@
             padding: 0;
             background: var(--color-cream);
             color: var(--color-text);
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
+        /* Hero & Critical Components */
         .hero {
             position: relative;
             height: 100vh;
@@ -87,7 +83,7 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            background: #eee;
+            background: #fafafa;
         }
 
         .hero-logo-target {
@@ -96,6 +92,52 @@
             font-weight: 500;
             letter-spacing: 0.15em;
             text-transform: uppercase;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-4) var(--space-8);
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--color-coral);
+            color: white;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════════════
+           Core Design System (Condensed for Inlining)
+           ═══════════════════════════════════════════════════════════════════════════ */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 var(--space-4);
         }
 
         .visually-hidden {
@@ -123,34 +165,16 @@
                 "url": "https://houseoftefa.com",
                 "logo": {
                     "@type": "ImageObject",
-                    "url": "https://houseoftefa.com/assets/Hero/Screenshot 2026-02-06 at 13.44.48.jpg"
+                    "url": "https://res.cloudinary.com/dzfrrcacc/image/upload/f_auto,q_auto,w_800/v1/TEFA/assets/Hero/Screenshot 2026-02-06 at 13.44.48"
                 },
-                "description": "Premium African fashion for the bold and beautiful. Handcrafted in Lagos, Nigeria.",
-                "email": "hello@houseoftefa.com",
-                "telephone": "+2348135407871",
-                "address": {
-                    "@type": "PostalAddress",
-                    "addressLocality": "Lagos",
-                    "addressCountry": "NG"
-                },
-                "sameAs": [
-                    "https://www.instagram.com/shop.tefa"
-                ]
+                "description": "Premium African fashion for the bold and beautiful. Handcrafted in Lagos, Nigeria."
             },
             {
                 "@type": "WebSite",
                 "@id": "https://houseoftefa.com/#website",
                 "name": "TÉFA",
                 "url": "https://houseoftefa.com",
-                "description": "Premium African fashion for the bold and beautiful. Handcrafted in Lagos, Nigeria.",
-                "publisher": {
-                    "@id": "https://houseoftefa.com/#organization"
-                },
-                "potentialAction": {
-                    "@type": "SearchAction",
-                    "target": "https://houseoftefa.com/shop?q={search_term_string}",
-                    "query-input": "required name=search_term_string"
-                }
+                "publisher": { "@id": "https://houseoftefa.com/#organization" }
             }
         ]
     }
@@ -159,6 +183,7 @@
 
 <body>
     <div id="root"></div>
+    <!-- Load JS at the end, module scripts are deferred by default -->
     <script type="module" src="/src/main.tsx"></script>
 </body>
 
