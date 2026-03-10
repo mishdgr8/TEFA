@@ -90,22 +90,15 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
     setIsMenuOpen(false);
   };
 
-  // Scroll detection for transparent header
+  // Determine if scrolled using framer-motion instead of separate listener
   const [isScrolled, setIsScrolled] = useState(false);
   const isHome = location.pathname === '/';
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 300) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    return scrollY.on("change", (latest) => {
+      setIsScrolled(latest > 300);
+    });
+  }, [scrollY]);
 
   // Header classes
   const headerClass = `header ${isHome && !isScrolled ? 'header-transparent' : 'header-solid'}`;

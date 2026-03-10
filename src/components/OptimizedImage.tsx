@@ -7,8 +7,8 @@ import React from 'react';
  * and a srcSet for responsive breakpoints.
  */
 
-// Standard responsive breakpoints
-const DEFAULT_WIDTHS = [640, 750, 828, 1080, 1200, 1920, 2048];
+// Standard responsive breakpoints (Added 320, 480 for mobile)
+const DEFAULT_WIDTHS = [320, 480, 640, 750, 828, 1080, 1200, 1920, 2048];
 const CLOUD_NAME = 'dzfrrcacc';
 
 function cloudinaryImageUrl(src: string, width: number, quality: number | string): string {

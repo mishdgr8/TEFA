@@ -46,9 +46,10 @@
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link rel="dns-prefetch" href="https://firebaseapp.com">
 
-    <!-- Preconnect to Google Fonts -->
+    <!-- Preconnect to Google Fonts and Cloudinary -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://res.cloudinary.com">
 
     <!-- Preload critical hero image (first slide) -->
     <link rel="preload" as="image" href="/assets/Hero/Screenshot 2026-02-06 at 13.44.48.jpg" type="image/jpeg">
@@ -57,10 +58,58 @@
     <link rel="preload" href="https://fonts.gstatic.com/s/montserrat/v29/JTUSjIg1_i6t8kCHKm459Wlhyw.woff2" as="font"
         type="font/woff2" crossorigin>
 
-    <!-- Google Fonts: Inter (body) + Cormorant Garamond (headings) + Montserrat (logo/brand) -->
+    <!-- Google Fonts: Optimized selection (Inter, Cormorant Garamond, Montserrat) -->
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Montserrat:wght@400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Montserrat:wght@500;700;800&display=swap"
         rel="stylesheet">
+
+    <!-- Critical CSS for Hero & Branding -->
+    <style>
+        :root {
+            --color-cream: #FFFFFF;
+            --color-text: #111111;
+            --color-coral: #111111;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--color-cream);
+            color: var(--color-text);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .hero {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #eee;
+        }
+
+        .hero-logo-target {
+            font-family: 'Montserrat', sans-serif;
+            font-size: clamp(4rem, 15vw, 12rem);
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+    </style>
 
     <!-- JSON-LD: Organization + WebSite -->
     <script type="application/ld+json">

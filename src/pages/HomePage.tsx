@@ -125,16 +125,34 @@ export const HomePage: React.FC = () => {
   // Use default products while loading to ensure featured section always shows
   const displayProducts = products.length > 0 ? products : DEFAULT_PRODUCTS;
 
-  // Handle categories scroll to hide hint
-  const handleCategoriesScroll = () => {
-    if (categoriesRef.current) {
-      if (categoriesRef.current.scrollLeft > 20) {
-        setShowScrollHint(false);
-      } else {
-        setShowScrollHint(true);
-      }
+  // Intersection Observer for Category Scroll Hint (Better than scroll listener)
+  useEffect(() => {
+    const categoriesElement = categoriesRef.current;
+    if (!categoriesElement) return;
+
+    // Use a small spacer at the start to detect if we've scrolled
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowScrollHint(entry.isIntersecting);
+      },
+      { root: categoriesElement, threshold: 0.1 }
+    );
+
+    // Create a sentinel element if it doesn't exist
+    let sentinel = categoriesElement.querySelector('.scroll-sentinel');
+    if (!sentinel) {
+      sentinel = document.createElement('div');
+      sentinel.className = 'scroll-sentinel';
+      sentinel.style.width = '1px';
+      sentinel.style.height = '1px';
+      sentinel.style.position = 'absolute';
+      sentinel.style.left = '0';
+      categoriesElement.prepend(sentinel);
     }
-  };
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [categories]);
 
   const { scrollY } = useScroll();
   const [rects, setRects] = useState<{ hero: DOMRect | null; nav: DOMRect | null }>({ hero: null, nav: null });
@@ -163,8 +181,17 @@ export const HomePage: React.FC = () => {
     };
     measure();
 
-    window.addEventListener('resize', updateRects);
-    return () => window.removeEventListener('resize', updateRects);
+    let resizeTimer: NodeJS.Timeout;
+    const handleResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(updateRects, 150); // Throttle resize
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(resizeTimer);
+    };
   }, []);
 
   // Gucci-style threshold
@@ -314,6 +341,7 @@ export const HomePage: React.FC = () => {
         {/* Hero Logo Target (Measurement Only) */}
         <div
           id="hero-logo-target"
+          className="hero-logo-target"
           style={{
             position: 'absolute',
             top: '40%', // Exact Gucci placement
@@ -400,7 +428,6 @@ export const HomePage: React.FC = () => {
             <div
               className="categories-grid"
               ref={categoriesRef}
-              onScroll={handleCategoriesScroll}
             >
               {categories.map((cat, idx) => (
                 <motion.div
