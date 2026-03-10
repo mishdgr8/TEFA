@@ -111,6 +111,7 @@ export const App: React.FC = () => {
           <button
             onClick={() => setIsCartOpen(true)}
             className="floating-cart-btn"
+            aria-label="Open cart"
           >
             <ShoppingBag size={24} />
             {cart.length > 0 && (

@@ -636,7 +636,8 @@
     font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     font-weight: 600;
-    color: #E1306C;
+    color: #AD1457;
+    /* Darker Pink for 4.5:1 contrast on white */
     text-decoration: none;
     transition: opacity var(--transition-fast);
 }
