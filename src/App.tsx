@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence, LazyMotion, domMax } from 'framer-motion';
 import { ShoppingBag } from 'lucide-react';
 
 // Components
@@ -59,90 +59,91 @@ export const App: React.FC = () => {
   const isAdminRoute = location.pathname.startsWith('/admin');
 
   return (
-    <div className="app-wrapper">
-      <Header
-        onOpenCart={() => setIsCartOpen(true)}
-      />
-
-      <AnimatePresence mode="wait">
-        <motion.main
-          key={location.pathname}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.3 }}
-        >
-          <React.Suspense fallback={<PageLoader />}>
-            <Routes location={location}>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/shop" element={<ShopPage />} />
-              <Route path="/shop/:categoryId" element={<ShopPage />} />
-              <Route path="/product/:slug" element={<ProductDetailPage />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/shipping" element={<ShippingPage />} />
-              <Route path="/size-guide" element={<SizeGuidePage />} />
-              <Route path="/faq" element={<FAQPage />} />
-              <Route path="/admin" element={<AdminDashboard onOpenProductForm={openProductForm} />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </React.Suspense>
-        </motion.main>
-      </AnimatePresence>
-
-      {!isAdminRoute && <Footer />}
-
-      <CartDrawer
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        items={cart}
-        currency={currency}
-        onUpdateQty={updateCartQty}
-        onRemove={removeFromCart}
-        onCheckout={() => {
-          setIsCartOpen(false);
-          navigate('/checkout');
-        }}
-      />
-
-      {/* Floating Cart Button (Mobile) */}
-      {!isAdminRoute && location.pathname !== '/checkout' && (
-        <button
-          onClick={() => setIsCartOpen(true)}
-          className="floating-cart-btn"
-        >
-          <ShoppingBag size={24} />
-          {cart.length > 0 && (
-            <span className="floating-cart-badge">
-              {cart.reduce((a, b) => a + b.qty, 0)}
-            </span>
-          )}
-        </button>
-      )}
-
-      {/* Product Form Modal */}
-      {isProductFormOpen && (
-        <ProductForm
-          productId={editingProductId}
-          onClose={closeProductForm}
+    <LazyMotion features={domMax}>
+      <div className="app-wrapper">
+        <Header
+          onOpenCart={() => setIsCartOpen(true)}
         />
-      )}
 
-      {/* Chat Widget */}
-      {!isAdminRoute && <ChatWidget />}
+        <AnimatePresence mode="wait">
+          <m.main
+            key={location.pathname}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            <React.Suspense fallback={<PageLoader />}>
+              <Routes location={location}>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/shop" element={<ShopPage />} />
+                <Route path="/shop/:categoryId" element={<ShopPage />} />
+                <Route path="/product/:slug" element={<ProductDetailPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/shipping" element={<ShippingPage />} />
+                <Route path="/size-guide" element={<SizeGuidePage />} />
+                <Route path="/faq" element={<FAQPage />} />
+                <Route path="/admin" element={<AdminDashboard onOpenProductForm={openProductForm} />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </React.Suspense>
+          </m.main>
+        </AnimatePresence>
 
-      {/* Global Auth Modal */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onSuccess={() => setIsAuthModalOpen(false)}
-      />
+        {!isAdminRoute && <Footer />}
 
-      {/* Global Profile Modal */}
-      <ProfileModal />
+        <CartDrawer
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+          items={cart}
+          currency={currency}
+          onUpdateQty={updateCartQty}
+          onRemove={removeFromCart}
+          onCheckout={() => {
+            setIsCartOpen(false);
+            navigate('/checkout');
+          }}
+        />
 
-      <style>{`
+        {/* Floating Cart Button (Mobile) */}
+        {!isAdminRoute && location.pathname !== '/checkout' && (
+          <button
+            onClick={() => setIsCartOpen(true)}
+            className="floating-cart-btn"
+          >
+            <ShoppingBag size={24} />
+            {cart.length > 0 && (
+              <span className="floating-cart-badge">
+                {cart.reduce((a, b) => a + b.qty, 0)}
+              </span>
+            )}
+          </button>
+        )}
+
+        {/* Product Form Modal */}
+        {isProductFormOpen && (
+          <ProductForm
+            productId={editingProductId}
+            onClose={closeProductForm}
+          />
+        )}
+
+        {/* Chat Widget */}
+        {!isAdminRoute && <ChatWidget />}
+
+        {/* Global Auth Modal */}
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          onSuccess={() => setIsAuthModalOpen(false)}
+        />
+
+        {/* Global Profile Modal */}
+        <ProfileModal />
+
+        <style>{`
         .app-wrapper {
           min-height: 100vh;
           background: var(--color-cream);
@@ -192,6 +193,7 @@ export const App: React.FC = () => {
           font-weight: 700;
         }
       `}</style>
-    </div>
+      </div>
+    </LazyMotion>
   );
 };

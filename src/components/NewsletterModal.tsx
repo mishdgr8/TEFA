@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Mail, CheckCircle2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { subscribeToNewsletter } from '../lib/firestore';
 
 interface NewsletterModalProps {
@@ -41,14 +41,14 @@ export const NewsletterModal: React.FC<NewsletterModalProps> = ({ isOpen, onClos
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="modal-overlay"
           onClick={onClose}
         >
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.9, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 30 }}
@@ -62,13 +62,13 @@ export const NewsletterModal: React.FC<NewsletterModalProps> = ({ isOpen, onClos
             <div className="newsletter-container">
               {status === 'success' ? (
                 <div className="newsletter-success">
-                  <motion.div
+                  <m.div
                     initial={{ scale: 0.5 }}
                     animate={{ scale: 1 }}
                     className="success-icon"
                   >
                     <CheckCircle2 size={64} color="#111111" />
-                  </motion.div>
+                  </m.div>
                   <h2 className="font-serif">Welcome to the Family</h2>
                   <p>Thank you for joining the TÉFA circle. You'll be the first to know about new collection drops.</p>
 
@@ -123,7 +123,7 @@ export const NewsletterModal: React.FC<NewsletterModalProps> = ({ isOpen, onClos
                 </div>
               )}
             </div>
-          </motion.div>
+          </m.div>
 
           <style>{`
             /* Base modal styles */
@@ -293,7 +293,7 @@ export const NewsletterModal: React.FC<NewsletterModalProps> = ({ isOpen, onClos
               }
             }
           `}</style>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

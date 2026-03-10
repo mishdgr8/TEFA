@@ -24,15 +24,20 @@
     <link rel="preload" href="/assets/rethena/RethenaDemo.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="/assets/lc_sac/LCSacTrial-Regular.ttf" as="font" type="font/ttf" crossorigin>
 
-    <!-- Preload LCP Hero Image (Responsive Cloudinary SrcSet) -->
-    <link rel="preload" as="image" fetchpriority="high"
-        imagesrcset="https://res.cloudinary.com/dzfrrcacc/image/upload/f_auto,q_auto,w_640/v1/TEFA/assets/Hero/Screenshot 2026-02-06 at 13.44.48 640w, https://res.cloudinary.com/dzfrrcacc/image/upload/f_auto,q_auto,w_828/v1/TEFA/assets/Hero/Screenshot 2026-02-06 at 13.44.48 828w, https://res.cloudinary.com/dzfrrcacc/image/upload/f_auto,q_auto,w_1080/v1/TEFA/assets/Hero/Screenshot 2026-02-06 at 13.44.48 1080w"
-        imagesizes="100vw">
+    <!-- Preload LCP Hero Image (Responsive & Optimized) -->
+    <link rel="preload" as="image"
+        href="https://res.cloudinary.com/dzfrrcacc/image/upload/f_auto,q_auto,w_1200/v1/TEFA/assets/Hero/Screenshot%202026-02-06%20at%2013.44.48"
+        imagesrcset="https://res.cloudinary.com/dzfrrcacc/image/upload/f_auto,q_auto,w_640/v1/TEFA/assets/Hero/Screenshot%202026-02-06%20at%2013.44.48 640w, https://res.cloudinary.com/dzfrrcacc/image/upload/f_auto,q_auto,w_828/v1/TEFA/assets/Hero/Screenshot%202026-02-06%20at%2013.44.48 828w, https://res.cloudinary.com/dzfrrcacc/image/upload/f_auto,q_auto,w_1080/v1/TEFA/assets/Hero/Screenshot%202026-02-06%20at%2013.44.48 1080w, https://res.cloudinary.com/dzfrrcacc/image/upload/f_auto,q_auto,w_1200/v1/TEFA/assets/Hero/Screenshot%202026-02-06%20at%2013.44.48 1200w"
+        imagesizes="100vw"
+        fetchpriority="high">
 
-    <!-- Google Fonts: Selective loading -->
+    <!-- Google Fonts: Non-render-blocking -->
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@500;700&display=swap"
         rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+    </noscript>
 
     <!-- Inlined Main CSS (Eliminates Render Blocking) -->
     <style>

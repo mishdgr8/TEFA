@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { MessageCircle, X, Send, Loader2, Minus, Maximize2, User, Bot, ExternalLink } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { sendWhatsAppMessage } from '../lib/whatsapp';
 import { db } from '../lib/firebase';
 import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
@@ -132,7 +132,7 @@ export const ChatWidget: React.FC = () => {
   return (
     <>
       {/* Chat Button */}
-      <motion.button
+      <m.button
         className="chat-widget-btn"
         onClick={() => {
           setIsOpen(!isOpen);
@@ -142,12 +142,12 @@ export const ChatWidget: React.FC = () => {
         whileTap={{ scale: 0.95 }}
       >
         {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
-      </motion.button>
+      </m.button>
 
       {/* Chat Window */}
       <AnimatePresence>
         {isOpen && !isMinimized && (
-          <motion.div
+          <m.div
             className="chat-widget-window"
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -244,7 +244,7 @@ export const ChatWidget: React.FC = () => {
                 <Send size={18} />
               </button>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 

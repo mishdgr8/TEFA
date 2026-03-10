@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { X, User, Settings, History, Heart, LogOut, ChevronRight } from 'lucide-react';
 import { useStore } from '../data/store';
 import { signOut } from '../lib/auth';
@@ -31,14 +31,14 @@ export const ProfileModal: React.FC = () => {
     return (
         <AnimatePresence>
             {isProfileModalOpen && (
-                <motion.div
+                <m.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={handleClose}
                     className="profile-modal-overlay"
                 >
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0, x: '100%' }}
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: '100%', opacity: 0 }}
@@ -91,7 +91,7 @@ export const ProfileModal: React.FC = () => {
                         <div className="profile-modal-footer">
                             <p>© {new Date().getFullYear()} TÉFA. All rights reserved.</p>
                         </div>
-                    </motion.div>
+                    </m.div>
 
                     <style>{`
             .profile-modal-overlay {
@@ -272,7 +272,7 @@ export const ProfileModal: React.FC = () => {
               letter-spacing: 0.05em;
             }
           `}</style>
-                </motion.div>
+                </m.div>
             )}
         </AnimatePresence>
     );

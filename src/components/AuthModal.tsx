@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, User, Loader2, AlertCircle } from 'lucide-react';
 import { signUp, signIn, signInWithGoogle } from '../lib/auth';
 
@@ -110,14 +110,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
           className="auth-modal-overlay"
         >
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -241,7 +241,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                 {mode === 'signin' ? 'Sign Up' : 'Sign In'}
               </button>
             </div>
-          </motion.div>
+          </m.div>
 
           <style>{`
             .auth-modal-overlay {
@@ -519,7 +519,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
               cursor: not-allowed;
             }
           `}</style>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );
