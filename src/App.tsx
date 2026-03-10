@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { m, AnimatePresence, LazyMotion, domMax } from 'framer-motion';
+import { m, AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
 import { ShoppingBag } from 'lucide-react';
 
 // Components
@@ -29,8 +29,8 @@ const NotFoundPage = React.lazy(() => import('./pages/NotFoundPage').then(m => (
 
 // Loading Component
 const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-[60vh]">
-    <div className="w-8 h-8 border-4 border-coral border-t-transparent rounded-full animate-spin"></div>
+  <div className="flex items-center justify-center min-h-screen bg-cream">
+    <div className="w-12 h-12 border-4 border-coral border-t-transparent rounded-full animate-spin"></div>
   </div>
 );
 
@@ -59,7 +59,7 @@ export const App: React.FC = () => {
   const isAdminRoute = location.pathname.startsWith('/admin');
 
   return (
-    <LazyMotion features={domMax}>
+    <LazyMotion features={domAnimation}>
       <div className="app-wrapper">
         <Header
           onOpenCart={() => setIsCartOpen(true)}
@@ -88,11 +88,10 @@ export const App: React.FC = () => {
                 <Route path="/admin" element={<AdminDashboard onOpenProductForm={openProductForm} />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
+              {!isAdminRoute && <Footer />}
             </React.Suspense>
           </m.main>
         </AnimatePresence>
-
-        {!isAdminRoute && <Footer />}
 
         <CartDrawer
           isOpen={isCartOpen}
