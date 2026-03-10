@@ -55,18 +55,7 @@
     margin-top: auto;
 }
 
-.hero-eyebrow {
-    display: block;
-    font-family: 'Montserrat', sans-serif;
-    font-size: clamp(4rem, 15vw, 12rem);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 800;
-    margin-bottom: var(--space-2);
-    color: #FFFFFF;
-    line-height: 0.9;
-    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
+/* hero-eyebrow removed as it was unused */
 
 .hero-title {
     display: none;
@@ -122,9 +111,14 @@
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     border: 1px solid #FFFFFF;
     width: fit-content;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(4px);
+    background: rgba(255, 255, 255, 0.2);
     margin-bottom: 6rem;
+}
+
+@media (min-width: 1024px) {
+    .new-arrival-button {
+        backdrop-filter: blur(4px);
+    }
 }
 
 .new-arrival-button .box {
@@ -199,6 +193,8 @@
     background: #D2A55D;
     padding: 0;
     overflow: hidden;
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 600px;
 }
 
 .container-full {
@@ -417,6 +413,8 @@
 .categories {
     background: var(--color-cream-dark);
     padding-bottom: 20px !important;
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 500px;
 }
 
 .categories .container {
@@ -613,6 +611,8 @@
 /* ─── Instagram Reviews Section ─── */
 .instagram-reviews {
     background: var(--color-cream-dark);
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 400px;
 }
 
 .reviews-header {
@@ -699,6 +699,8 @@
 .promo-icons {
     background: #F7F3ED;
     padding: var(--space-16) 0;
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 200px;
 }
 
 .promo-grid {

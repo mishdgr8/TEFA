@@ -1,6 +1,6 @@
 import React from 'react';
 import { ShoppingBag, X, Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { CartItem, CurrencyCode } from '../types';
 import { formatPrice } from '../data/store';
 
@@ -29,14 +29,14 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     <AnimatePresence>
       {isOpen && (
         <>
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
             className="cart-overlay"
           />
-          <motion.div
+          <m.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -118,7 +118,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 </p>
               </div>
             )}
-          </motion.div>
+          </m.div>
 
           <style>{`
             .cart-overlay {

@@ -12,7 +12,7 @@ interface HeaderProps {
   onOpenCart: () => void;
 }
 
-const motionLink = motion.create(Link);
+const motionLink = m.create(Link);
 
 export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
   const { scrollY } = useScroll();
@@ -104,7 +104,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
   const headerClass = `header ${isHome && !isScrolled ? 'header-transparent' : 'header-solid'}`;
 
   return (
-    <motion.nav
+    <m.nav
       className={headerClass}
       style={{
         backgroundColor: isHome ? headerBgColor : undefined,
@@ -121,7 +121,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
         </button>
 
         {/* Desktop Navigation */}
-        <motion.div
+        <m.div
           className="header-nav-desktop"
           style={{
             opacity: 1,
@@ -139,10 +139,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
               Admin
             </Link>
           )}
-        </motion.div>
+        </m.div>
 
         {/* Logo (Centered) - The Target for FLIP morph */}
-        <motion.div
+        <m.div
           id="nav-logo-target"
           style={{
             opacity: isHome ? logoTextOpacity : 1,
@@ -168,7 +168,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
               }}
             >TÉFA</span>
           </Link>
-        </motion.div>
+        </m.div>
 
         {/* Right Actions */}
         <div className="header-actions">
@@ -282,14 +282,14 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
       <AnimatePresence>
         {isMenuOpen && (
           <>
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMenuOpen(false)}
               className="mobile-menu-overlay"
             />
-            <motion.div
+            <m.div
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
@@ -358,7 +358,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </m.div>
           </>
         )}
       </AnimatePresence>
@@ -1069,6 +1069,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
           background: #FEE2E2;
         }
       `}</style>
-    </motion.nav>
+    </m.nav>
   );
 };

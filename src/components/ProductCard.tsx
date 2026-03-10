@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Product } from '../types';
 import { OptimizedImage } from './OptimizedImage';
 import './ProductCard.css';
@@ -10,12 +10,12 @@ interface ProductCardProps {
   product: Product;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+export const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
   const navigate = useNavigate();
   const { currency, categories } = useStore();
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -65,9 +65,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           )}
         </p>
       </div>
-
-
-
-    </motion.div>
+    </m.div>
   );
-};
+});

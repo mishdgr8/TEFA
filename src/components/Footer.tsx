@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Instagram, MessageCircle, ChevronRight } from 'lucide-react';
 
-export const Footer: React.FC = () => {
+export const Footer: React.FC = React.memo(() => {
   const navigate = useNavigate();
 
   return (
@@ -268,6 +268,9 @@ export const Footer: React.FC = () => {
         }
 
         @media (min-width: 768px) {
+          .footer {
+            padding-bottom: 4rem;
+          }
           .footer-bottom {
             flex-direction: row;
             justify-content: space-between;
@@ -332,6 +335,6 @@ export const Footer: React.FC = () => {
           }
         }
       `}</style>
-    </footer >
+    </footer>
   );
-};
+});

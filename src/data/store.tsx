@@ -166,14 +166,6 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     }
 
     const unsubscribe = subscribeToCategories(async (firestoreCategories) => {
-      // Force re-seeding to restore correct image paths after today's rollback
-      try {
-        await seedCategories(CATEGORIES);
-        console.log('Categories re-seeded to restore stable image paths.');
-      } catch (error) {
-        console.error('Failed to re-seed categories:', error);
-      }
-
       if (firestoreCategories.length > 0) {
         setCategories(firestoreCategories);
       } else {
@@ -369,7 +361,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     saveToStorage(STORAGE_KEYS.CURRENCY, newCurrency);
   };
 
-  const value: StoreContextType = {
+  const value = React.useMemo(() => ({
     products,
     categories,
     reviews,
@@ -398,7 +390,18 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     setIsAuthModalOpen,
     isProfileModalOpen,
     setIsProfileModalOpen,
-  };
+  }), [
+    products,
+    categories,
+    reviews,
+    cart,
+    user,
+    loading,
+    currency,
+    isSearchOpen,
+    isAuthModalOpen,
+    isProfileModalOpen
+  ]);
 
   return (
     <StoreContext.Provider value={value}>

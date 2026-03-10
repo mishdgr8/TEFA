@@ -1,6 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 
 interface SizeGuideModalProps {
   isOpen: boolean;
@@ -11,14 +11,14 @@ export const SizeGuideModal: React.FC<SizeGuideModalProps> = ({ isOpen, onClose 
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="modal-overlay"
           onClick={onClose}
         >
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -101,7 +101,7 @@ export const SizeGuideModal: React.FC<SizeGuideModalProps> = ({ isOpen, onClose 
                 </div>
               </div>
             </div>
-          </motion.div>
+          </m.div>
 
           <style>{`
             /* Base modal styles */
@@ -266,7 +266,7 @@ export const SizeGuideModal: React.FC<SizeGuideModalProps> = ({ isOpen, onClose 
               line-height: 1.6;
             }
           `}</style>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );
