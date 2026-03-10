@@ -12,7 +12,7 @@ export const SEO_CONFIG = {
     DEFAULT_TITLE: 'TÉFA — Premium African Fashion | Handcrafted in Lagos',
     DEFAULT_DESCRIPTION:
         'Discover TÉFA — premium African fashion for the bold and beautiful. Handcrafted kaftans, ankara sets, gowns, and accessories from Lagos, Nigeria. Free worldwide shipping.',
-    DEFAULT_OG_IMAGE: '/assets/Hero/Screenshot 2026-02-06 at 13.44.48.jpg',
+    DEFAULT_OG_IMAGE: '/assets/Hero/Screenshot 2026-02-06 at 13.44.48.webp',
     TWITTER_HANDLE: '@shop.tefa',
     INSTAGRAM_HANDLE: '@shop.tefa',
     LOCALE: 'en_US',
@@ -20,7 +20,7 @@ export const SEO_CONFIG = {
     BRAND: {
         name: 'TÉFA',
         url: 'https://houseoftefa.com',
-        logo: 'https://houseoftefa.com/assets/Hero/Screenshot 2026-02-06 at 13.44.48.jpg',
+        logo: 'https://houseoftefa.com/assets/Hero/Screenshot 2026-02-06 at 13.44.48.webp',
         description: 'Premium African fashion for the bold and beautiful. Handcrafted in Lagos, Nigeria.',
         email: 'hello@houseoftefa.com',
         phone: '+2348135407871',

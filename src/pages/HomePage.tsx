@@ -14,24 +14,24 @@ import './HomePage.css';
 
 // Hero images (using JPG for smaller file sizes)
 const heroImages = [
-  '/assets/Hero/Screenshot 2026-02-06 at 13.44.48.jpg',
-  '/assets/Hero/Screenshot 2026-02-07 at 09.26.26.jpg',
-  '/assets/Hero/Screenshot 2026-02-07 at 09.31.22.jpg',
+  '/assets/Hero/Screenshot 2026-02-06 at 13.44.48.webp',
+  '/assets/Hero/Screenshot 2026-02-07 at 09.26.26.webp',
+  '/assets/Hero/Screenshot 2026-02-07 at 09.31.22.webp',
 ];
 
 // Story Stack Images
 const storyImages = [
-  '/assets/images/Screenshot 2026-02-07 at 11.32.55.jpg',
-  '/assets/images/Screenshot 2026-02-07 at 11.33.18.jpg',
-  '/assets/images/Screenshot 2026-02-07 at 11.51.16.png',
+  '/assets/images/Screenshot 2026-02-07 at 11.32.55.webp',
+  '/assets/images/Screenshot 2026-02-07 at 11.33.18.webp',
+  '/assets/images/Screenshot 2026-02-07 at 11.51.16.webp',
 ];
 
 // Instagram review videos (placeholders - replace with real embed URLs)
 const instagramReviews: CustomerReview[] = [
-  { id: '1', thumbnail: '/assets/images/Screenshot 2026-02-07 at 11.32.55.jpg', username: '@tefa_customer1', platform: 'instagram', videoUrl: '' },
-  { id: '2', thumbnail: '/assets/images/Screenshot 2026-02-07 at 11.33.18.jpg', username: '@mish_mordi', platform: 'instagram', videoUrl: '' },
-  { id: '3', thumbnail: '/assets/images/Screenshot 2026-02-07 at 11.51.16.png', username: '@fashion_ng', platform: 'instagram', videoUrl: '' },
-  { id: '4', thumbnail: '/assets/Hero/Screenshot 2026-02-06 at 13.44.48.png', username: '@fashion_ng', platform: 'instagram', videoUrl: '' },
+  { id: '1', thumbnail: '/assets/images/Screenshot 2026-02-07 at 11.32.55.webp', username: '@tefa_customer1', platform: 'instagram', videoUrl: '' },
+  { id: '2', thumbnail: '/assets/images/Screenshot 2026-02-07 at 11.33.18.webp', username: '@mish_mordi', platform: 'instagram', videoUrl: '' },
+  { id: '3', thumbnail: '/assets/images/Screenshot 2026-02-07 at 11.51.16.webp', username: '@fashion_ng', platform: 'instagram', videoUrl: '' },
+  { id: '4', thumbnail: '/assets/Hero/Screenshot 2026-02-06 at 13.44.48.webp', username: '@fashion_ng', platform: 'instagram', videoUrl: '' },
 ];
 
 const ReviewCard: React.FC<{ review: CustomerReview; idx: number }> = ({ review, idx }) => {
