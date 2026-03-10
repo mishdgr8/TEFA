@@ -71,6 +71,19 @@ const ReviewCard = React.memo(({ review, idx }: { review: CustomerReview; idx: n
     <m.div
       ref={cardRef}
       className="review-card"
+      role="button"
+      tabIndex={0}
+      aria-label={`View review from ${review.username}`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          if (review.externalLink) {
+            window.open(review.externalLink, '_blank');
+          } else if (review.username.startsWith('@')) {
+            const handle = review.username.substring(1);
+            window.open(`https://instagram.com/${handle}`, '_blank');
+          }
+        }
+      }}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -404,6 +417,10 @@ export const HomePage: React.FC = () => {
           </m.p>
           <div
             className="new-arrival-button"
+            role="button"
+            tabIndex={0}
+            aria-label="Shop New Arrivals"
+            onKeyDown={(e) => e.key === 'Enter' && navigate('/shop')}
             onClick={() => navigate('/shop')}
           >
             <div className="box">S</div>
@@ -433,6 +450,10 @@ export const HomePage: React.FC = () => {
               {categories.map((cat, idx) => (
                 <m.div
                   key={cat.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Browse ${cat.name} collection`}
+                  onKeyDown={(e) => e.key === 'Enter' && navigate(`/shop/${cat.id}`)}
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
