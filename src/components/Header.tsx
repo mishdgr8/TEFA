@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { ShoppingBag, Menu, X, ChevronRight, Search, User, LogOut, ChevronDown, Settings, History, Heart } from 'lucide-react';
-import { useScroll, useTransform, motion, AnimatePresence } from 'framer-motion';
+import { useScroll, useTransform, m, AnimatePresence } from 'framer-motion';
 import { useStore } from '../data/store';
 import { CATEGORIES } from '../data/categories';
 import { PageName, PageParams, CURRENCIES } from '../types';
@@ -12,7 +12,7 @@ interface HeaderProps {
   onOpenCart: () => void;
 }
 
-const motionLink = m.create(Link);
+const motionLink = m(Link);
 
 export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
   const { scrollY } = useScroll();
@@ -90,7 +90,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
     setIsMenuOpen(false);
   };
 
-  // Determine if scrolled using framer-motion instead of separate listener
+  // Determine if scrolled using framer-m instead of separate listener
   const [isScrolled, setIsScrolled] = useState(false);
   const isHome = location.pathname === '/';
 
