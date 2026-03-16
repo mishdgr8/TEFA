@@ -39,6 +39,7 @@ const ReviewCard = React.memo(({ review, idx }: { review: CustomerReview; idx: n
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const [isInView, setIsInView] = useState(false);
   const cardRef = React.useRef<HTMLDivElement>(null);
+  const [videoError, setVideoError] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -56,7 +57,7 @@ const ReviewCard = React.memo(({ review, idx }: { review: CustomerReview; idx: n
   }, []);
 
   useEffect(() => {
-    if (videoRef.current) {
+    if (videoRef.current && !videoError) {
       if (isInView) {
         videoRef.current.play().catch(() => {
           // Autoplay might be blocked if not muted/interacted with
@@ -65,7 +66,7 @@ const ReviewCard = React.memo(({ review, idx }: { review: CustomerReview; idx: n
         videoRef.current.pause();
       }
     }
-  }, [isInView]);
+  }, [isInView, videoError]);
 
   return (
     <m.div
@@ -98,7 +99,7 @@ const ReviewCard = React.memo(({ review, idx }: { review: CustomerReview; idx: n
       }}
     >
       <div className="review-thumbnail">
-        {review.videoUrl ? (
+        {review.videoUrl && !videoError ? (
           <video
             ref={videoRef}
             src={review.videoUrl}
@@ -107,6 +108,11 @@ const ReviewCard = React.memo(({ review, idx }: { review: CustomerReview; idx: n
             loop
             playsInline
             className="review-video"
+            onError={(e) => {
+              // Only fail if we really can't load it after removal of CORS attribute
+              console.warn(`Video load failed for ${review.username}:`, e);
+              setVideoError(true);
+            }}
             onMouseEnter={(e) => e.currentTarget.play()}
             onMouseLeave={(e) => {
               if (!isInView) {
@@ -115,7 +121,13 @@ const ReviewCard = React.memo(({ review, idx }: { review: CustomerReview; idx: n
             }}
           />
         ) : (
-          <OptimizedImage src={review.thumbnail} alt={`Customer review from ${review.username}`} sizes="(max-width: 768px) 50vw, 25vw" quality={70} />
+          <OptimizedImage
+            src={review.thumbnail}
+            alt={`Customer review from ${review.username}`}
+            sizes="(max-width: 768px) 50vw, 25vw"
+            quality={70}
+            priority={idx < 4}
+          />
         )}
       </div>
       <span className="review-username">{review.username}</span>
