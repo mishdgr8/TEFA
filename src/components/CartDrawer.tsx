@@ -3,6 +3,7 @@ import { ShoppingBag, X, Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 import { CartItem, CurrencyCode } from '../types';
 import { formatPrice } from '../data/store';
+import { OptimizedImage } from './OptimizedImage';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -67,7 +68,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 items.map(item => (
                   <div key={item.variantId} className="cart-item">
                     <div className="cart-item-image">
-                      <img src={item.image} alt={item.name} />
+                      <OptimizedImage
+                        src={item.image}
+                        alt={item.name}
+                        widths={[80, 160]}
+                        sizes="80px"
+                        quality={60}
+                      />
                     </div>
                     <div className="cart-item-content">
                       <div className="cart-item-header">
