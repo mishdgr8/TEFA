@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { m, AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
+import { m, AnimatePresence, LazyMotion, domAnimation, useScroll, useSpring, useMotionValueEvent } from 'framer-motion';
 import { ShoppingBag } from 'lucide-react';
+import Lenis from 'lenis';
 
 // Components
 import { Header } from './components/Header';
@@ -45,6 +46,48 @@ export const App: React.FC = () => {
   const [isProductFormOpen, setIsProductFormOpen] = useState(false);
 
   const { cart, updateCartQty, removeFromCart, currency, isAuthModalOpen, setIsAuthModalOpen } = useStore();
+
+  const { scrollYProgress } = useScroll();
+  const scaleY = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  useMotionValueEvent(scrollYProgress, "change", () => {
+    setIsScrolling(true);
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = setTimeout(() => setIsScrolling(false), 1500);
+  });
+
+  // Initialize Lenis Smooth Scrolling
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+    });
+
+    function raf(time: number) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
+
+    return () => {
+      lenis.destroy();
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    };
+  }, []);
+
 
   const openProductForm = (productId?: string) => {
     setEditingProductId(productId);
@@ -143,6 +186,16 @@ export const App: React.FC = () => {
         {/* Global Profile Modal */}
         <ProfileModal />
 
+        <m.div
+          className="custom-scrollbar-indicator"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: isScrolling ? 1 : 0 }}
+          style={{
+            scaleY: scaleY,
+            transformOrigin: "top"
+          }}
+        />
+
         <style>{`
         .app-wrapper {
           min-height: 100vh;
@@ -191,6 +244,19 @@ export const App: React.FC = () => {
           border-radius: 50%;
           font-size: 0.75rem;
           font-weight: 700;
+        }
+
+        .custom-scrollbar-indicator {
+          position: fixed;
+          top: 0;
+          right: 2px;
+          width: 4px;
+          height: 100%;
+          background: var(--color-coral);
+          z-index: 9999;
+          border-radius: var(--radius-full);
+          opacity: 0.6;
+          pointer-events: none;
         }
       `}</style>
       </div>

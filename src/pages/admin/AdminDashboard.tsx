@@ -21,6 +21,7 @@ import { Category, CustomerReview } from '../../types';
 import { seedProducts, seedCategories } from '../../lib/firestore';
 import { DEFAULT_PRODUCTS } from '../../data/products';
 import { CATEGORIES } from '../../data/categories';
+import { OptimizedImage } from '../../components/OptimizedImage';
 
 interface AdminDashboardProps {
   onOpenProductForm: (productId?: string) => void;
@@ -301,7 +302,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 {products.map(product => (
                   <div key={product.id} className="table-row">
                     <div className="col-image">
-                      <img src={product.images[0]} alt={product.name} />
+                      <OptimizedImage src={product.images[0]} alt={product.name} />
                     </div>
                     <div className="col-name">
                       <span className="product-name">{product.name}</span>
@@ -355,7 +356,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="table-body">
                 {categories.map(cat => (
                   <div key={cat.id} className="table-row cat-grid">
-                    <div className="col-image"><img src={cat.image} alt={cat.name} /></div>
+                    <div className="col-image"><OptimizedImage src={cat.image} alt={cat.name} /></div>
                     <div className="col-name"><span className="product-name">{cat.name}</span></div>
                     <div className="col-slug"><code>{cat.slug}</code></div>
                     <div className="col-actions">
@@ -391,7 +392,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="table-body">
                 {reviews.map(review => (
                   <div key={review.id} className="table-row review-grid">
-                    <div className="col-image"><img src={review.thumbnail} alt={review.username} /></div>
+                    <div className="col-image"><OptimizedImage src={review.thumbnail} alt={review.username} /></div>
                     <div className="col-name">
                       <span className="product-name">{review.username}</span>
                       {review.videoUrl && (

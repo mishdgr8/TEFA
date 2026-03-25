@@ -3,6 +3,7 @@ import { X, Plus, Trash2, Image, Upload, Video, Loader2 } from 'lucide-react';
 import { useStore } from '../../data/store';
 import { Product, ProductColor } from '../../types';
 import { uploadProductImage, uploadProductVideo } from '../../lib/storage';
+import { OptimizedImage } from '../../components/OptimizedImage';
 
 interface ProductFormProps {
   productId?: string;
@@ -419,10 +420,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({ productId, onClose }) 
 
                 {formData.imageUrl && (
                   <div className="image-preview">
-                    <img
+                    <OptimizedImage
                       src={formData.imageUrl}
                       alt="Preview"
-                      onError={e => (e.currentTarget.style.display = 'none')}
                     />
                     {formData.imageUrl.startsWith('data:') && (
                       <span className="upload-badge">Uploaded from device</span>
@@ -439,7 +439,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ productId, onClose }) 
                     <div key={index} className="gallery-row">
                       {url.startsWith('data:') ? (
                         <div className="gallery-preview-inline">
-                          <img src={url} alt={`Gallery ${index + 1}`} />
+                          <OptimizedImage src={url} alt={`Gallery ${index + 1}`} />
                           <span>Uploaded image</span>
                         </div>
                       ) : (

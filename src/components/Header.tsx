@@ -7,6 +7,7 @@ import { CATEGORIES } from '../data/categories';
 import { PageName, PageParams, CURRENCIES } from '../types';
 import { AuthModal } from './AuthModal';
 import { signOut } from '../lib/auth';
+import { OptimizedImage } from './OptimizedImage';
 
 interface HeaderProps {
   onOpenCart: () => void;
@@ -240,7 +241,13 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
                     onClick={() => handlePreviewClick(product.slug)}
                   >
                     <div className="search-preview-image">
-                      <img src={product.images[0]} alt={product.name} />
+                      <OptimizedImage
+                        src={product.images[0]}
+                        alt={product.name}
+                        widths={[64, 128]}
+                        sizes="64px"
+                        quality={60}
+                      />
                     </div>
                     <div className="search-preview-info">
                       <span className="search-preview-name">{product.name}</span>

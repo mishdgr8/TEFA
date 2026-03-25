@@ -3,175 +3,176 @@ import { X, Loader2, Upload, Trash2 } from 'lucide-react';
 import { useStore } from '../../data/store';
 import { Category } from '../../types';
 import { uploadFile } from '../../lib/storage';
+import { OptimizedImage } from '../../components/OptimizedImage';
 
 interface CategoryFormProps {
-    category?: Category | null;
-    onClose: () => void;
+  category?: Category | null;
+  onClose: () => void;
 }
 
 export const CategoryForm: React.FC<CategoryFormProps> = ({ category, onClose }) => {
-    const { addCategory, updateCategory } = useStore();
-    const isEditing = !!category;
+  const { addCategory, updateCategory } = useStore();
+  const isEditing = !!category;
 
-    const [formData, setFormData] = useState({
-        name: category?.name || '',
-        image: category?.image || '',
-        hoverImage: category?.hoverImage || '',
-    });
+  const [formData, setFormData] = useState({
+    name: category?.name || '',
+    image: category?.image || '',
+    hoverImage: category?.hoverImage || '',
+  });
 
-    const [isSaving, setIsSaving] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'image' | 'hoverImage') => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'image' | 'hoverImage') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-        try {
-            const path = `categories/${Date.now()}_${file.name}`;
-            const url = await uploadFile(file, path, (progress) => {
-                setUploadProgress(prev => ({ ...prev, [field]: progress }));
-            });
-            setFormData(prev => ({ ...prev, [field]: url }));
-        } catch (error) {
-            console.error(`Upload failed for ${field}:`, error);
-            alert(`Failed to upload ${field}. Please try again.`);
-        } finally {
-            setUploadProgress(prev => {
-                const next = { ...prev };
-                delete next[field];
-                return next;
-            });
-        }
-    };
+    try {
+      const path = `categories/${Date.now()}_${file.name}`;
+      const url = await uploadFile(file, path, (progress) => {
+        setUploadProgress(prev => ({ ...prev, [field]: progress }));
+      });
+      setFormData(prev => ({ ...prev, [field]: url }));
+    } catch (error) {
+      console.error(`Upload failed for ${field}:`, error);
+      alert(`Failed to upload ${field}. Please try again.`);
+    } finally {
+      setUploadProgress(prev => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (isSaving) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSaving) return;
 
-        if (!formData.name || !formData.image) {
-            alert('Please provide at least a name and a main image.');
-            return;
-        }
+    if (!formData.name || !formData.image) {
+      alert('Please provide at least a name and a main image.');
+      return;
+    }
 
-        setIsSaving(true);
-        try {
-            if (isEditing && category) {
-                await updateCategory(category.id, formData);
-            } else {
-                await addCategory(formData);
-            }
-            alert('Category saved successfully!');
-            onClose();
-        } catch (error) {
-            console.error('Failed to save category:', error);
-            alert('Failed to save category. Please try again.');
-        } finally {
-            setIsSaving(false);
-        }
-    };
+    setIsSaving(true);
+    try {
+      if (isEditing && category) {
+        await updateCategory(category.id, formData);
+      } else {
+        await addCategory(formData);
+      }
+      alert('Category saved successfully!');
+      onClose();
+    } catch (error) {
+      console.error('Failed to save category:', error);
+      alert('Failed to save category. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
-    return (
-        <div className="modal-overlay">
-            <div className="modal-container">
-                <div className="modal-header">
-                    <h2>{isEditing ? 'Edit Category' : 'Add New Category'}</h2>
-                    <button className="close-btn" onClick={onClose}>
-                        <X size={24} />
+  return (
+    <div className="modal-overlay">
+      <div className="modal-container">
+        <div className="modal-header">
+          <h2>{isEditing ? 'Edit Category' : 'Add New Category'}</h2>
+          <button className="close-btn" onClick={onClose}>
+            <X size={24} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="form-content">
+          <div className="form-group">
+            <label htmlFor="name">Category Name *</label>
+            <input
+              id="name"
+              type="text"
+              value={formData.name}
+              onChange={e => setFormData({ ...formData, name: e.target.value })}
+              placeholder="e.g., Bubu Gowns"
+              required
+            />
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Main Image *</label>
+              <div className="media-upload-area">
+                {formData.image ? (
+                  <div className="media-preview">
+                    <OptimizedImage src={formData.image} alt="Main" />
+                    <button type="button" className="remove-media" onClick={() => setFormData({ ...formData, image: '' })}>
+                      <Trash2 size={16} />
                     </button>
-                </div>
-
-                <form onSubmit={handleSubmit} className="form-content">
-                    <div className="form-group">
-                        <label htmlFor="name">Category Name *</label>
-                        <input
-                            id="name"
-                            type="text"
-                            value={formData.name}
-                            onChange={e => setFormData({ ...formData, name: e.target.value })}
-                            placeholder="e.g., Bubu Gowns"
-                            required
-                        />
-                    </div>
-
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label>Main Image *</label>
-                            <div className="media-upload-area">
-                                {formData.image ? (
-                                    <div className="media-preview">
-                                        <img src={formData.image} alt="Main" />
-                                        <button type="button" className="remove-media" onClick={() => setFormData({ ...formData, image: '' })}>
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <label className="upload-placeholder">
-                                        <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'image')} hidden />
-                                        {uploadProgress['image'] !== undefined ? (
-                                            <div className="progress-container">
-                                                <Loader2 className="animate-spin" />
-                                                <span>{Math.round(uploadProgress['image'])}%</span>
-                                            </div>
-                                        ) : (
-                                            <>
-                                                <Upload size={24} />
-                                                <span>Upload Image</span>
-                                            </>
-                                        )}
-                                    </label>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="form-group">
-                            <label>Hover Image (Optional)</label>
-                            <div className="media-upload-area">
-                                {formData.hoverImage ? (
-                                    <div className="media-preview">
-                                        <img src={formData.hoverImage} alt="Hover" />
-                                        <button type="button" className="remove-media" onClick={() => setFormData({ ...formData, hoverImage: '' })}>
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <label className="upload-placeholder">
-                                        <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'hoverImage')} hidden />
-                                        {uploadProgress['hoverImage'] !== undefined ? (
-                                            <div className="progress-container">
-                                                <Loader2 className="animate-spin" />
-                                                <span>{Math.round(uploadProgress['hoverImage'])}%</span>
-                                            </div>
-                                        ) : (
-                                            <>
-                                                <Upload size={24} />
-                                                <span>Upload Image</span>
-                                            </>
-                                        )}
-                                    </label>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="form-footer">
-                        <button type="button" className="cancel-btn" onClick={onClose} disabled={isSaving}>
-                            Cancel
-                        </button>
-                        <button type="submit" className="submit-btn" disabled={isSaving}>
-                            {isSaving ? (
-                                <>
-                                    <Loader2 className="animate-spin" size={20} />
-                                    Saving...
-                                </>
-                            ) : (
-                                'Save Category'
-                            )}
-                        </button>
-                    </div>
-                </form>
+                  </div>
+                ) : (
+                  <label className="upload-placeholder">
+                    <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'image')} hidden />
+                    {uploadProgress['image'] !== undefined ? (
+                      <div className="progress-container">
+                        <Loader2 className="animate-spin" />
+                        <span>{Math.round(uploadProgress['image'])}%</span>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload size={24} />
+                        <span>Upload Image</span>
+                      </>
+                    )}
+                  </label>
+                )}
+              </div>
             </div>
 
-            <style>{`
+            <div className="form-group">
+              <label>Hover Image (Optional)</label>
+              <div className="media-upload-area">
+                {formData.hoverImage ? (
+                  <div className="media-preview">
+                    <OptimizedImage src={formData.hoverImage} alt="Hover" />
+                    <button type="button" className="remove-media" onClick={() => setFormData({ ...formData, hoverImage: '' })}>
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="upload-placeholder">
+                    <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'hoverImage')} hidden />
+                    {uploadProgress['hoverImage'] !== undefined ? (
+                      <div className="progress-container">
+                        <Loader2 className="animate-spin" />
+                        <span>{Math.round(uploadProgress['hoverImage'])}%</span>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload size={24} />
+                        <span>Upload Image</span>
+                      </>
+                    )}
+                  </label>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="form-footer">
+            <button type="button" className="cancel-btn" onClick={onClose} disabled={isSaving}>
+              Cancel
+            </button>
+            <button type="submit" className="submit-btn" disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="animate-spin" size={20} />
+                  Saving...
+                </>
+              ) : (
+                'Save Category'
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <style>{`
         .modal-overlay {
           position: fixed;
           inset: 0;
@@ -375,6 +376,6 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({ category, onClose })
           color: #CE870D;
         }
       `}</style>
-        </div>
-    );
+    </div>
+  );
 };

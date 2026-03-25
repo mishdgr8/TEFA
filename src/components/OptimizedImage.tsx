@@ -19,9 +19,10 @@ function cloudinaryImageUrl(src: string, width: number, quality: number | string
 
     // For local assets (like /assets/Hero/image.webp), use the uploaded assets from Cloudinary
     if (src.startsWith('/')) {
-        const publicIdBase = `TEFA${src.replace(/\.[^/.]+$/, "")}`;
-        // Encode the public ID to handle spaces and special characters
-        return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/f_auto,q_${quality},w_${width}/v1/${encodeURI(publicIdBase)}`;
+        // Use the actual path but strip the leading slash. Cloudinary handles slashes and spaces.
+        const publicIdBase = `TEFA/${src.substring(1)}`;
+        // Use encodeURIComponent to handle spaces and slashes correctly in the URL path segment
+        return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/f_auto,q_${quality},w_${width}/v1/${encodeURIComponent(publicIdBase)}`;
     }
 
     return src;
