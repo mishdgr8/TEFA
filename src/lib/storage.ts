@@ -1,41 +1,60 @@
-// Firebase Storage Operations
-import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
-import app from './firebase';
+// Cloudinary Storage Operations (Replaces Firebase Storage for billing optimization)
+// To use this, create an 'Unsigned Upload Preset' in your Cloudinary Dashboard
+// with the name matching VITE_CLOUDINARY_UPLOAD_PRESET (default: tefa_products)
 
-// Initialize Storage
-const storage = getStorage(app);
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'tefa_products';
 
 /**
- * Upload a file to Firebase Storage with progress tracking
+ * Upload a file to Cloudinary
  * @param file - The file to upload
- * @param path - The storage path
+ * @param _path - (Optional) Path for backward compatibility with Firebase Storage
  * @param onProgress - Optional callback for progress percentage (0-100)
- * @returns The download URL of the uploaded file
+ * @returns The secure URL of the uploaded file
  */
 export const uploadFile = async (
     file: File,
-    path: string,
+    _path?: string,
     onProgress?: (progress: number) => void
 ): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const storageRef = ref(storage, path);
-        const uploadTask = uploadBytesResumable(storageRef, file);
+    if (!CLOUD_NAME) {
+        throw new Error('Cloudinary Cloud Name is not configured in .env.local');
+    }
 
-        uploadTask.on(
-            'state_changed',
-            (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                if (onProgress) onProgress(progress);
-            },
-            (error) => {
-                console.error('Upload failed:', error);
-                reject(error);
-            },
-            async () => {
-                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                resolve(downloadURL);
+    return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', UPLOAD_PRESET);
+
+        // Optional: Add folder/tag info derived from the legacy 'path'
+        if (_path) {
+            const folder = _path.substring(0, _path.lastIndexOf('/')) || 'uploads';
+            formData.append('folder', `TEFA/${folder}`);
+        }
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, true);
+
+        xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable && onProgress) {
+                const progress = (event.loaded / event.total) * 100;
+                onProgress(progress);
             }
-        );
+        };
+
+        xhr.onload = () => {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                resolve(response.secure_url);
+            } else {
+                const error = JSON.parse(xhr.responseText);
+                console.error('Cloudinary Upload Error:', error);
+                reject(new Error(error.error?.message || 'Upload failed'));
+            }
+        };
+
+        xhr.onerror = () => reject(new Error('Network error during upload'));
+        xhr.send(formData);
     });
 };
 
@@ -44,17 +63,15 @@ export const uploadFile = async (
  * @param file - The image file
  * @param productId - Optional product ID
  * @param onProgress - Optional progress callback
- * @returns The download URL
+ * @returns The secure URL
  */
 export const uploadProductImage = async (
     file: File,
     productId?: string,
     onProgress?: (progress: number) => void
 ): Promise<string> => {
-    const timestamp = Date.now();
-    const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const folder = productId || 'new';
-    const path = `products/${folder}/${timestamp}_${safeName}`;
+    const folder = productId || 'new_products';
+    const path = `products/${folder}`;
     return uploadFile(file, path, onProgress);
 };
 
@@ -63,31 +80,26 @@ export const uploadProductImage = async (
  * @param file - The video file
  * @param productId - Optional product ID
  * @param onProgress - Optional progress callback
- * @returns The download URL
+ * @returns The secure URL
  */
 export const uploadProductVideo = async (
     file: File,
     productId?: string,
     onProgress?: (progress: number) => void
 ): Promise<string> => {
-    const timestamp = Date.now();
-    const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const folder = productId || 'new';
-    const path = `products/${folder}/videos/${timestamp}_${safeName}`;
+    const folder = productId || 'new_products';
+    const path = `products/${folder}/videos`;
     return uploadFile(file, path, onProgress);
 };
 
 /**
- * Delete a file from Firebase Storage
- * @param url - The download URL of the file to delete
+ * Delete a file (Note: Cloudinary requires Admin API or a server-side signature to delete files)
+ * Since this is currently frontend-only, simple URL deletion isn't possible.
+ * We'll just leave this as a no-op to prevent breaking the build.
  */
-export const deleteFileByUrl = async (url: string): Promise<void> => {
-    try {
-        const storageRef = ref(storage, url);
-        await deleteObject(storageRef);
-    } catch (error) {
-        console.error('Failed to delete file:', error);
-    }
+export const deleteFileByUrl = async (_url: string): Promise<void> => {
+    console.warn('Direct Cloudinary deletion not supported from frontend for security reason.');
 };
 
-export { storage };
+// Legacy Export for potential reuse of Firebase features
+export const storage = null; 
