@@ -43,17 +43,33 @@ export const uploadFile = async (
         };
 
         xhr.onload = () => {
-            if (xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                resolve(response.secure_url);
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    console.log('☁️ Cloudinary Success:', response.secure_url);
+                    resolve(response.secure_url);
+                } catch (e) {
+                    console.error('❌ Failed to parse Cloudinary response:', xhr.responseText);
+                    reject(new Error('Invalid response from Cloudinary.'));
+                }
             } else {
-                const error = JSON.parse(xhr.responseText);
-                console.error('Cloudinary Upload Error:', error);
-                reject(new Error(error.error?.message || 'Upload failed'));
+                let errorMsg = 'Upload failed';
+                try {
+                    const error = JSON.parse(xhr.responseText);
+                    errorMsg = error.error?.message || errorMsg;
+                    console.error('❌ Cloudinary Error:', error);
+                } catch (e) {
+                    console.error('❌ Cloudinary Error (Raw):', xhr.responseText);
+                }
+                reject(new Error(errorMsg));
             }
         };
 
-        xhr.onerror = () => reject(new Error('Network error during upload'));
+        xhr.onerror = () => {
+            console.error('❌ Network Error while uploading to Cloudinary');
+            reject(new Error('Network error during upload. Please check your connection or CORS settings.'));
+        };
+
         xhr.send(formData);
     });
 };
