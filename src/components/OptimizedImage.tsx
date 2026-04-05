@@ -9,20 +9,37 @@ import React from 'react';
 
 // Standard responsive breakpoints (Added 320, 480 for mobile)
 const DEFAULT_WIDTHS = [320, 480, 640, 750, 828, 1080, 1200, 1920, 2048];
-const CLOUD_NAME = 'dzfrrcacc';
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dzfrrcacc';
 
 function cloudinaryImageUrl(src: string, width: number, quality: number | string): string {
-    // For external URLs (like Firebase Storage), use the Cloudinary 'fetch' API
+    // 1. If it's already a Cloudinary URL from our own cloud, we can just transform it.
+    // We look for res.cloudinary.com/<our-cloud>/
+    const cloudinaryBase = `res.cloudinary.com/${CLOUD_NAME}/`;
+    if (src.includes(cloudinaryBase)) {
+        // Find the index after the cloud name and handle potential version/upload segments
+        const parts = src.split(cloudinaryBase);
+        const resourcePath = parts[1];
+
+        // Remove existing transformations if any (e.g. image/upload/v1234/...)
+        // Simple heuristic: find 'image/upload/' and keep what's after the version (v[0-9]+)
+        const uploadMarker = 'image/upload/';
+        if (resourcePath.includes(uploadMarker)) {
+            const afterUpload = resourcePath.split(uploadMarker)[1];
+            // Remove the version segment if it's there (v123456789/)
+            const cleanPath = afterUpload.replace(/^v\d+\//, '');
+            return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/f_auto,q_${quality},w_${width}/${cleanPath}`;
+        }
+    }
+
+    // 2. For external URLs (like Firebase Storage), use the Cloudinary 'fetch' API
     if (src.startsWith('http')) {
         return `https://res.cloudinary.com/${CLOUD_NAME}/image/fetch/f_auto,q_${quality},w_${width}/${encodeURIComponent(src)}`;
     }
 
-    // For local assets (like /assets/Hero/image.webp), use the uploaded assets from Cloudinary
+    // 3. For local assets (like /assets/Hero/image.webp), use the uploaded assets from Cloudinary
     if (src.startsWith('/')) {
-        // Use the actual path but strip the leading slash. Cloudinary handles slashes and spaces.
-        const publicIdBase = `TEFA/${src.substring(1)}`;
-        // Use encodeURIComponent to handle spaces and slashes correctly in the URL path segment
-        return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/f_auto,q_${quality},w_${width}/v1/${encodeURIComponent(publicIdBase)}`;
+        const publicIdBase = `TEFA/${src.substring(1).replace(/\//g, '_').replace(/\.[^/.]+$/, "")}`;
+        return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/f_auto,q_${quality},w_${width}/${encodeURIComponent(publicIdBase)}`;
     }
 
     return src;
