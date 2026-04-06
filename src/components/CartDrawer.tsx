@@ -24,7 +24,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   onRemove,
   onCheckout
 }) => {
-  const total = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  const total = items.reduce((sum, item) => {
+    const itemPrice = currency === 'USD' ? (item.priceUSD || (item.price * 0.00125)) : item.price;
+    return sum + (itemPrice * item.qty);
+  }, 0);
 
   return (
     <AnimatePresence>
@@ -95,7 +98,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                           ✨ Express Production (14 days)
                         </div>
                       )}
-                      <p className="cart-item-price">{formatPrice(item.price, currency)}</p>
+                      <p className="cart-item-price">
+                        {formatPrice({ amount: currency === 'USD' ? (item.priceUSD || (item.price * 0.00125)) : item.price }, currency)}
+                      </p>
                       <div className="cart-item-qty">
                         <button onClick={() => onUpdateQty(item.variantId, -1)} aria-label="Decrease quantity">
                           <Minus size={14} />
@@ -116,7 +121,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <div className="cart-footer">
                 <div className="cart-total">
                   <span>Subtotal</span>
-                  <span className="cart-total-amount">{formatPrice(total, currency)}</span>
+                  <span className="cart-total-amount">{formatPrice({ amount: total }, currency)}</span>
                 </div>
                 <button onClick={onCheckout} className="cart-checkout-btn">
                   Confirm Inquiry <ArrowRight size={18} />

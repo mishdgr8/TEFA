@@ -4,7 +4,7 @@ import { m } from 'framer-motion';
 import { Product } from '../types';
 import { OptimizedImage } from './OptimizedImage';
 import './ProductCard.css';
-import { formatPrice, getCategoryName, useStore } from '../data/store';
+import { formatPrice, getCategoryName, useStore, getProductPrice } from '../data/store';
 
 interface ProductCardProps {
   product: Product;
@@ -59,14 +59,17 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) 
           {product.name} <span className="separator">-</span> {getCategoryName(product.categoryId, categories)}
         </h3>
         <p className="product-card-price">
-          {product.salePrice && product.salePrice < product.price ? (
-            <>
-              <span className="original-price-strike">{formatPrice(product.price, currency)}</span>
-              <span className="sale-price">{formatPrice(product.salePrice, currency)}</span>
-            </>
-          ) : (
-            formatPrice(product.price, currency)
-          )}
+          {(() => {
+            const { original, sale } = getProductPrice(product, currency);
+            return sale ? (
+              <>
+                <span className="original-price-strike">{formatPrice({ amount: original }, currency)}</span>
+                <span className="sale-price">{formatPrice({ amount: sale }, currency)}</span>
+              </>
+            ) : (
+              formatPrice({ amount: original }, currency)
+            );
+          })()}
         </p>
       </div>
     </m.div>

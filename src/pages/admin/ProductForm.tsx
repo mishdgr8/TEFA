@@ -14,6 +14,7 @@ interface FormData {
   name: string;
   description: string;
   price: string;
+  priceUSD: string;
   salePrice: string;
   discountPercentage: string;
   categoryId: string;
@@ -33,9 +34,10 @@ const initialFormData: FormData = {
   name: '',
   description: '',
   price: '',
+  priceUSD: '',
   salePrice: '',
   discountPercentage: '',
-  categoryId: '1',
+  categoryId: 'f848c11d-92fe-42a4-aaf9-54dca79e9896',
 
 
   imageUrl: '',
@@ -145,6 +147,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ productId, onClose }) 
         name: existingProduct.name,
         description: existingProduct.description,
         price: existingProduct.price.toString(),
+        priceUSD: existingProduct.priceUSD ? existingProduct.priceUSD.toString() : '',
         salePrice: existingProduct.salePrice ? existingProduct.salePrice.toString() : '',
         discountPercentage: existingProduct.salePrice
           ? Math.round(((existingProduct.price - existingProduct.salePrice) / existingProduct.price) * 100).toString()
@@ -202,6 +205,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ productId, onClose }) 
         name: formData.name.trim(),
         description: formData.description.trim(),
         price: Number(formData.price),
+        priceUSD: formData.priceUSD ? Number(formData.priceUSD) : undefined,
         salePrice: formData.salePrice ? Number(formData.salePrice) : undefined,
         currency: '₦',
 
@@ -328,6 +332,21 @@ export const ProductForm: React.FC<ProductFormProps> = ({ productId, onClose }) 
                   />
 
                   {errors.price && <span className="error-text">{errors.price}</span>}
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="priceUSD">Price (USD $)</label>
+                  <input
+                    id="priceUSD"
+                    type="number"
+                    step="0.01"
+                    value={formData.priceUSD}
+                    onChange={e => setFormData({ ...formData, priceUSD: e.target.value })}
+                    placeholder="e.g. 29.99"
+                  />
+                  <span className="helper-text" style={{ fontSize: '0.75rem', color: '#888' }}>
+                    Leave blank to use auto-conversion from Naira.
+                  </span>
                 </div>
 
                 <div className="form-group">

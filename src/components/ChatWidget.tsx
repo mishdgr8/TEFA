@@ -2,8 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { MessageCircle, X, Send, Loader2, Minus, Maximize2, User, Bot, ExternalLink } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 import { sendWhatsAppMessage } from '../lib/whatsapp';
-import { db } from '../lib/firebase';
-import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { supabase } from '../lib/supabase';
 import { useStore } from '../data/store';
 
 interface Message {
@@ -41,36 +40,72 @@ export const ChatWidget: React.FC = () => {
     return newId;
   }, []);
 
-  // Sync with Firestore
+  // Sync with Supabase Realtime
   useEffect(() => {
     if (!chatId) return;
 
-    const q = query(
-      collection(db, 'chats', chatId, 'messages'),
-      orderBy('timestamp', 'asc')
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const firestoreMessages = snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          text: data.text,
-          isUser: data.isUser,
-          timestamp: (data.timestamp as Timestamp)?.toDate() || new Date(),
-        };
+    // Ensure the chat row exists (upsert)
+    supabase
+      .from('chats')
+      .upsert({ id: chatId }, { onConflict: 'id' })
+      .then(({ error }) => {
+        if (error) console.warn('Chat upsert:', error.message);
       });
 
-      if (firestoreMessages.length > 0) {
+    // Fetch existing messages
+    const fetchMessages = async () => {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('chat_id', chatId)
+        .order('created_at', { ascending: true });
+
+      if (!error && data && data.length > 0) {
+        const mapped = data.map((row: any) => ({
+          id: row.id,
+          text: row.text,
+          isUser: row.is_user,
+          timestamp: new Date(row.created_at),
+        }));
         setMessages(prev => {
-          // Keep the initial welcome message if it's the first time
           const welcome = prev.find(m => m.id === '1');
-          return welcome ? [welcome, ...firestoreMessages] : firestoreMessages;
+          return welcome ? [welcome, ...mapped] : mapped;
         });
       }
-    });
+    };
+    fetchMessages();
 
-    return () => unsubscribe();
+    // Subscribe to new messages in real-time
+    const channel = supabase
+      .channel(`chat-${chatId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `chat_id=eq.${chatId}`,
+        },
+        (payload) => {
+          const row = payload.new as any;
+          const newMsg: Message = {
+            id: row.id,
+            text: row.text,
+            isUser: row.is_user,
+            timestamp: new Date(row.created_at),
+          };
+          setMessages(prev => {
+            // Avoid duplicate
+            if (prev.some(m => m.id === newMsg.id)) return prev;
+            return [...prev, newMsg];
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [chatId]);
 
   const scrollToBottom = () => {

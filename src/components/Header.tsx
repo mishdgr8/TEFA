@@ -2,11 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { ShoppingBag, Menu, X, ChevronRight, Search, User, LogOut, ChevronDown, Settings, History, Heart } from 'lucide-react';
 import { useScroll, useTransform, m, AnimatePresence } from 'framer-motion';
-import { useStore } from '../data/store';
+import { useStore, getProductPrice, formatPrice } from '../data/store';
 import { CATEGORIES } from '../data/categories';
 import { PageName, PageParams, CURRENCIES } from '../types';
 import { AuthModal } from './AuthModal';
-import { signOut } from '../lib/auth';
+import { signOut } from '../lib/supabaseAuth';
 import { OptimizedImage } from './OptimizedImage';
 
 interface HeaderProps {
@@ -252,8 +252,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
                     <div className="search-preview-info">
                       <span className="search-preview-name">{product.name}</span>
                       <span className="search-preview-price">
-                        {/* Simple formatting since we might not have formatPrice easily available without changing imports */}
-                        {currentCurrency.symbol}{Math.round(product.price * currentCurrency.rate).toLocaleString()}
+                        {(() => {
+                          const { original, sale } = getProductPrice(product, currency);
+                          return formatPrice({ amount: sale || original }, currency);
+                        })()}
                       </span>
                     </div>
                   </button>

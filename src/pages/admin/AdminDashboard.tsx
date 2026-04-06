@@ -12,13 +12,15 @@ import {
   MessageSquare,
   Trash2,
   Edit,
-  ExternalLink
+  ExternalLink,
+  ShoppingBag
 } from 'lucide-react';
 import { useStore } from '../../data/store';
 import { CategoryForm } from './CategoryForm';
 import { ReviewForm } from './ReviewForm';
+import { AdminOrders } from './AdminOrders';
 import { Category, CustomerReview } from '../../types';
-import { seedProducts, seedCategories } from '../../lib/firestore';
+import { seedProducts, seedCategories } from '../../lib/supabaseDb';
 import { DEFAULT_PRODUCTS } from '../../data/products';
 import { CATEGORIES } from '../../data/categories';
 import { OptimizedImage } from '../../components/OptimizedImage';
@@ -38,11 +40,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     deleteProduct,
     deleteCategory,
     deleteReview,
+    orders,
     user,
     loading
   } = useStore();
 
-  const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'reviews'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'reviews' | 'orders'>('products');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [repairing, setRepairing] = useState(false);
 
@@ -277,6 +280,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <MessageSquare size={18} />
             Customer Reviews
           </button>
+          <button
+            className={`tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
+            onClick={() => setActiveTab('orders')}
+          >
+            <ShoppingBag size={18} />
+            Orders
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -294,7 +304,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <span className="col-image">Image</span>
                 <span className="col-name">Name</span>
                 <span className="col-category">Category</span>
-                <span className="col-price">Price</span>
+                <span className="col-price">Price (NGN)</span>
+                <span className="col-price-usd">Price (USD)</span>
                 <span className="col-actions">Actions</span>
               </div>
 
@@ -315,6 +326,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </div>
                     <div className="col-price">
                       ₦{product.price.toLocaleString()}
+                    </div>
+                    <div className="col-price-usd">
+                      {product.priceUSD ? `$${product.priceUSD.toFixed(2)}` : 'Auto'}
                     </div>
                     <div className="col-actions">
                       <button onClick={() => onOpenProductForm(product.id)} className="action-btn edit">
@@ -416,6 +430,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           </div>
         )}
+
+        {activeTab === 'orders' && <AdminOrders />}
       </div>
 
       {isCategoryFormOpen && <CategoryForm category={editingCategory} onClose={() => setIsCategoryFormOpen(false)} />}
@@ -584,13 +600,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           letter-spacing: 0.1em;
         }
 
-        .table-row {
+        .table-header, .table-row {
           display: grid;
-          grid-template-columns: 80px 2fr 1fr 100px 150px;
+          grid-template-columns: 80px 2fr 1fr 120px 100px 120px;
           gap: 16px;
           padding: 16px 24px;
           align-items: center;
-          border-bottom: 1px solid #f5f5f5;
         }
 
         .col-image img {

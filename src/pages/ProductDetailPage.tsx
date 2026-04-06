@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ChevronLeft, ShoppingBag, Plus, Minus, Sparkles, Truck, Play, X } from 'lucide-react';
-import { useStore, formatPrice } from '../data/store';
+import { useStore, formatPrice, getProductPrice } from '../data/store';
 import { CartItem } from '../types';
 import { SizeGuideModal } from '../components/SizeGuideModal';
 import { OptimizedImage } from '../components/OptimizedImage';
@@ -54,15 +54,21 @@ export const ProductDetailPage: React.FC = () => {
       return;
     }
 
-    const effectivePrice = product.salePrice && product.salePrice < product.price ? product.salePrice : product.price;
-    const price = isExpress ? effectivePrice * 1.2 : effectivePrice;
+    const { original, sale } = getProductPrice(product, 'NGN');
+    const { original: originalUSD, sale: saleUSD } = getProductPrice(product, 'USD');
 
+    const basePrice = sale || original;
+    const basePriceUSD = saleUSD || originalUSD;
+
+    const finalPrice = isExpress ? basePrice * 1.2 : basePrice;
+    const finalPriceUSD = isExpress ? basePriceUSD * 1.2 : basePriceUSD;
 
     const item: CartItem = {
       productId: product.id,
       variantId: `${product.id}-${selectedSize}-${selectedColor}${isExpress ? '-express' : ''}`,
       name: product.name,
-      price,
+      price: finalPrice,
+      priceUSD: finalPriceUSD,
       qty,
       selectedSize,
       selectedColor,
@@ -170,27 +176,34 @@ export const ProductDetailPage: React.FC = () => {
 
             <h1 className="product-title">{product.name}</h1>
             <p className="product-price">
-              {isExpress ? (
-                <>
-                  <span className="original-price">{formatPrice((product.salePrice || product.price), currency)}</span>
-                  <span className="express-price">
-                    {formatPrice((product.salePrice || product.price) * 1.2, currency)}
-                    <span className="express-tag"> (Express +20%)</span>
-                  </span>
-                </>
-              ) : (
-                product.salePrice && product.salePrice < product.price ? (
+              {(() => {
+                const { original, sale } = getProductPrice(product, currency);
+                const priceToWeight = sale || original;
+
+                if (isExpress) {
+                  return (
+                    <>
+                      <span className="original-price">{formatPrice({ amount: priceToWeight }, currency)}</span>
+                      <span className="express-price">
+                        {formatPrice({ amount: priceToWeight * 1.2 }, currency)}
+                        <span className="express-tag"> (Express +20%)</span>
+                      </span>
+                    </>
+                  );
+                }
+
+                return sale ? (
                   <>
-                    <span className="original-price-strike">{formatPrice(product.price, currency)}</span>
-                    <span className="sale-price-large">{formatPrice(product.salePrice, currency)}</span>
+                    <span className="original-price-strike">{formatPrice({ amount: original }, currency)}</span>
+                    <span className="sale-price-large">{formatPrice({ amount: sale }, currency)}</span>
                     <span className="sale-badge-large">
-                      {Math.round(((product.price - product.salePrice) / product.price) * 100)}% OFF
+                      {Math.round(((original - sale) / original) * 100)}% OFF
                     </span>
                   </>
                 ) : (
-                  formatPrice(product.price, currency)
-                )
-              )}
+                  formatPrice({ amount: original }, currency)
+                );
+              })()}
             </p>
 
 

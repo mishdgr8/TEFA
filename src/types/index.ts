@@ -8,6 +8,7 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  priceUSD?: number;  // International price
   salePrice?: number; // Discounted price
   currency: string;
 
@@ -54,6 +55,7 @@ export interface CartItem {
   variantId: string;
   name: string;
   price: number;
+  priceUSD?: number;
   qty: number;
   selectedSize: string;
   selectedColor: string;
@@ -64,9 +66,25 @@ export interface CartItem {
 
 export interface CustomerInfo {
   name: string;
+  email: string;
   phone: string;
   location: string;
   note: string;
+}
+
+export interface Order {
+  id: string;
+  userId?: string;
+  customerInfo: CustomerInfo;
+  items: CartItem[];
+  total: number;
+  totalUSD?: number;
+  currency: CurrencyCode;
+  paymentReference: string;
+  paymentStatus: 'pending' | 'success' | 'failed';
+  orderStatus: 'new' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  createdAt: number;
+  updatedAt: number;
 }
 
 // Navigation
@@ -83,6 +101,7 @@ export interface StoreState {
   categories: Category[];
   reviews: CustomerReview[];
   cart: CartItem[];
+  orders: Order[];
   user: AuthUser | null;
   loading: boolean;
   isSearchOpen: boolean;
@@ -108,6 +127,9 @@ export interface StoreActions {
   addReview: (review: Omit<CustomerReview, 'id' | 'createdAt'>) => Promise<void>;
   updateReview: (id: string, updates: Partial<CustomerReview>) => Promise<void>;
   deleteReview: (id: string) => Promise<void>;
+
+  updateOrderStatus: (id: string, status: Order['orderStatus']) => Promise<void>;
+  deleteOrder: (id: string) => Promise<void>;
 
   addToCart: (item: CartItem) => void;
   updateCartQty: (variantId: string, delta: number) => void;

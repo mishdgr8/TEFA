@@ -2,98 +2,98 @@ import React from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { X, User, Settings, History, Heart, LogOut, ChevronRight } from 'lucide-react';
 import { useStore } from '../data/store';
-import { signOut } from '../lib/auth';
+import { signOut } from '../lib/supabaseAuth';
 import { useNavigate } from 'react-router-dom';
 
 export const ProfileModal: React.FC = () => {
-    const { isProfileModalOpen, setIsProfileModalOpen, user } = useStore();
-    const navigate = useNavigate();
+  const { isProfileModalOpen, setIsProfileModalOpen, user } = useStore();
+  const navigate = useNavigate();
 
-    const handleClose = () => setIsProfileModalOpen(false);
+  const handleClose = () => setIsProfileModalOpen(false);
 
-    const handleNavigate = (path: string) => {
-        navigate(path);
-        handleClose();
-    };
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    handleClose();
+  };
 
-    const handleSignOut = async () => {
-        try {
-            await signOut();
-            handleClose();
-            navigate('/');
-        } catch (error) {
-            console.error('Failed to sign out:', error);
-        }
-    };
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      handleClose();
+      navigate('/');
+    } catch (error) {
+      console.error('Failed to sign out:', error);
+    }
+  };
 
-    if (!user) return null;
+  if (!user) return null;
 
-    return (
-        <AnimatePresence>
-            {isProfileModalOpen && (
-                <m.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={handleClose}
-                    className="profile-modal-overlay"
-                >
-                    <m.div
-                        initial={{ opacity: 0, x: '100%' }}
-                        animate={{ x: 0, opacity: 1 }}
-                        exit={{ x: '100%', opacity: 0 }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="profile-modal"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="profile-modal-header">
-                            <button onClick={handleClose} className="profile-modal-close">
-                                <X size={24} />
-                            </button>
-                            <h2>My Profile</h2>
-                        </div>
+  return (
+    <AnimatePresence>
+      {isProfileModalOpen && (
+        <m.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={handleClose}
+          className="profile-modal-overlay"
+        >
+          <m.div
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: '100%', opacity: 0 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="profile-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="profile-modal-header">
+              <button onClick={handleClose} className="profile-modal-close">
+                <X size={24} />
+              </button>
+              <h2>My Profile</h2>
+            </div>
 
-                        <div className="profile-user-card">
-                            <div className="profile-avatar">
-                                <User size={32} />
-                            </div>
-                            <div className="profile-info">
-                                <h3>{user.email?.split('@')[0]}</h3>
-                                <p>{user.email}</p>
-                            </div>
-                        </div>
+            <div className="profile-user-card">
+              <div className="profile-avatar">
+                <User size={32} />
+              </div>
+              <div className="profile-info">
+                <h3>{user.email?.split('@')[0]}</h3>
+                <p>{user.email}</p>
+              </div>
+            </div>
 
-                        <div className="profile-nav">
-                            <button className="profile-nav-item" onClick={() => handleNavigate('/account')}>
-                                <div className="nav-icon"><Settings size={20} /></div>
-                                <span>Account Settings</span>
-                                <ChevronRight size={18} className="nav-arrow" />
-                            </button>
-                            <button className="profile-nav-item" onClick={() => handleNavigate('/orders')}>
-                                <div className="nav-icon"><History size={20} /></div>
-                                <span>Purchase History</span>
-                                <ChevronRight size={18} className="nav-arrow" />
-                            </button>
-                            <button className="profile-nav-item" onClick={() => handleNavigate('/wishlist')}>
-                                <div className="nav-icon"><Heart size={20} /></div>
-                                <span>Wishlist</span>
-                                <ChevronRight size={18} className="nav-arrow" />
-                            </button>
+            <div className="profile-nav">
+              <button className="profile-nav-item" onClick={() => handleNavigate('/account')}>
+                <div className="nav-icon"><Settings size={20} /></div>
+                <span>Account Settings</span>
+                <ChevronRight size={18} className="nav-arrow" />
+              </button>
+              <button className="profile-nav-item" onClick={() => handleNavigate('/orders')}>
+                <div className="nav-icon"><History size={20} /></div>
+                <span>Purchase History</span>
+                <ChevronRight size={18} className="nav-arrow" />
+              </button>
+              <button className="profile-nav-item" onClick={() => handleNavigate('/wishlist')}>
+                <div className="nav-icon"><Heart size={20} /></div>
+                <span>Wishlist</span>
+                <ChevronRight size={18} className="nav-arrow" />
+              </button>
 
-                            <div className="profile-nav-divider" />
+              <div className="profile-nav-divider" />
 
-                            <button className="profile-nav-item sign-out" onClick={handleSignOut}>
-                                <div className="nav-icon"><LogOut size={20} /></div>
-                                <span>Sign Out</span>
-                            </button>
-                        </div>
+              <button className="profile-nav-item sign-out" onClick={handleSignOut}>
+                <div className="nav-icon"><LogOut size={20} /></div>
+                <span>Sign Out</span>
+              </button>
+            </div>
 
-                        <div className="profile-modal-footer">
-                            <p>© {new Date().getFullYear()} TÉFA. All rights reserved.</p>
-                        </div>
-                    </m.div>
+            <div className="profile-modal-footer">
+              <p>© {new Date().getFullYear()} TÉFA. All rights reserved.</p>
+            </div>
+          </m.div>
 
-                    <style>{`
+          <style>{`
             .profile-modal-overlay {
               position: fixed;
               inset: 0;
@@ -272,8 +272,8 @@ export const ProfileModal: React.FC = () => {
               letter-spacing: 0.05em;
             }
           `}</style>
-                </m.div>
-            )}
-        </AnimatePresence>
-    );
+        </m.div>
+      )}
+    </AnimatePresence>
+  );
 };

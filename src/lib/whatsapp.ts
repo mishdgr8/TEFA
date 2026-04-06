@@ -1,5 +1,4 @@
-import { functions } from './firebase';
-import { httpsCallable } from 'firebase/functions';
+import { supabase } from './supabase';
 
 export interface WhatsAppMessage {
     text: string;
@@ -9,21 +8,23 @@ export interface WhatsAppMessage {
 
 /**
  * WhatsApp Cloud API Service
- * Now routes through Firebase Functions to avoid CORS issues and keep tokens secure.
+ * Routes through Supabase Edge Functions (replaces Firebase callable function).
  */
 export const sendWhatsAppMessage = async (message: WhatsAppMessage) => {
     console.log('Sending WhatsApp Payload:', message);
     try {
-        const sendNotification = httpsCallable(functions, 'sendWhatsAppNotification');
-        const result = await sendNotification({
-            text: message.text,
-            adminText: message.adminText,
-            chatId: message.chatId
+        const { data, error } = await supabase.functions.invoke('send-whatsapp', {
+            body: {
+                text: message.text,
+                adminText: message.adminText,
+                chatId: message.chatId,
+            },
         });
-        return result.data;
+
+        if (error) throw error;
+        return data;
     } catch (error) {
         console.error('WhatsApp Bridge Error:', error);
-        // Fallback to console for debugging if function fails
         console.log('Failing over to manual link flow');
         throw error;
     }

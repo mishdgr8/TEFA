@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Product, CartItem, Category, StoreContextType, AuthUser, CurrencyCode, CURRENCIES, CustomerReview } from '../types';
+import { Product, CartItem, Category, StoreContextType, AuthUser, CurrencyCode, CURRENCIES, CustomerReview, Order } from '../types';
 import { DEFAULT_PRODUCTS } from './products';
 import { CATEGORIES } from './categories';
-import { onAuthChange, User } from '../lib/auth';
-import { isFirebaseConfigValid } from '../lib/firebase';
+import { onAuthChange, User } from '../lib/supabaseAuth';
+import { isSupabaseConfigValid as isFirebaseConfigValid } from '../lib/supabase';
 import {
   getProducts,
   subscribeToProducts,
@@ -21,8 +21,11 @@ import {
   seedCategories,
   seedProducts,
   subscribeToUserProfile,
-  ensureUserProfile
-} from '../lib/firestore';
+  ensureUserProfile,
+  subscribeToOrders,
+  updateOrderStatusInFirestore,
+  deleteOrderFromFirestore
+} from '../lib/supabaseDb';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Local Storage Keys (for cart only - products now in Firestore)
@@ -80,6 +83,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>(() =>
     loadFromStorage(STORAGE_KEYS.CART, [])
   );
+  const [orders, setOrders] = useState<Order[]>([]);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [currency, setCurrencyState] = useState<CurrencyCode>(() =>
     loadFromStorage(STORAGE_KEYS.CURRENCY, 'NGN') as CurrencyCode
@@ -108,14 +112,14 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
         }
 
         if (firebaseUser) {
-          // Ensure user document exists in Firestore
-          await ensureUserProfile(firebaseUser.uid, firebaseUser.email);
+          // Ensure user document exists in Supabase Profiles
+          await ensureUserProfile(firebaseUser.id, firebaseUser.email || null);
 
           // Subscribe to user profile for Real-time admin/role updates
-          profileUnsubscribe = subscribeToUserProfile(firebaseUser.uid, (profileData) => {
+          profileUnsubscribe = subscribeToUserProfile(firebaseUser.id, (profileData) => {
             setUser({
-              uid: firebaseUser.uid,
-              email: firebaseUser.email,
+              uid: firebaseUser.id,
+              email: firebaseUser.email || null,
               isAdmin: profileData.isAdmin || false
             });
           });
@@ -221,6 +225,17 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     saveToStorage(STORAGE_KEYS.CART, cart);
   }, [cart]);
 
+  // Subscribe to orders for admin
+  useEffect(() => {
+    if (!isFirebaseConfigValid || !user?.isAdmin) return;
+
+    const unsubscribe = subscribeToOrders((newOrders) => {
+      setOrders(newOrders);
+    });
+
+    return () => unsubscribe();
+  }, [user?.isAdmin]);
+
   // ─── Product Actions (Firestore) ───
   const addProduct = async (productData: Omit<Product, 'id' | 'slug' | 'createdAt' | 'updatedAt'>) => {
     try {
@@ -302,6 +317,22 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Failed to delete review:', error);
       throw error;
+    }
+  };
+
+  const updateOrderStatus = async (id: string, status: Order['orderStatus']) => {
+    try {
+      await updateOrderStatusInFirestore(id, status);
+    } catch (error) {
+      console.error('Failed to update order status:', error);
+    }
+  };
+
+  const deleteOrder = async (id: string) => {
+    try {
+      await deleteOrderFromFirestore(id);
+    } catch (error) {
+      console.error('Failed to delete order:', error);
     }
   };
 
@@ -395,11 +426,15 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     setIsAuthModalOpen,
     isProfileModalOpen,
     setIsProfileModalOpen,
+    orders,
+    updateOrderStatus,
+    deleteOrder,
   }), [
     products,
     categories,
     reviews,
     cart,
+    orders,
     user,
     loading,
     currency,
@@ -419,10 +454,62 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 // Helper Functions (exported for use in components)
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const formatPrice = (price: number, currencyCode: CurrencyCode = 'NGN'): string => {
+export const formatPrice = (
+  price: number | { amount: number; isConverted?: boolean },
+  currencyCode: CurrencyCode = 'NGN'
+): string => {
   const currencyInfo = CURRENCIES.find(c => c.code === currencyCode) || CURRENCIES[0];
-  const convertedPrice = price * currencyInfo.rate;
-  return `${currencyInfo.symbol}${convertedPrice.toLocaleString(undefined, { minimumFractionDigits: currencyCode === 'NGN' ? 0 : 2, maximumFractionDigits: currencyCode === 'NGN' ? 0 : 2 })}`;
+
+  let finalAmount: number;
+
+  if (typeof price === 'object') {
+    finalAmount = price.amount;
+  } else {
+    // Standard path: convert from Naira using the global rate
+    finalAmount = price * currencyInfo.rate;
+  }
+
+  const fractionDigits = currencyCode === 'NGN' ? 0 : 2;
+  return `${currencyInfo.symbol}${finalAmount.toLocaleString(undefined, {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits
+  })}`;
+};
+
+/**
+ * Centrally calculates the price for a product based on active currency, 
+ * respecting manual USD price overrides if present.
+ */
+export const getProductPrice = (product: any, currency: CurrencyCode = 'NGN'): { original: number, sale?: number } => {
+  if (currency === 'NGN') {
+    return {
+      original: product.price,
+      sale: product.salePrice
+    };
+  }
+
+  // Handle USD with potential manual price overrides
+  const rate = CURRENCIES.find(c => c.code === 'USD')?.rate || 0.00125;
+
+  // Use product.priceUSD if it exists, otherwise fallback to rate conversion
+  const originalUSD = product.priceUSD || (product.price * rate);
+
+  // Calculate sale price in USD
+  let saleUSD: number | undefined = undefined;
+  if (product.salePrice) {
+    if (product.priceUSD) {
+      // If we have a custom USD price, we scale the sale price proportionally
+      const discountRatio = product.salePrice / product.price;
+      saleUSD = product.priceUSD * discountRatio;
+    } else {
+      saleUSD = product.salePrice * rate;
+    }
+  }
+
+  return {
+    original: originalUSD,
+    sale: saleUSD
+  };
 };
 
 export const getCategoryName = (categoryId: string, categories: Category[] = []): string => {

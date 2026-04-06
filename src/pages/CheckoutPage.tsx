@@ -1,493 +1,601 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Instagram, MessageCircle } from 'lucide-react';
+import { Instagram, MessageCircle, CreditCard, ArrowLeft, ShieldCheck, CheckCircle, Smartphone } from 'lucide-react';
 import { useStore, formatPrice } from '../data/store';
-import { CustomerInfo } from '../types';
+import { CustomerInfo, CURRENCIES } from '../types';
 import { SEOHead } from '../components/SEOHead';
+import { PaymentWrapper } from '../components/PaymentWrapper';
 
 export const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
-  const { cart } = useStore();
+  const { cart, currency, clearCart } = useStore();
   const [formData, setFormData] = useState<CustomerInfo>({
     name: '',
+    email: '',
     phone: '',
     location: '',
     note: ''
   });
 
-  const [couponCode, setCouponCode] = useState('');
-  const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; amount: number } | null>(null);
-  const [couponError, setCouponError] = useState('');
+  const [showPayment, setShowPayment] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState<{ code: string, amount: number } | null>(null);
 
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-  const total = appliedDiscount ? subtotal - appliedDiscount.amount : subtotal;
+  const currentCurrency = CURRENCIES.find(c => c.code === currency);
+  const rate = currentCurrency?.rate || 1;
 
-  const handleApplyCoupon = () => {
-    if (!couponCode.trim()) return;
+  const subtotal = cart.reduce((acc, item) => {
+    // If USD, use priceUSD or fall back to converted price
+    const itemPrice = currency === 'USD' ? (item.priceUSD || (item.price * rate)) : item.price;
+    return acc + (itemPrice * (item.qty || 1));
+  }, 0);
 
-    if (couponCode.toUpperCase() === 'TEFA10') {
-      const discount = subtotal * 0.10;
-      setAppliedDiscount({ code: 'TEFA10', amount: discount });
-      setCouponError('');
-    } else {
-      setCouponError('Invalid coupon code');
-      setAppliedDiscount(null);
-    }
-  };
+  // Convert discount amount if needed
+  const discountAmount = appliedDiscount ? (currency === 'USD' ? (appliedDiscount.amount * rate) : appliedDiscount.amount) : 0;
+  const total = subtotal - discountAmount;
 
-  const generateMessage = () => {
-    let message = `Hi TÉFA! I'd like to place an order:\n\n`;
-    cart.forEach((item, idx) => {
-      const expressTag = item.isExpress ? ' [EXPRESS REQUEST]' : '';
-      message += `${idx + 1}) ${item.name}${expressTag}\n   Size: ${item.selectedSize}\n   Color: ${item.selectedColor}\n   Qty: ${item.qty}\n   Price: ${formatPrice(item.price * item.qty)}\n\n`;
-    });
-
-    message += `Subtotal: ${formatPrice(subtotal)}\n`;
-    if (appliedDiscount) {
-      message += `Discount (${appliedDiscount.code}): -${formatPrice(appliedDiscount.amount)}\n`;
-    }
-    message += `Total Estimate: ${formatPrice(total)}\n\n`;
-
-    message += `Customer Info:\n`;
-    message += `- Name: ${formData.name || 'Not provided'}\n`;
-    message += `- Location: ${formData.location || 'Not provided'}\n`;
-    if (formData.note) message += `- Notes: ${formData.note}\n`;
-    message += `\nPlease confirm availability and payment details.`;
-    return message;
-  };
-
-  const handleSendWhatsApp = () => {
-    const encoded = encodeURIComponent(generateMessage());
-    window.open(`https://wa.me/2348135407871?text=${encoded}`, '_blank');
-  };
-
-  const handleSendInstagram = () => {
-    navigator.clipboard.writeText(generateMessage());
-    alert("Order summary copied to clipboard! Redirecting to Instagram...");
-    window.open(`https://www.instagram.com/shop.tefa/`, '_blank');
-  };
-
-  if (cart.length === 0) {
+  if (cart.length === 0 && !isSuccess) {
     return (
-      <div className="checkout-empty">
-        <p>Your cart is empty.</p>
-        <button onClick={() => navigate('/shop')}>Back to Shop</button>
+      <div className="empty-checkout">
+        <SEOHead title="Checkout | TÉFA" description="Complete your order." />
+        <h1>Your bag is empty</h1>
+        <button onClick={() => navigate('/shop')}>Return to Shop</button>
         <style>{`
-          .checkout-empty {
-            padding-top: 160px;
-            text-align: center;
+          .empty-checkout {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            padding-top: 100px;
           }
-          .checkout-empty p {
-            color: var(--color-text-muted);
-            margin-bottom: var(--space-4);
+          .empty-checkout h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            font-style: italic;
           }
-          .checkout-empty button {
-            background: none;
+          .empty-checkout button {
+            background: #1a1a1a;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 40px;
             border: none;
-            color: var(--color-coral);
-            font-weight: 700;
             cursor: pointer;
-            text-decoration: underline;
+            font-weight: 600;
           }
         `}</style>
       </div>
     );
   }
 
+  const handleSendWhatsApp = () => {
+    const text = encodeURIComponent(`New Inquiry from TÉFA Site:\n\nCustomer: ${formData.name}\nEmail: ${formData.email}\nItems:\n${cart.map(i => `- ${i.name} (x${i.qty})`).join('\n')}\nTotal: ${formatPrice(total)}\nNotes: ${formData.note}`);
+    window.open(`https://wa.me/2349000000000?text=${text}`, '_blank');
+  };
+
+  const handleSendInstagram = () => {
+    window.open('https://instagram.com/tefaofficial', '_blank');
+  };
+
   return (
     <div className="checkout-page">
-      <SEOHead
-        title="Checkout"
-        description="Confirm your TÉFA order inquiry."
-        path="/checkout"
-        noindex={true}
-      />
+      <SEOHead title="Checkout | TÉFA" description="Secure your pieces from the latest collection." />
+
       <div className="checkout-container">
-        <h1>Confirm Your Inquiry</h1>
+        <header className="checkout-header">
+          <button onClick={() => navigate(-1)} className="back-link">
+            <ArrowLeft size={16} /> Back to Shop
+          </button>
+          <h1>Secure Your Pieces</h1>
+          <p className="subtitle">Finalize your selection and secure your order.</p>
+        </header>
 
-        {/* Order Summary */}
-        <div className="checkout-card">
-          <h3>
-            <span className="step-badge orange">1</span>
-            Order Summary
-          </h3>
-          <div className="order-items">
-            {cart.map(item => (
-              <div key={item.variantId} className="order-item">
-                <span>{item.name} (x{item.qty})</span>
-                <span className="order-item-price">{formatPrice(item.price * item.qty)}</span>
-              </div>
-            ))}
-
-            <div className="coupon-section">
-              <div className="coupon-input-group">
-                <input
-                  type="text"
-                  placeholder="Promo Code"
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value)}
-                  disabled={!!appliedDiscount}
-                />
-                {!appliedDiscount ? (
-                  <button onClick={handleApplyCoupon}>Apply</button>
-                ) : (
-                  <button onClick={() => {
-                    setAppliedDiscount(null);
-                    setCouponCode('');
-                  }} className="remove-btn">Remove</button>
-                )}
-              </div>
-              {couponError && <p className="coupon-error">{couponError}</p>}
-              {appliedDiscount && <p className="coupon-success">Code {appliedDiscount.code} applied!</p>}
-            </div>
-
-            <div className="order-totals">
-              <div className="total-row">
-                <span>Subtotal</span>
-                <span>{formatPrice(subtotal)}</span>
-              </div>
-              {appliedDiscount && (
-                <div className="total-row discount">
-                  <span>Discount ({appliedDiscount.code})</span>
-                  <span>-{formatPrice(appliedDiscount.amount)}</span>
+        {!isSuccess ? (
+          <div className="checkout-layout">
+            {/* Left Column: Form & Payment */}
+            <div className="checkout-main">
+              <section className="checkout-section">
+                <div className="section-title">
+                  <span className="step">1</span>
+                  <h2>Delivery Details</h2>
                 </div>
-              )}
-              <div className="total-row final">
-                <span>Estimated Total</span>
-                <span>{formatPrice(total)}</span>
+                <div className="form-grid">
+                  <div className="input-group full">
+                    <label>Email Address (Required for receipt)</label>
+                    <input
+                      type="email"
+                      placeholder="e.g. grace@example.com"
+                      value={formData.email}
+                      onChange={e => setFormData({ ...formData, email: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label>Full Name</label>
+                    <input
+                      type="text"
+                      placeholder="Enter your name"
+                      value={formData.name}
+                      onChange={e => setFormData({ ...formData, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label>Phone Number</label>
+                    <input
+                      type="text"
+                      placeholder="+234..."
+                      value={formData.phone}
+                      onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                    />
+                  </div>
+                  <div className="input-group full">
+                    <label>Delivery City & Country</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Lagos, Nigeria"
+                      value={formData.location}
+                      onChange={e => setFormData({ ...formData, location: e.target.value })}
+                    />
+                  </div>
+                  <div className="input-group full">
+                    <label>Special Notes (Optional)</label>
+                    <textarea
+                      placeholder="Size adjustments, delivery instructions, etc."
+                      rows={3}
+                      value={formData.note}
+                      onChange={e => setFormData({ ...formData, note: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </section>
+
+              <section className="checkout-section payment-box">
+                {!showPayment ? (
+                  <div className="payment-options">
+                    <button
+                      className="primary-pay-btn"
+                      onClick={() => {
+                        if (!formData.email) {
+                          alert("Please provide an email address for payment.");
+                          return;
+                        }
+                        setShowPayment(true);
+                      }}
+                    >
+                      <CreditCard size={20} />
+                      Pay Instantly via Card
+                    </button>
+
+                    <div className="separator">
+                      <span>OR CHOOSE AN INQUIRY CHANNEL</span>
+                    </div>
+
+                    <div className="inquiry-grid">
+                      <button onClick={handleSendWhatsApp} className="inquiry-btn wa">
+                        <MessageCircle size={18} /> WhatsApp
+                      </button>
+                      <button onClick={handleSendInstagram} className="inquiry-btn ig">
+                        <Instagram size={18} /> Instagram
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="paystack-interface">
+                    <div className="interface-header">
+                      <button onClick={() => setShowPayment(false)} className="back-sm">
+                        <ArrowLeft size={14} /> Change Method
+                      </button>
+                      <h3>Secure Checkout</h3>
+                    </div>
+                    <PaymentWrapper
+                      email={formData.email}
+                      customerName={formData.name || 'TÉFA Customer'}
+                      total={total}
+                      cart={cart}
+                      customerInfo={formData}
+                      onSuccess={(ref) => {
+                        console.log('Payment Successful:', ref);
+                        clearCart();
+                        setIsSuccess(true);
+                      }}
+                      onClose={() => setShowPayment(false)}
+                    />
+                    <div className="security-footer">
+                      <ShieldCheck size={12} />
+                      PCI-DSS Compliant Encryption
+                    </div>
+                  </div>
+                )}
+              </section>
+            </div>
+
+            {/* Right Column: Order Summary */}
+            <aside className="checkout-sidebar">
+              <div className="summary-card">
+                <h3>Order Summary</h3>
+                <div className="summary-items">
+                  {cart.map(item => {
+                    const itemPrice = currency === 'USD' ? (item.priceUSD || (item.price * rate)) : item.price;
+                    return (
+                      <div key={item.variantId} className="summary-item">
+                        <div className="item-info">
+                          <span className="item-name">{item.name}</span>
+                          <span className="item-qty">Qty: {item.qty}</span>
+                        </div>
+                        <span className="item-price">{formatPrice({ amount: itemPrice * (item.qty || 1) }, currency)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="summary-totals">
+                  <div className="total-row">
+                    <span>Subtotal</span>
+                    <span>{formatPrice({ amount: subtotal }, currency)}</span>
+                  </div>
+                  {appliedDiscount && (
+                    <div className="total-row discount">
+                      <span>Discount ({appliedDiscount.code})</span>
+                      <span>-{formatPrice({ amount: discountAmount }, currency)}</span>
+                    </div>
+                  )}
+                  <div className="total-row grand-total">
+                    <span>Grand Total</span>
+                    <span>{formatPrice({ amount: total }, currency)}</span>
+                  </div>
+                </div>
+
+                <p className="delivery-note">
+                  * Shipping rates will be updated via email/WhatsApp based on your location.
+                </p>
               </div>
-            </div>
+            </aside>
           </div>
-        </div>
-
-        {/* Customer Details */}
-        <div className="checkout-card">
-          <h3>
-            <span className="step-badge coral">2</span>
-            Your Details (Optional)
-          </h3>
-          <div className="checkout-form">
-            <div className="form-row">
-              <input
-                type="text"
-                placeholder="Full Name"
-                value={formData.name}
-                onChange={e => setFormData({ ...formData, name: e.target.value })}
-              />
-              <input
-                type="text"
-                placeholder="Phone Number"
-                value={formData.phone}
-                onChange={e => setFormData({ ...formData, phone: e.target.value })}
-              />
-            </div>
-            <input
-              type="text"
-              placeholder="Delivery City/Country"
-              value={formData.location}
-              onChange={e => setFormData({ ...formData, location: e.target.value })}
-            />
-            <textarea
-              placeholder="Special notes or questions..."
-              rows={3}
-              value={formData.note}
-              onChange={e => setFormData({ ...formData, note: e.target.value })}
-            />
+        ) : (
+          <div className="success-screen">
+            <CheckCircle size={64} className="success-icon" />
+            <h2>Order Secured Successfully!</h2>
+            <p>Thank you for choosing TÉFA. We've sent a detailed receipt to <strong>{formData.email}</strong>. Our team will contact you shortly regarding delivery.</p>
+            <button onClick={() => navigate('/shop')} className="return-btn">Return to Collections</button>
           </div>
-        </div>
-
-        {/* Send Inquiry */}
-        <div className="checkout-send">
-          <div className="send-header">
-            <h3>Ready to order?</h3>
-            <p>Choose your preferred channel to send this inquiry.</p>
-          </div>
-          <div className="send-buttons">
-            <button onClick={handleSendWhatsApp} className="whatsapp-btn">
-              <MessageCircle size={20} /> Send on WhatsApp
-            </button>
-            <button onClick={handleSendInstagram} className="instagram-btn">
-              <Instagram size={20} /> Send on Instagram
-            </button>
-          </div>
-          <p className="send-note">Payments are arranged privately after confirmation.</p>
-        </div>
+        )}
       </div>
 
       <style>{`
         .checkout-page {
-          padding-top: 120px;
-          padding-bottom: var(--space-24);
+          background-color: #fdfaf7;
+          min-height: 100vh;
+          padding: 100px 24px 80px;
+          color: #1a1a1a;
         }
 
         .checkout-container {
-          max-width: 680px;
+          max-width: 1100px;
           margin: 0 auto;
-          padding: 0 var(--space-4);
         }
 
-        .checkout-container h1 {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: clamp(2rem, 4vw, 2.5rem);
-          font-weight: 700;
-          font-style: italic;
-          margin-bottom: var(--space-8);
+        .checkout-header {
+          margin-bottom: 48px;
         }
 
-        .checkout-card {
-          background: white;
-          padding: var(--space-8);
-          border-radius: var(--radius-xl);
-          border: 1px solid var(--color-nude-light);
-          margin-bottom: var(--space-6);
-          box-shadow: var(--shadow-sm);
-        }
-
-        .checkout-card h3 {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 1.25rem;
-          font-weight: 600;
-          font-style: italic;
+        .back-link {
+          background: none;
+          border: none;
+          color: #666;
           display: flex;
           align-items: center;
-          gap: var(--space-3);
-          margin-bottom: var(--space-6);
+          gap: 8px;
+          cursor: pointer;
+          margin-bottom: 24px;
+          font-family: 'Quicksand', sans-serif;
+          font-weight: 600;
+          font-size: 0.9rem;
         }
 
-        .step-badge {
+        .checkout-header h1 {
+          font-family: 'Cormorant Garamond', serif;
+          font-size: 3rem;
+          font-weight: 700;
+          font-style: italic;
+          margin-bottom: 8px;
+          line-height: 1.1;
+        }
+
+        .subtitle {
+          color: #888;
+          font-size: 1.1rem;
+        }
+
+        .checkout-layout {
+          display: grid;
+          grid-template-columns: 1fr 380px;
+          gap: 48px;
+          align-items: start;
+        }
+
+        @media (max-width: 900px) {
+          .checkout-layout {
+            grid-template-columns: 1fr;
+          }
+          .checkout-sidebar {
+            order: -1;
+          }
+        }
+
+        .checkout-section {
+          background: white;
+          border-radius: 24px;
+          padding: 32px;
+          margin-bottom: 24px;
+          border: 1px solid #eee;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        }
+
+        .section-title {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          margin-bottom: 32px;
+        }
+
+        .step {
           width: 32px;
           height: 32px;
+          background: #c69b7b;
+          color: white;
+          border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          border-radius: 50%;
-          color: white;
-          font-family: 'Quicksand', sans-serif;
-          font-size: 0.75rem;
           font-weight: 700;
-          font-style: normal;
+          font-size: 0.8rem;
         }
 
-        .step-badge.orange {
-          background: var(--color-nude);
+        .section-title h2 {
+          font-family: 'Cormorant Garamond', serif;
+          font-size: 1.6rem;
+          font-weight: 600;
+          font-style: italic;
         }
 
-        .step-badge.coral {
-          background: var(--color-coral);
+        .form-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
         }
 
-        .order-items {
+        .input-group.full {
+          grid-column: span 2;
+        }
+
+        @media (max-width: 600px) {
+          .input-group { grid-column: span 2; }
+          .form-grid { grid-template-columns: 1fr; }
+        }
+
+        .input-group label {
+          display: block;
+          font-size: 0.8rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-bottom: 8px;
+          color: #999;
+        }
+
+        .input-group input, 
+        .input-group textarea {
+          width: 100%;
+          padding: 14px 18px;
+          background: #f9f9f9;
+          border: 1px solid #eee;
+          border-radius: 12px;
+          font-family: 'Quicksand', sans-serif;
+          font-size: 1rem;
+          transition: border-color 0.2s, background 0.2s;
+        }
+
+        .input-group input:focus, 
+        .input-group textarea:focus {
+          outline: none;
+          background: white;
+          border-color: #c69b7b;
+        }
+
+        .payment-box {
+          border-top: 4px solid #c69b7b;
+          text-align: center;
+        }
+
+        .primary-pay-btn {
+          width: 100%;
+          background: #1a1a1a;
+          color: white;
+          padding: 20px;
+          border-radius: 16px;
+          border: none;
+          font-weight: 700;
+          font-size: 1.1rem;
           display: flex;
-          flex-direction: column;
-          gap: var(--space-3);
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          cursor: pointer;
+          transition: transform 0.2s;
         }
 
-        .order-item {
+        .primary-pay-btn:hover {
+          transform: translateY(-2px);
+          background: #000;
+        }
+
+        .separator {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          margin: 32px 0;
+        }
+
+        .separator::before, 
+        .separator::after {
+          content: "";
+          flex: 1;
+          height: 1px;
+          background: #eee;
+        }
+
+        .separator span {
+          font-size: 0.7rem;
+          font-weight: 800;
+          color: #bbb;
+          letter-spacing: 0.1em;
+        }
+
+        .inquiry-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
+
+        .inquiry-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 16px;
+          border-radius: 12px;
+          border: 1px solid #eee;
+          font-weight: 700;
+          cursor: pointer;
+          background: white;
+          transition: all 0.2s;
+        }
+
+        .inquiry-btn.wa { color: #25D366; }
+        .inquiry-btn.ig { color: #E4405F; }
+        .inquiry-btn:hover { background: #fdfdfd; border-color: #ddd; }
+
+        .summary-card {
+          background: white;
+          border-radius: 24px;
+          padding: 32px;
+          border: 1px solid #eee;
+          position: sticky;
+          top: 100px;
+        }
+
+        .summary-card h3 {
+          font-family: 'Cormorant Garamond', serif;
+          font-size: 1.6rem;
+          font-style: italic;
+          margin-bottom: 24px;
+          border-bottom: 1px solid #eee;
+          padding-bottom: 16px;
+        }
+
+        .summary-item {
           display: flex;
           justify-content: space-between;
-          align-items: center;
-          font-size: 0.9375rem;
+          margin-bottom: 16px;
         }
 
-        .order-item-price {
-          font-weight: 700;
-        }
-
-        .coupon-section {
-          margin-top: var(--space-4);
-          padding-top: var(--space-4);
-          border-top: 1px dashed var(--color-nude);
-        }
-
-        .coupon-input-group {
-          display: flex;
-          gap: var(--space-2);
-        }
-
-        .coupon-input-group input {
-          flex: 1;
-          padding: 8px 12px;
-          border: 1px solid var(--color-nude);
-          border-radius: var(--radius-md);
-          font-family: 'Quicksand', sans-serif;
-        }
-
-        .coupon-input-group button {
-          padding: 8px 16px;
-          background: var(--color-brown);
-          color: white;
-          border: none;
-          border-radius: var(--radius-md);
-          cursor: pointer;
-          font-weight: 600;
-        }
-
-        .coupon-input-group button.remove-btn {
-          background: #ef4444;
-        }
-
-        .coupon-error {
-          color: #ef4444;
-          font-size: 0.8rem;
-          margin-top: 4px;
-        }
-
-        .coupon-success {
-          color: #22c55e;
-          font-size: 0.8rem;
-          margin-top: 4px;
-        }
-
-        .order-totals {
-          margin-top: var(--space-4);
-          padding-top: var(--space-4);
-          border-top: 1px solid var(--color-nude-light);
+        .item-info {
           display: flex;
           flex-direction: column;
-          gap: var(--space-2);
+        }
+
+        .item-name { font-weight: 600; font-size: 0.95rem; }
+        .item-qty { font-size: 0.8rem; color: #888; }
+        .item-price { font-weight: 700; font-family: 'Quicksand', sans-serif; }
+
+        .summary-totals {
+          margin-top: 32px;
+          padding-top: 24px;
+          border-top: 2px dashed #eee;
         }
 
         .total-row {
           display: flex;
           justify-content: space-between;
+          margin-bottom: 12px;
           font-size: 0.9rem;
         }
 
-        .total-row.discount {
-          color: #22c55e;
+        .grand-total {
+          font-size: 1.4rem;
+          font-weight: 800;
+          color: #c69b7b;
+          margin-top: 12px;
         }
 
-        .total-row.final {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 1.25rem;
-          font-weight: 700;
-          font-style: italic;
-          margin-top: var(--space-2);
-          padding-top: var(--space-2);
-          border-top: 1px solid var(--color-nude-light);
+        .delivery-note {
+          font-size: 0.75rem;
+          color: #999;
+          margin-top: 24px;
+          line-height: 1.5;
         }
 
-        .checkout-form {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-4);
-        }
-
-        .form-row {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: var(--space-4);
-        }
-
-        @media (min-width: 640px) {
-          .form-row {
-            grid-template-columns: 1fr 1fr;
-          }
-        }
-
-        .checkout-form input,
-        .checkout-form textarea {
-          width: 100%;
-          padding: var(--space-4);
-          background: var(--color-cream-dark);
-          border: 2px solid transparent;
-          border-radius: var(--radius-md);
-          font-family: 'Quicksand', sans-serif;
-          font-size: 1rem;
-          color: var(--color-text);
-          outline: none;
-          transition: all var(--transition-fast);
-        }
-
-        .checkout-form input:focus,
-        .checkout-form textarea:focus {
+        .success-screen {
           background: white;
-          border-color: var(--color-coral);
-        }
-
-        .checkout-form input::placeholder,
-        .checkout-form textarea::placeholder {
-          color: var(--color-text-muted);
-        }
-
-        .checkout-form textarea {
-          resize: vertical;
-        }
-
-        .checkout-send {
-          background: var(--color-brown-dark);
-          color: white;
-          padding: var(--space-8);
-          border-radius: var(--radius-xl);
+          padding: 80px 40px;
+          border-radius: 32px;
           text-align: center;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.05);
         }
 
-        .send-header {
-          margin-bottom: var(--space-6);
+        .success-icon {
+          color: #22c55e;
+          margin-bottom: 24px;
         }
 
-        .send-header h3 {
+        .success-screen h2 {
           font-family: 'Cormorant Garamond', serif;
-          font-size: 1.5rem;
-          font-weight: 600;
-          font-style: italic;
+          font-size: 2.5rem;
+          margin-bottom: 16px;
+        }
+
+        .success-screen p { color: #666; max-width: 500px; margin: 0 auto 40px; }
+
+        .return-btn {
+          background: #c69b7b;
           color: white;
-          margin-bottom: var(--space-2);
+          padding: 18px 36px;
+          border-radius: 40px;
+          border: none;
+          font-weight: 700;
+          cursor: pointer;
         }
 
-        .send-header p {
-          color: rgba(255, 255, 255, 0.6);
-          font-size: 0.9375rem;
+        .interface-header {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          margin-bottom: 24px;
         }
 
-        .send-buttons {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: var(--space-4);
-          margin-bottom: var(--space-4);
+        .interface-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; }
+
+        .back-sm {
+          background: none;
+          border: none;
+          color: #999;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 0.8rem;
+          cursor: pointer;
         }
 
-        @media (min-width: 640px) {
-          .send-buttons {
-            grid-template-columns: 1fr 1fr;
-          }
-        }
-
-        .whatsapp-btn,
-        .instagram-btn {
+        .security-footer {
+          margin-top: 24px;
+          font-size: 0.7rem;
+          color: #bbb;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: var(--space-2);
-          padding: var(--space-5);
-          border: none;
-          border-radius: var(--radius-xl);
-          font-family: 'Quicksand', sans-serif;
-          font-size: 1rem;
-          font-weight: 700;
-          color: white;
-          cursor: pointer;
-          transition: opacity var(--transition-fast);
-        }
-
-        .whatsapp-btn:hover,
-        .instagram-btn:hover {
-          opacity: 0.9;
-        }
-
-        .whatsapp-btn {
-          background: #25D366;
-        }
-
-        .instagram-btn {
-          background: linear-gradient(135deg, #f9ce34, #ee2a7b, #6228d7);
-        }
-
-        .send-note {
-          font-size: 0.625rem;
-          text-transform: uppercase;
-          letter-spacing: 0.2em;
-          color: rgba(255, 255, 255, 0.4);
+          gap: 6px;
         }
       `}</style>
     </div>

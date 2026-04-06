@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, User, Loader2, AlertCircle } from 'lucide-react';
-import { signUp, signIn, signInWithGoogle } from '../lib/auth';
+import { signUp, signIn, signInWithGoogle } from '../lib/supabaseAuth';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -52,28 +52,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
       setPassword('');
       setConfirmPassword('');
     } catch (err: any) {
-      const errorCode = err.code;
-      switch (errorCode) {
-        case 'auth/invalid-email':
-          setError('Invalid email address');
-          break;
-        case 'auth/user-disabled':
-          setError('This account has been disabled');
-          break;
-        case 'auth/user-not-found':
-          setError('No account found with this email');
-          break;
-        case 'auth/wrong-password':
-          setError('Incorrect password');
-          break;
-        case 'auth/email-already-in-use':
-          setError('An account already exists with this email');
-          break;
-        case 'auth/weak-password':
-          setError('Password is too weak');
-          break;
-        default:
-          setError('An error occurred. Please try again.');
+      const msg = (err.message || '').toLowerCase();
+      if (msg.includes('invalid login credentials') || msg.includes('invalid email')) {
+        setError(mode === 'signin' ? 'Invalid email or password' : 'Invalid email address');
+      } else if (msg.includes('email not confirmed')) {
+        setError('Please confirm your email before signing in');
+      } else if (msg.includes('user already registered') || msg.includes('already been registered')) {
+        setError('An account already exists with this email');
+      } else if (msg.includes('password') && msg.includes('weak')) {
+        setError('Password is too weak');
+      } else {
+        setError(err.message || 'An error occurred. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -94,11 +83,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
       onSuccess();
       onClose();
     } catch (err: any) {
-      const errorCode = err.code;
-      if (errorCode === 'auth/popup-closed-by-user') {
+      const msg = (err.message || '').toLowerCase();
+      if (msg.includes('popup') || msg.includes('cancelled')) {
         setError('Sign in cancelled');
-      } else if (errorCode === 'auth/popup-blocked') {
-        setError('Popup was blocked. Please allow popups for this site.');
       } else {
         setError('Failed to sign in with Google. Please try again.');
       }

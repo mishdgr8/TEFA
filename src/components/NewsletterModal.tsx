@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Mail, CheckCircle2 } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
-import { subscribeToNewsletter } from '../lib/firestore';
+import { subscribeToNewsletter } from '../lib/supabaseDb';
 
 interface NewsletterModalProps {
   isOpen: boolean;
