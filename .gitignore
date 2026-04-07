@@ -24,3 +24,7 @@ functions/.env
 *.njsproj
 *.sln
 *.sw?
+service-account.json
+credentials.json
+key.json
+*.mjs

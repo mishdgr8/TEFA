@@ -58,7 +58,7 @@ export const ProfileModal: React.FC = () => {
                 <User size={32} />
               </div>
               <div className="profile-info">
-                <h3>{user.email?.split('@')[0]}</h3>
+                <h3>{user.metadata?.first_name ? `${user.metadata.first_name} ${user.metadata.last_name || ''}` : user.email?.split('@')[0]}</h3>
                 <p>{user.email}</p>
               </div>
             </div>

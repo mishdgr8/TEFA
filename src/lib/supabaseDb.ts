@@ -5,12 +5,23 @@ import { supabase } from './supabase';
 import { Product, Category, CustomerReview, Order } from '../types';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
-// ─── Slug Generation ───────────────────────────────────────────
+// Slug Generation
 const generateSlug = (name: string): string => {
     return name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '');
+};
+
+export const getUserOrders = async (userId: string): Promise<Order[]> => {
+    const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []).map(rowToOrder);
 };
 
 // ─── Row → Type Converters ─────────────────────────────────────
@@ -66,26 +77,41 @@ const rowToReview = (row: any): CustomerReview => ({
     createdAt: row.created_at ? new Date(row.created_at).getTime() : undefined,
 });
 
-const rowToOrder = (row: any): Order => ({
-    id: row.id,
-    userId: row.user_id,
-    customerInfo: {
-        name: row.customer_name,
-        email: row.customer_email,
-        phone: row.customer_phone,
-        location: row.customer_location,
-        note: row.customer_note,
-    },
-    items: row.order_items || [],
-    total: Number(row.total),
-    totalUSD: row.total_usd ? Number(row.total_usd) : undefined,
-    currency: row.currency,
-    paymentReference: row.payment_reference || '',
-    paymentStatus: row.payment_status,
-    orderStatus: row.order_status,
-    createdAt: row.created_at ? new Date(row.created_at).getTime() : 0,
-    updatedAt: row.updated_at ? new Date(row.updated_at).getTime() : 0,
-});
+const rowToOrder = (row: any): Order => {
+    let parsedInfo: any = {};
+    try {
+        parsedInfo = row.customer_location ? JSON.parse(row.customer_location) : {};
+    } catch (e) {
+        // Legacy fallback
+        parsedInfo = { address: row.customer_location || '' };
+    }
+
+    return {
+        id: row.id,
+        userId: row.user_id,
+        customerInfo: {
+            firstName: parsedInfo.firstName || (row.customer_name || '').split(' ')[0] || '',
+            lastName: parsedInfo.lastName || (row.customer_name || '').split(' ').slice(1).join(' ') || '',
+            email: row.customer_email || '',
+            phone: row.customer_phone || '',
+            countryCode: parsedInfo.countryCode || '+234',
+            city: parsedInfo.city || '',
+            country: parsedInfo.country || '',
+            address: parsedInfo.address || '',
+            postalCode: parsedInfo.postalCode || '',
+            note: row.customer_note || '',
+        },
+        items: row.order_items || [],
+        total: Number(row.total),
+        totalUSD: row.total_usd ? Number(row.total_usd) : undefined,
+        currency: row.currency,
+        paymentReference: row.payment_reference || '',
+        paymentStatus: row.payment_status,
+        orderStatus: row.order_status,
+        createdAt: row.created_at ? new Date(row.created_at).getTime() : 0,
+        updatedAt: row.updated_at ? new Date(row.updated_at).getTime() : 0,
+    };
+};
 
 // ═══════════════════════════════════════════════════════════════
 // PRODUCT OPERATIONS
@@ -449,7 +475,11 @@ export const subscribeToUserProfile = (
             if (error || !data) {
                 callback({ isAdmin: false });
             } else {
-                callback({ isAdmin: data.is_admin || false });
+                const profile = data as any;
+                callback({
+                    ...profile,
+                    isAdmin: profile.is_admin || false
+                });
             }
         })
         .catch((err) => {
@@ -469,7 +499,10 @@ export const subscribeToUserProfile = (
             },
             (payload) => {
                 const newData = payload.new as any;
-                callback({ isAdmin: newData?.is_admin || false });
+                callback({
+                    ...newData,
+                    isAdmin: newData?.is_admin || false
+                });
             }
         )
         .subscribe();
@@ -479,7 +512,7 @@ export const subscribeToUserProfile = (
     };
 };
 
-export const ensureUserProfile = async (uid: string, email: string | null) => {
+export const ensureUserProfile = async (uid: string, email: string | null, metadata?: any) => {
     // The database trigger `handle_new_user` auto-creates profiles on signup.
     // This is a safety-net for edge cases (e.g., OAuth users).
     const { data } = await supabase
@@ -492,8 +525,12 @@ export const ensureUserProfile = async (uid: string, email: string | null) => {
         await supabase.from('profiles').insert({
             id: uid,
             email,
+            first_name: metadata?.first_name || null,
+            last_name: metadata?.last_name || null,
+            phone: metadata?.phone || null,
+            country: metadata?.country || null,
             is_admin: false,
-        });
+        } as any);
     }
 };
 
@@ -555,6 +592,14 @@ export const deleteOrderFromFirestore = async (id: string): Promise<void> => {
     if (error) throw error;
 };
 
+export const updateUserProfile = async (uid: string, updates: any) => {
+    const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', uid);
+    if (error) throw error;
+};
+
 // ═══════════════════════════════════════════════════════════════
 // NEWSLETTER OPERATIONS
 // ═══════════════════════════════════════════════════════════════
@@ -575,6 +620,9 @@ export const subscribeToNewsletter = async (email: string): Promise<string> => {
         console.error('supabaseDb.ts: subscribeToNewsletter error:', error);
         throw error;
     }
+
+    if (!data) throw new Error('Failed to subscribe');
+
     console.log('supabaseDb.ts: subscribeToNewsletter success, ID:', data.id);
     return data.id;
 };

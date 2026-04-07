@@ -53,9 +53,13 @@ export const AdminOrders: React.FC = () => {
                             </div>
 
                             <div className="col-customer">
-                                <span className="customer-name">{order.customerInfo.name}</span>
+                                <span className="customer-name">{order.customerInfo.firstName} {order.customerInfo.lastName}</span>
                                 <span className="customer-email">{order.customerInfo.email}</span>
-                                <span className="customer-phone" style={{ fontSize: '10px', color: '#999', display: 'block' }}>{order.customerInfo.phone}</span>
+                                <span className="customer-phone" style={{ fontSize: '10px', color: '#999', display: 'block' }}>{order.customerInfo.countryCode} {order.customerInfo.phone}</span>
+                                <span className="customer-address" style={{ fontSize: '10px', color: '#666', marginTop: '4px', display: 'block' }}>
+                                    {order.customerInfo.address}, {order.customerInfo.city}, {order.customerInfo.postalCode}<br />
+                                    {order.customerInfo.country}
+                                </span>
                             </div>
 
                             <div className="col-items">

@@ -1,26 +1,72 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Instagram, MessageCircle, CreditCard, ArrowLeft, ShieldCheck, CheckCircle, Smartphone } from 'lucide-react';
+import { Instagram, MessageCircle, CreditCard, ArrowLeft, ShieldCheck, CheckCircle } from 'lucide-react';
 import { useStore, formatPrice } from '../data/store';
 import { CustomerInfo, CURRENCIES } from '../types';
 import { SEOHead } from '../components/SEOHead';
 import { PaymentWrapper } from '../components/PaymentWrapper';
+import { SearchableDropdown } from '../components/SearchableDropdown';
+import { COUNTRIES } from '../data/countries';
 
 export const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
-  const { cart, currency, clearCart } = useStore();
-  const [formData, setFormData] = useState<CustomerInfo>({
-    name: '',
-    email: '',
-    phone: '',
-    location: '',
-    note: ''
+  const { cart, currency, clearCart, user } = useStore();
+
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  // Initialize from sessionStorage or defaults
+  const [formData, setFormData] = useState<CustomerInfo>(() => {
+    try {
+      const saved = sessionStorage.getItem('checkout_info');
+      if (saved) return JSON.parse(saved);
+    } catch (e) { }
+
+    return {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      countryCode: '+234',
+      city: '',
+      country: '',
+      address: '',
+      postalCode: '',
+      note: ''
+    };
   });
 
+  React.useEffect(() => {
+    if (user && !formData.email && !formData.firstName) {
+      setFormData(prev => ({
+        ...prev,
+        email: user.email || prev.email,
+        firstName: (user.metadata?.first_name) || prev.firstName,
+        lastName: (user.metadata?.last_name) || prev.lastName,
+        phone: (user.metadata?.phone) || prev.phone,
+        country: (user.metadata?.country) || prev.country
+      }));
+    }
+  }, [user]);
+
+  // Save to sessionStorage when it changes so they don't lose progress if they come back
+  React.useEffect(() => {
+    if (formData.email || formData.firstName) {
+      sessionStorage.setItem('checkout_info', JSON.stringify(formData));
+    }
+  }, [formData]);
+
   const [showPayment, setShowPayment] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [promoCode, setPromoCode] = useState('');
   const [appliedDiscount, setAppliedDiscount] = useState<{ code: string, amount: number } | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'card'>('card');
+  const [cardData, setCardData] = useState({
+    number: '',
+    expiry: '',
+    cvv: '',
+    name: '',
+    useShippingAsBilling: true,
+    saveInfo: false
+  });
 
   const currentCurrency = CURRENCIES.find(c => c.code === currency);
   const rate = currentCurrency?.rate || 1;
@@ -71,7 +117,7 @@ export const CheckoutPage: React.FC = () => {
   }
 
   const handleSendWhatsApp = () => {
-    const text = encodeURIComponent(`New Inquiry from TÉFA Site:\n\nCustomer: ${formData.name}\nEmail: ${formData.email}\nItems:\n${cart.map(i => `- ${i.name} (x${i.qty})`).join('\n')}\nTotal: ${formatPrice(total)}\nNotes: ${formData.note}`);
+    const text = encodeURIComponent(`New Inquiry from TÉFA Site:\n\nCustomer: ${formData.firstName} ${formData.lastName}\nEmail: ${formData.email}\nPhone: ${formData.countryCode}${formData.phone}\nAddress: ${formData.address}, ${formData.city}, ${formData.country} ${formData.postalCode}\nItems:\n${cart.map(i => `- ${i.name} (x${i.qty})`).join('\n')}\nTotal: ${formatPrice(total)}\nNotes: ${formData.note}`);
     window.open(`https://wa.me/2349000000000?text=${text}`, '_blank');
   };
 
@@ -103,7 +149,7 @@ export const CheckoutPage: React.FC = () => {
                 </div>
                 <div className="form-grid">
                   <div className="input-group full">
-                    <label>Email Address (Required for receipt)</label>
+                    <label>Email Address</label>
                     <input
                       type="email"
                       placeholder="e.g. grace@example.com"
@@ -113,30 +159,89 @@ export const CheckoutPage: React.FC = () => {
                     />
                   </div>
                   <div className="input-group">
-                    <label>Full Name</label>
+                    <label>First Name</label>
                     <input
                       type="text"
-                      placeholder="Enter your name"
-                      value={formData.name}
-                      onChange={e => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="First Name"
+                      value={formData.firstName}
+                      onChange={e => setFormData({ ...formData, firstName: e.target.value })}
                     />
                   </div>
                   <div className="input-group">
-                    <label>Phone Number</label>
+                    <label>Last Name</label>
                     <input
                       type="text"
-                      placeholder="+234..."
-                      value={formData.phone}
-                      onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="Last Name"
+                      value={formData.lastName}
+                      onChange={e => setFormData({ ...formData, lastName: e.target.value })}
+                    />
+                  </div>
+                  <div className="input-group full" style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '8px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label>Code</label>
+                      <SearchableDropdown
+                        options={COUNTRIES.map(c => ({
+                          label: c.dialCode ? c.dialCode : '',
+                          value: c.dialCode,
+                          icon: c.flag,
+                          searchStr: `${c.name} ${c.dialCode}`
+                        })).filter(c => c.value)} // ensure no empty dial code
+                        value={formData.countryCode}
+                        onChange={(val) => setFormData({ ...formData, countryCode: val })}
+                        placeholder="Code"
+                        searchPlaceholder="Search..."
+                      />
+                    </div>
+                    <div>
+                      <label>Phone Number</label>
+                      <input
+                        type="text"
+                        placeholder="800 000 0000"
+                        value={formData.phone}
+                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div className="input-group full">
+                    <label>Address</label>
+                    <input
+                      type="text"
+                      placeholder="123 Example Street, Apt 4B"
+                      value={formData.address}
+                      onChange={e => setFormData({ ...formData, address: e.target.value })}
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label>City</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Lagos"
+                      value={formData.city}
+                      onChange={e => setFormData({ ...formData, city: e.target.value })}
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label>Postal Code / Zip Code</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 100001"
+                      value={formData.postalCode}
+                      onChange={e => setFormData({ ...formData, postalCode: e.target.value })}
                     />
                   </div>
                   <div className="input-group full">
-                    <label>Delivery City & Country</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Lagos, Nigeria"
-                      value={formData.location}
-                      onChange={e => setFormData({ ...formData, location: e.target.value })}
+                    <label>Country</label>
+                    <SearchableDropdown
+                      options={COUNTRIES.map(c => ({
+                        label: c.name,
+                        value: c.name,
+                        icon: c.flag,
+                        searchStr: c.name
+                      }))}
+                      value={formData.country}
+                      onChange={(val) => setFormData({ ...formData, country: val })}
+                      placeholder="Select a country"
+                      searchPlaceholder="Search country..."
                     />
                   </div>
                   <div className="input-group full">
@@ -151,63 +256,116 @@ export const CheckoutPage: React.FC = () => {
                 </div>
               </section>
 
-              <section className="checkout-section payment-box">
-                {!showPayment ? (
-                  <div className="payment-options">
+              <section className="checkout-section payment-box" style={{ textAlign: 'left' }}>
+                <div className="section-title">
+                  <span className="step">2</span>
+                  <h2>Payment</h2>
+                </div>
+                <p className="payment-helper">All transactions are secure and encrypted.</p>
+
+                <div className="payment-methods-container">
+                  <div className={`method-choice active`}>
+                    <div className="method-header">
+                      <div className="radio-group">
+                        <div className="radio-outer checked">
+                          <div className="radio-inner" />
+                        </div>
+                        <span className="method-label">Credit card</span>
+                      </div>
+                      <div className="card-icons">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" style={{ height: '12px' }} />
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" style={{ height: '18px' }} />
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style={{ height: '18px', opacity: 0.5, filter: 'grayscale(1)' }} />
+                      </div>
+                    </div>
+
+                    <div className="card-form-nested">
+                      <div className="card-input-wrapper">
+                        <input
+                          type="text"
+                          placeholder="Card number"
+                          value={cardData.number}
+                          onChange={e => setCardData({ ...cardData, number: e.target.value })}
+                        />
+                        <ShieldCheck size={18} className="input-icon-right" />
+                      </div>
+                      <div className="card-row">
+                        <input
+                          type="text"
+                          placeholder="Expiration date (MM / YY)"
+                          value={cardData.expiry}
+                          onChange={e => setCardData({ ...cardData, expiry: e.target.value })}
+                        />
+                        <div className="card-input-wrapper">
+                          <input
+                            type="text"
+                            placeholder="Security code"
+                            value={cardData.cvv}
+                            onChange={e => setCardData({ ...cardData, cvv: e.target.value })}
+                          />
+                          <span className="info-icon">?</span>
+                        </div>
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Name on card"
+                        value={cardData.name}
+                        onChange={e => setCardData({ ...cardData, name: e.target.value })}
+                      />
+
+                      <div className="checkbox-row" onClick={() => setCardData({ ...cardData, useShippingAsBilling: !cardData.useShippingAsBilling })}>
+                        <div className={`custom-checkbox ${cardData.useShippingAsBilling ? 'checked' : ''}`}>
+                          {cardData.useShippingAsBilling && <CheckCircle size={14} />}
+                        </div>
+                        <span>Use shipping address as billing address</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="action-row">
+                  {!showPayment ? (
                     <button
-                      className="primary-pay-btn"
+                      className="review-order-btn"
                       onClick={() => {
-                        if (!formData.email) {
-                          alert("Please provide an email address for payment.");
-                          return;
-                        }
+                        if (!formData.email) { alert("Please provide an email."); return; }
                         setShowPayment(true);
                       }}
                     >
-                      <CreditCard size={20} />
-                      Pay Instantly via Card
+                      Review order
                     </button>
+                  ) : (
+                    <div className="paystack-active-container">
+                      <div className="interface-header">
+                        <button onClick={() => setShowPayment(false)} className="back-sm">
+                          <ArrowLeft size={14} /> Back to details
+                        </button>
+                        <h3>Complete Transaction</h3>
+                      </div>
+                      <PaymentWrapper
+                        email={formData.email}
+                        customerName={(`${formData.firstName} ${formData.lastName}`).trim() || 'TÉFA Customer'}
+                        total={total}
+                        cart={cart}
+                        customerInfo={formData}
+                        userId={user?.uid}
+                        onSuccess={(ref) => {
+                          console.log('Payment Successful:', ref);
+                          clearCart();
+                          setIsSuccess(true);
+                        }}
+                        onClose={() => setShowPayment(false)}
+                      />
+                    </div>
+                  )}
+                </div>
 
-                    <div className="separator">
-                      <span>OR CHOOSE AN INQUIRY CHANNEL</span>
-                    </div>
-
-                    <div className="inquiry-grid">
-                      <button onClick={handleSendWhatsApp} className="inquiry-btn wa">
-                        <MessageCircle size={18} /> WhatsApp
-                      </button>
-                      <button onClick={handleSendInstagram} className="inquiry-btn ig">
-                        <Instagram size={18} /> Instagram
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="paystack-interface">
-                    <div className="interface-header">
-                      <button onClick={() => setShowPayment(false)} className="back-sm">
-                        <ArrowLeft size={14} /> Change Method
-                      </button>
-                      <h3>Secure Checkout</h3>
-                    </div>
-                    <PaymentWrapper
-                      email={formData.email}
-                      customerName={formData.name || 'TÉFA Customer'}
-                      total={total}
-                      cart={cart}
-                      customerInfo={formData}
-                      onSuccess={(ref) => {
-                        console.log('Payment Successful:', ref);
-                        clearCart();
-                        setIsSuccess(true);
-                      }}
-                      onClose={() => setShowPayment(false)}
-                    />
-                    <div className="security-footer">
-                      <ShieldCheck size={12} />
-                      PCI-DSS Compliant Encryption
-                    </div>
-                  </div>
-                )}
+                <div className="policy-footer">
+                  <button>Refund policy</button>
+                  <button>Shipping policy</button>
+                  <button>Privacy policy</button>
+                  <button>Terms of service</button>
+                </div>
               </section>
             </div>
 
@@ -220,9 +378,13 @@ export const CheckoutPage: React.FC = () => {
                     const itemPrice = currency === 'USD' ? (item.priceUSD || (item.price * rate)) : item.price;
                     return (
                       <div key={item.variantId} className="summary-item">
+                        <div className="item-thumb">
+                          <img src={item.image} alt={item.name} />
+                          <span className="item-badge">{item.qty}</span>
+                        </div>
                         <div className="item-info">
                           <span className="item-name">{item.name}</span>
-                          <span className="item-qty">Qty: {item.qty}</span>
+                          <span className="item-meta">Size: {item.selectedSize} {item.selectedColor ? `| ${item.selectedColor}` : ''}</span>
                         </div>
                         <span className="item-price">{formatPrice({ amount: itemPrice * (item.qty || 1) }, currency)}</span>
                       </div>
@@ -386,7 +548,8 @@ export const CheckoutPage: React.FC = () => {
         }
 
         .input-group input, 
-        .input-group textarea {
+        .input-group textarea,
+        .input-group select {
           width: 100%;
           padding: 14px 18px;
           background: #f9f9f9;
@@ -395,10 +558,12 @@ export const CheckoutPage: React.FC = () => {
           font-family: 'Quicksand', sans-serif;
           font-size: 1rem;
           transition: border-color 0.2s, background 0.2s;
+          appearance: none;
         }
 
         .input-group input:focus, 
-        .input-group textarea:focus {
+        .input-group textarea:focus,
+        .input-group select:focus {
           outline: none;
           background: white;
           border-color: #c69b7b;
@@ -406,186 +571,271 @@ export const CheckoutPage: React.FC = () => {
 
         .payment-box {
           border-top: 4px solid #c69b7b;
-          text-align: center;
         }
 
-        .primary-pay-btn {
-          width: 100%;
-          background: #1a1a1a;
-          color: white;
-          padding: 20px;
-          border-radius: 16px;
-          border: none;
-          font-weight: 700;
-          font-size: 1.1rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
-          cursor: pointer;
-          transition: transform 0.2s;
-        }
-
-        .primary-pay-btn:hover {
-          transform: translateY(-2px);
-          background: #000;
-        }
-
-        .separator {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          margin: 32px 0;
-        }
-
-        .separator::before, 
-        .separator::after {
-          content: "";
-          flex: 1;
-          height: 1px;
-          background: #eee;
-        }
-
-        .separator span {
-          font-size: 0.7rem;
-          font-weight: 800;
-          color: #bbb;
-          letter-spacing: 0.1em;
-        }
-
-        .inquiry-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 16px;
-        }
-
-        .inquiry-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          padding: 16px;
-          border-radius: 12px;
-          border: 1px solid #eee;
-          font-weight: 700;
-          cursor: pointer;
-          background: white;
-          transition: all 0.2s;
-        }
-
-        .inquiry-btn.wa { color: #25D366; }
-        .inquiry-btn.ig { color: #E4405F; }
-        .inquiry-btn:hover { background: #fdfdfd; border-color: #ddd; }
-
-        .summary-card {
-          background: white;
-          border-radius: 24px;
-          padding: 32px;
-          border: 1px solid #eee;
-          position: sticky;
-          top: 100px;
-        }
-
-        .summary-card h3 {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 1.6rem;
-          font-style: italic;
+        .payment-helper {
+          font-size: 0.85rem;
+          color: #888;
           margin-bottom: 24px;
-          border-bottom: 1px solid #eee;
-          padding-bottom: 16px;
         }
 
-        .summary-item {
+        .payment-methods-container {
+          border: 1px solid #ddd;
+          border-radius: 12px;
+          overflow: hidden;
+          background: #f9f9f9;
+        }
+
+        .method-choice {
+          border-bottom: 1px solid #ddd;
+        }
+
+        .method-choice:last-child {
+          border-bottom: none;
+        }
+
+        .method-choice.active {
+          background: #f4faff; /* Light blue tint for active */
+          border: 2px solid #005bd3;
+          margin: -1px;
+          z-index: 1;
+        }
+
+        .method-header {
+          padding: 18px 20px;
           display: flex;
+          align-items: center;
           justify-content: space-between;
-          margin-bottom: 16px;
+          cursor: pointer;
         }
 
-        .item-info {
+        .radio-group {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .radio-outer {
+          width: 18px;
+          height: 18px;
+          border: 1px solid #ccc;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: white;
+        }
+
+        .radio-outer.checked {
+          border-color: #005bd3;
+          border-width: 5px;
+        }
+
+        .radio-inner {
+          width: 6px;
+          height: 6px;
+          background: white;
+          border-radius: 50%;
+        }
+
+        .method-label {
+          font-weight: 600;
+          font-size: 0.95rem;
+        }
+
+        .card-icons {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .card-form-nested {
+          padding: 24px;
+          background: #f4f8fb;
           display: flex;
           flex-direction: column;
+          gap: 14px;
         }
 
-        .item-name { font-weight: 600; font-size: 0.95rem; }
-        .item-qty { font-size: 0.8rem; color: #888; }
-        .item-price { font-weight: 700; font-family: 'Quicksand', sans-serif; }
-
-        .summary-totals {
-          margin-top: 32px;
-          padding-top: 24px;
-          border-top: 2px dashed #eee;
+        .card-input-wrapper {
+          position: relative;
+          width: 100%;
         }
 
-        .total-row {
+        .input-icon-right {
+          position: absolute;
+          right: 14px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #aaa;
+        }
+
+        .info-icon {
+          position: absolute;
+          right: 14px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #aaa;
+          font-size: 1.2rem;
+          cursor: pointer;
+        }
+
+        .card-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 14px;
+        }
+
+        .card-form-nested input {
+          width: 100% !important;
+          box-sizing: border-box !important;
+          background: white !important;
+          border: 1px solid #ddd !important;
+          font-size: 1rem !important;
+          padding: 14px 18px !important;
+          border-radius: 12px !important;
+          font-family: 'Quicksand', sans-serif !important;
+          transition: border-color 0.2s !important;
+        }
+
+        .card-form-nested input:focus {
+          outline: none !important;
+          border-color: #c69b7b !important;
+        }
+
+        .checkbox-row {
           display: flex;
-          justify-content: space-between;
-          margin-bottom: 12px;
+          align-items: center;
+          gap: 12px;
+          margin-top: 8px;
+          cursor: pointer;
           font-size: 0.9rem;
         }
 
-        .grand-total {
-          font-size: 1.4rem;
-          font-weight: 800;
-          color: #c69b7b;
-          margin-top: 12px;
-        }
-
-        .delivery-note {
-          font-size: 0.75rem;
-          color: #999;
-          margin-top: 24px;
-          line-height: 1.5;
-        }
-
-        .success-screen {
+        .custom-checkbox {
+          width: 20px;
+          height: 20px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           background: white;
-          padding: 80px 40px;
-          border-radius: 32px;
-          text-align: center;
-          box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+          color: #005bd3;
         }
 
-        .success-icon {
-          color: #22c55e;
-          margin-bottom: 24px;
-        }
-
-        .success-screen h2 {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 2.5rem;
-          margin-bottom: 16px;
-        }
-
-        .success-screen p { color: #666; max-width: 500px; margin: 0 auto 40px; }
-
-        .return-btn {
-          background: #c69b7b;
+        .custom-checkbox.checked {
+          background: #005bd3;
+          border-color: #005bd3;
           color: white;
-          padding: 18px 36px;
-          border-radius: 40px;
-          border: none;
-          font-weight: 700;
-          cursor: pointer;
         }
 
-        .interface-header {
+        .save-info-section {
+          margin-top: 40px;
+        }
+
+        .save-info-section h3 {
+          font-size: 1.1rem;
+          margin-bottom: 20px;
+          font-weight: 600;
+        }
+
+        .save-card-box {
+          border: 1px solid #ddd;
+          border-radius: 12px;
+          padding: 20px;
+          background: white;
+        }
+
+        .phone-input-row {
           display: flex;
           align-items: center;
           gap: 16px;
-          margin-bottom: 24px;
         }
 
-        .interface-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; }
+        .icon-box {
+          color: #888;
+        }
 
-        .back-sm {
+        .phone-col {
+          flex: 1;
+        }
+
+        .phone-col label {
+          font-size: 0.75rem;
+          color: #888;
+          display: block;
+          margin-bottom: 4px;
+        }
+
+        .phone-col input {
+          border: none;
+          padding: 0;
+          font-size: 1.1rem;
+          font-weight: 600;
+          background: transparent;
+          width: 100%;
+          outline: none;
+        }
+
+        .clear-btn {
+          color: #005bd3;
           background: none;
           border: none;
-          color: #999;
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          font-size: 0.8rem;
+          font-weight: 600;
           cursor: pointer;
+        }
+
+        .legal-text {
+          font-size: 0.8rem;
+          color: #888;
+          margin-top: 16px;
+          line-height: 1.5;
+        }
+
+        .review-order-btn {
+          width: 100%;
+          background: #005bd3;
+          color: white;
+          padding: 22px;
+          border-radius: 12px;
+          border: none;
+          font-weight: 700;
+          font-size: 1.2rem;
+          margin-top: 40px;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+
+        .review-order-btn:hover {
+          background: #004fb6;
+        }
+
+        .policy-footer {
+          margin-top: 48px;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 20px;
+          border-top: 1px solid #eee;
+          padding-top: 24px;
+        }
+
+        .policy-footer button {
+          background: none;
+          border: none;
+          color: #005bd3;
+          font-size: 0.85rem;
+          text-decoration: underline;
+          cursor: pointer;
+          padding: 0;
+        }
+
+        .paystack-active-container {
+            margin-top: 32px;
+            padding: 24px;
+            background: #fff;
+            border: 2px solid #eee;
+            border-radius: 20px;
         }
 
         .security-footer {
@@ -597,6 +847,156 @@ export const CheckoutPage: React.FC = () => {
           justify-content: center;
           gap: 6px;
         }
+
+        /* ═══════════ ORDER SUMMARY SIDEBAR ═══════════ */
+        .checkout-sidebar {
+          position: sticky;
+          top: 120px;
+        }
+
+        .summary-card {
+          background: white;
+          border: 1px solid #eee;
+          border-radius: 24px;
+          padding: 32px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        }
+
+        .summary-card h3 {
+          font-family: 'Cormorant Garamond', serif;
+          font-size: 1.5rem;
+          font-weight: 700;
+          font-style: italic;
+          margin-bottom: 24px;
+          padding-bottom: 16px;
+          border-bottom: 1px solid #eee;
+        }
+
+        .summary-items {
+          display: flex;
+          flex-direction: column;
+          gap: 0;
+        }
+
+        .summary-item {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 12px 0;
+          border-bottom: 1px solid #f5f5f5;
+        }
+
+        .summary-item:last-child {
+          border-bottom: none;
+        }
+
+        .item-thumb {
+          width: 64px;
+          height: 64px;
+          background: #f5f5f5;
+          border-radius: 12px;
+          border: 1px solid #eee;
+          position: relative;
+          flex-shrink: 0;
+        }
+
+        .item-thumb img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          border-radius: 12px;
+        }
+
+        .item-badge {
+          position: absolute;
+          top: -6px;
+          right: -6px;
+          background: #c69b7b;
+          color: white;
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          font-size: 0.7rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          border: 2px solid white;
+          z-index: 2;
+        }
+
+        .item-info {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          min-width: 0;
+        }
+
+        .item-name {
+          font-weight: 600;
+          font-size: 0.95rem;
+          font-family: 'Quicksand', sans-serif;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          color: #1a1a1a;
+        }
+
+        .item-meta {
+          font-size: 0.78rem;
+          color: #999;
+          font-family: 'Quicksand', sans-serif;
+        }
+
+        .item-price {
+          font-weight: 700;
+          font-family: 'Quicksand', sans-serif;
+          font-size: 0.95rem;
+          flex-shrink: 0;
+          color: #1a1a1a;
+        }
+
+        /* ═══════════ TOTALS ═══════════ */
+        .summary-totals {
+          margin-top: 20px;
+          padding-top: 20px;
+          border-top: 1px solid #eee;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .total-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-family: 'Quicksand', sans-serif;
+          font-size: 0.95rem;
+          color: #555;
+        }
+
+        .total-row.discount {
+          color: #c69b7b;
+        }
+
+        .total-row.grand-total {
+          font-size: 1.15rem;
+          font-weight: 800;
+          color: #1a1a1a;
+          padding-top: 12px;
+          border-top: 2px solid #1a1a1a;
+          margin-top: 4px;
+        }
+
+        .delivery-note {
+          margin-top: 20px;
+          font-size: 0.78rem;
+          color: #aaa;
+          line-height: 1.5;
+          font-style: italic;
+        }
+
       `}</style>
     </div>
   );

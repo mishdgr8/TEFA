@@ -109,18 +109,30 @@ export interface Database {
                 Row: {
                     id: string;
                     email: string | null;
+                    first_name: string | null;
+                    last_name: string | null;
+                    phone: string | null;
+                    country: string | null;
                     is_admin: boolean;
                     created_at: string;
                 };
                 Insert: {
                     id: string;
                     email?: string | null;
+                    first_name?: string | null;
+                    last_name?: string | null;
+                    phone?: string | null;
+                    country?: string | null;
                     is_admin?: boolean;
                     created_at?: string;
                 };
                 Update: {
                     id?: string;
                     email?: string | null;
+                    first_name?: string | null;
+                    last_name?: string | null;
+                    phone?: string | null;
+                    country?: string | null;
                     is_admin?: boolean;
                     created_at?: string;
                 };

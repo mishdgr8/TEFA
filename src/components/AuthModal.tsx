@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, User, Loader2, AlertCircle } from 'lucide-react';
 import { signUp, signIn, signInWithGoogle } from '../lib/supabaseAuth';
+import { SearchableDropdown } from './SearchableDropdown';
+import { COUNTRIES } from '../data/countries';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -17,6 +19,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Extra fields for signup
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [country, setCountry] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +46,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
       if (mode === 'signin') {
         await signIn(email, password);
       } else {
-        await signUp(email, password);
+        await signUp(email, password, {
+          first_name: firstName,
+          last_name: lastName,
+          phone: phone,
+          country: country
+        });
         setSuccess('Account created! Sign in to continue.');
         setMode('signin');
         setPassword('');
@@ -139,6 +152,31 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
             )}
 
             <form onSubmit={handleSubmit} className="auth-form">
+              {mode === 'signup' && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div className="auth-field">
+                    <label>First Name</label>
+                    <input
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      placeholder="Jane"
+                      required
+                    />
+                  </div>
+                  <div className="auth-field">
+                    <label>Last Name</label>
+                    <input
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      placeholder="Doe"
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="auth-field">
                 <label>
                   <Mail size={18} />
@@ -181,6 +219,35 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                     required
                   />
                 </div>
+              )}
+
+              {mode === 'signup' && (
+                <>
+                  <div className="auth-field">
+                    <label>Phone Number</label>
+                    <input
+                      type="text"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+234..."
+                      required
+                    />
+                  </div>
+                  <div className="auth-field">
+                    <label>Country</label>
+                    <SearchableDropdown
+                      options={COUNTRIES.map(c => ({
+                        label: `${c.flag} ${c.name}`,
+                        value: c.name,
+                        icon: c.flag,
+                        searchStr: c.name
+                      }))}
+                      value={country}
+                      onChange={(val) => setCountry(val)}
+                      placeholder="Select Country"
+                    />
+                  </div>
+                </>
               )}
 
               <button type="submit" className="auth-submit" disabled={loading}>

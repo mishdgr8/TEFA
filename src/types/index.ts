@@ -65,10 +65,15 @@ export interface CartItem {
 }
 
 export interface CustomerInfo {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phone: string;
-  location: string;
+  countryCode: string;
+  city: string;
+  country: string;
+  address: string;
+  postalCode: string;
   note: string;
 }
 
@@ -113,6 +118,12 @@ export interface AuthUser {
   uid: string;
   email: string | null;
   isAdmin?: boolean;
+  metadata?: {
+    first_name?: string;
+    last_name?: string;
+    phone?: string;
+    country?: string;
+  };
 }
 
 export interface StoreActions {
@@ -130,6 +141,7 @@ export interface StoreActions {
 
   updateOrderStatus: (id: string, status: Order['orderStatus']) => Promise<void>;
   deleteOrder: (id: string) => Promise<void>;
+  updateProfile: (updates: Partial<AuthUser['metadata']>) => Promise<void>;
 
   addToCart: (item: CartItem) => void;
   updateCartQty: (variantId: string, delta: number) => void;

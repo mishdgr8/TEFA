@@ -24,7 +24,8 @@ import {
   ensureUserProfile,
   subscribeToOrders,
   updateOrderStatusInFirestore,
-  deleteOrderFromFirestore
+  deleteOrderFromFirestore,
+  updateUserProfile
 } from '../lib/supabaseDb';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -113,14 +114,21 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
         if (firebaseUser) {
           // Ensure user document exists in Supabase Profiles
-          await ensureUserProfile(firebaseUser.id, firebaseUser.email || null);
+          await ensureUserProfile(firebaseUser.id, firebaseUser.email || null, firebaseUser.user_metadata);
 
           // Subscribe to user profile for Real-time admin/role updates
           profileUnsubscribe = subscribeToUserProfile(firebaseUser.id, (profileData) => {
             setUser({
               uid: firebaseUser.id,
               email: firebaseUser.email || null,
-              isAdmin: profileData.isAdmin || false
+              isAdmin: profileData.isAdmin || false,
+              metadata: {
+                ...firebaseUser.user_metadata,
+                first_name: profileData.first_name || firebaseUser.user_metadata?.first_name,
+                last_name: profileData.last_name || firebaseUser.user_metadata?.last_name,
+                phone: profileData.phone || firebaseUser.user_metadata?.phone,
+                country: profileData.country || firebaseUser.user_metadata?.country,
+              }
             });
           });
         } else {
@@ -336,6 +344,19 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     }
   };
 
+  const updateProfile = async (updates: Partial<AuthUser['metadata']>) => {
+    if (!user) return;
+    try {
+      // Sync to profiles table
+      await updateUserProfile(user.uid, updates);
+
+      // Local state update happens automatically via the Real-time subscription in useEffect
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      throw error;
+    }
+  };
+
   const migrateCategories = async () => {
     try {
       await seedCategories(CATEGORIES);
@@ -429,6 +450,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     orders,
     updateOrderStatus,
     deleteOrder,
+    updateProfile,
   }), [
     products,
     categories,

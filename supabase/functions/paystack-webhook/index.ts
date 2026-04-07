@@ -53,11 +53,11 @@ serve(async (req) => {
                 .insert({
                     payment_reference: data.reference,
                     user_id: userId,
-                    customer_name: metadata.customer_name || 'Customer',
+                    customer_name: metadata.customer_info ? `${metadata.customer_info.firstName} ${metadata.customer_info.lastName}`.trim() : (metadata.customer_name || 'Customer'),
                     customer_email: data.customer.email || metadata.customer_email || '',
-                    customer_phone: metadata.customer_phone || data.customer.phone || '',
-                    customer_location: metadata.customer_location || '',
-                    customer_note: metadata.customer_note || '',
+                    customer_phone: metadata.customer_info?.phone ? `${metadata.customer_info.countryCode || ''} ${metadata.customer_info.phone}`.trim() : (metadata.customer_phone || data.customer.phone || ''),
+                    customer_location: JSON.stringify(metadata.customer_info || {}),
+                    customer_note: metadata.customer_note || metadata.customer_info?.note || '',
                     total: data.amount / 100, // Convert subunits back to NGN/USD
                     currency: data.currency || 'NGN',
                     payment_status: 'success',

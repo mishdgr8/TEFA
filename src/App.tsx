@@ -20,6 +20,8 @@ const CheckoutPage = React.lazy(() => import('./pages/CheckoutPage').then(m => (
 const AboutPage = React.lazy(() => import('./pages/AboutPage').then(m => ({ default: m.AboutPage })));
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const ProductForm = React.lazy(() => import('./pages/admin/ProductForm').then(m => ({ default: m.ProductForm })));
+const OrdersPage = React.lazy(() => import('./pages/OrdersPage').then(m => ({ default: m.OrdersPage })));
+const AccountPage = React.lazy(() => import('./pages/AccountPage').then(m => ({ default: m.AccountPage })));
 
 // Support Pages - Lazy loaded
 const ContactPage = React.lazy(() => import('./pages/ContactPage').then(m => ({ default: m.ContactPage })));
@@ -129,6 +131,8 @@ export const App: React.FC = () => {
                 <Route path="/size-guide" element={<SizeGuidePage />} />
                 <Route path="/faq" element={<FAQPage />} />
                 <Route path="/admin" element={<AdminDashboard onOpenProductForm={openProductForm} />} />
+                <Route path="/orders" element={<OrdersPage />} />
+                <Route path="/account" element={<AccountPage />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
               {!isAdminRoute && <Footer />}

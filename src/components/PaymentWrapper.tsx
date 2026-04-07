@@ -13,6 +13,7 @@ interface PaymentWrapperProps {
     customerInfo: CustomerInfo;
     onSuccess: (reference: string) => void;
     onClose: () => void;
+    userId?: string;
 }
 
 /**
@@ -26,7 +27,8 @@ export const PaymentWrapper: React.FC<PaymentWrapperProps> = ({
     cart,
     customerInfo,
     onSuccess,
-    onClose
+    onClose,
+    userId
 }) => {
     const { currency } = useStore();
     const [isInitializing, setIsInitializing] = useState(false);
@@ -39,6 +41,7 @@ export const PaymentWrapper: React.FC<PaymentWrapperProps> = ({
         publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
         currency: currency.toUpperCase(),
         metadata: {
+            user_id: userId,
             custom_fields: [
                 {
                     display_name: "Customer Name",
