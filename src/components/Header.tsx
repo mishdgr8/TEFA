@@ -8,6 +8,7 @@ import { PageName, PageParams, CURRENCIES } from '../types';
 import { AuthModal } from './AuthModal';
 import { signOut } from '../lib/supabaseAuth';
 import { OptimizedImage } from './OptimizedImage';
+import { AnnouncementBar } from './AnnouncementBar';
 
 interface HeaderProps {
   onOpenCart: () => void;
@@ -289,6 +290,8 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
         </div>
       </div>
 
+      <AnnouncementBar />
+
       {/* Auth Modal - No longer rendered here, moved to App.tsx */}
 
       {/* Mobile Menu Drawer */}
@@ -389,7 +392,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
         .header-transparent {
           background-color: transparent;
           box-shadow: none;
-          padding: var(--space-3) 0;
           border-bottom: none;
         }
 
@@ -397,18 +399,17 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
           background-color: rgba(255, 255, 255, 0.95);
           backdrop-filter: blur(10px);
           box-shadow: var(--shadow-sm);
-          padding: var(--space-2) 0;
           border-bottom: 1px solid var(--color-nude-light);
         }
 
         .header-inner {
           max-width: 1440px;
           margin: 0 auto;
-          padding: 0 var(--space-6);
+          padding: var(--space-2) var(--space-6);
           display: flex;
           align-items: center;
           justify-content: space-between;
-          height: 60px;
+          height: 80px;
           position: relative;
         }
 

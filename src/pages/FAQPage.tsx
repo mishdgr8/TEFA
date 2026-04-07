@@ -10,6 +10,10 @@ interface FAQItem {
 const FAQ_DATA: Record<string, FAQItem[]> = {
     "Orders & Payment": [
         {
+            question: "Is everything on pre-order?",
+            answer: "Yes, TÉFA operates on a strictly PREORDER ONLY basis. Every piece is handcrafted specifically for you once your order is confirmed. This ensures the highest quality and exclusivity for every client."
+        },
+        {
             question: "How do I place an order?",
             answer: "Simply browse our collection, select your size and color, and 'Add to Inquiry'. Once finished, head to checkout or use the 'Direct Chat' button to finalize your order with our concierge via WhatsApp."
         },

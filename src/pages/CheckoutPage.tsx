@@ -14,6 +14,22 @@ export const CheckoutPage: React.FC = () => {
   const { cart, currency, clearCart, user, createOrder } = useStore();
 
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isShippingModalOpen, setIsShippingModalOpen] = useState(false);
+
+  // Prevent background scrolling when modal is open
+  React.useEffect(() => {
+    if (isShippingModalOpen) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, [isShippingModalOpen]);
 
   // Initialize from sessionStorage or defaults
   const [formData, setFormData] = useState<CustomerInfo>(() => {
@@ -169,6 +185,9 @@ export const CheckoutPage: React.FC = () => {
           </button>
           <h1>Secure Your Pieces</h1>
           <p className="subtitle">Finalize your selection and secure your order.</p>
+          <div className="preorder-notice-bold">
+            <strong>PREORDER ONLY</strong>: All pieces are handcrafted following your order confirmation.
+          </div>
         </header>
 
         {!isSuccess ? (
@@ -481,6 +500,13 @@ export const CheckoutPage: React.FC = () => {
                     <span>Subtotal</span>
                     <span>{formatPrice({ amount: subtotal }, currency)}</span>
                   </div>
+                  <div className="total-row">
+                    <span className="with-info">
+                      Shipping
+                      <button className="info-trigger" onClick={() => setIsShippingModalOpen(true)} aria-label="Shipping information">?</button>
+                    </span>
+                    <span className="shipping-text">Calculated later</span>
+                  </div>
                   {appliedDiscount && (
                     <div className="total-row discount">
                       <span>Discount ({appliedDiscount.code})</span>
@@ -527,6 +553,69 @@ export const CheckoutPage: React.FC = () => {
         )}
       </div>
 
+      {isShippingModalOpen && (
+        <div className="shipping-modal-overlay" onClick={() => setIsShippingModalOpen(false)}>
+          <div className="shipping-modal-content" onClick={e => e.stopPropagation()} data-lenis-prevent>
+            <button className="close-modal" onClick={() => setIsShippingModalOpen(false)}>&times;</button>
+            <div className="modal-header">
+              <h2>Shipping Information</h2>
+              <div className="brand-badge">TEFA</div>
+            </div>
+
+            <div className="modal-body">
+              <div className="shipping-section">
+                <h3>General</h3>
+                <p>TÉFA partners with trusted third-party logistics providers for local and international deliveries. When placing your order, please ensure billing and shipping address details are accurate, as we cannot modify them once the item has been ordered or dispatched.</p>
+              </div>
+
+              <div className="shipping-section">
+                <h3>Timelines</h3>
+                <p>Shipping and delivery timelines start from the date of dispatch and are subject to the operations of our logistics partners.</p>
+                <ul>
+                  <li>Deliveries within Lagos: 1–2 business days</li>
+                  <li>Deliveries within Nigeria (outside Lagos): 2–3 business days</li>
+                  <li>International deliveries: 3–5 business days</li>
+                </ul>
+              </div>
+
+              <div className="shipping-section">
+                <h3>Shipment Tracking</h3>
+                <ul>
+                  <li>For shipments outside Lagos, a Shipment Tracking Number will be emailed to you once your order is dispatched.</li>
+                  <li>If you do not receive your order within 10 working days of dispatch, notify us promptly.</li>
+                  <li>If we do not hear from you within 14 working days of dispatch, we will assume the parcel was received in perfect condition.</li>
+                </ul>
+              </div>
+
+              <div className="shipping-section">
+                <h3>Shipping Fees & Custom Duties</h3>
+                <ul>
+                  <li>Shipping fees vary by destination and are shown at checkout.</li>
+                  <li>Product prices exclude shipping fees and taxes.</li>
+                  <li>Customs & Import taxes are your responsibility and vary by country.</li>
+                  <li>TÉFA is not liable for delays or additional fees imposed by customs or logistics providers.</li>
+                </ul>
+              </div>
+
+              <div className="shipping-section">
+                <h3>Returns</h3>
+                <p>TÉFA pieces are handcrafted to order and are not eligible for a refund. However, they can be returned for an exchange or credit note within 7 days of receiving the item.</p>
+                <ul>
+                  <li>Items must be in original condition: unworn and unwashed with all tags attached.</li>
+                  <li>Return shipping costs are the customer's responsibility.</li>
+                  <li>To initiate a return, contact our concierge team.</li>
+                </ul>
+              </div>
+
+              <div className="shipping-section">
+                <h3>Cancellations</h3>
+                <p>Cancellations are only accepted within 24 hours of placing an order. Once production has started, we cannot cancel or modify your order.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
         .checkout-page {
           background-color: #fdfaf7;
@@ -570,6 +659,21 @@ export const CheckoutPage: React.FC = () => {
         .subtitle {
           color: #888;
           font-size: 1.1rem;
+          margin-bottom: 16px;
+        }
+
+        .preorder-notice-bold {
+          display: inline-block;
+          background: #1a1a1a;
+          color: white;
+          padding: 8px 16px;
+          border-radius: 8px;
+          font-size: 0.85rem;
+          letter-spacing: 0.05em;
+        }
+
+        .preorder-notice-bold strong {
+          color: #c69b7b;
         }
 
         .checkout-layout {
@@ -1078,6 +1182,39 @@ export const CheckoutPage: React.FC = () => {
           color: #555;
         }
 
+        .with-info {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .info-trigger {
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: #eee;
+          border: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.7rem;
+          font-weight: 700;
+          cursor: pointer;
+          color: #888;
+          transition: background 0.2s;
+        }
+
+        .info-trigger:hover {
+          background: #ddd;
+          color: #1a1a1a;
+        }
+
+        .shipping-text {
+          font-size: 0.85rem;
+          color: #999;
+          font-style: italic;
+        }
+
         .total-row.discount {
           color: #c69b7b;
         }
@@ -1205,6 +1342,152 @@ export const CheckoutPage: React.FC = () => {
           color: #aaa;
           font-size: 0.9rem;
           letter-spacing: 0.05em;
+        }
+
+        /* ═══════════ SHIPPING MODAL ═══════════ */
+        .shipping-modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0,0,0,0.5);
+          backdrop-filter: blur(4px);
+          z-index: 2000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          overscroll-behavior: none;
+        }
+
+        .shipping-modal-content {
+          background: white;
+          width: 100%;
+          max-width: 600px;
+          max-height: 85vh;
+          border-radius: 24px;
+          padding: 40px 40px 20px;
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+
+        .modal-body {
+          flex: 1;
+          min-height: 0;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          padding-right: 12px;
+          padding-bottom: 40px;
+        }
+
+        /* Custom scrollbar - visible on hover or scroll */
+        .modal-body::-webkit-scrollbar {
+          width: 6px;
+        }
+        .modal-body::-webkit-scrollbar-track {
+          background: #fdfaf7;
+          border-radius: 10px;
+        }
+        .modal-body::-webkit-scrollbar-thumb {
+          background: #c69b7b;
+          border-radius: 10px;
+        }
+        .modal-body::-webkit-scrollbar-thumb:hover {
+          background: #b08968;
+        }
+
+        /* Firefox scrollbar */
+        .modal-body {
+          scrollbar-width: thin;
+          scrollbar-color: #c69b7b #fdfaf7;
+        }
+
+        .close-modal {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          background: none;
+          border: none;
+          font-size: 2rem;
+          line-height: 1;
+          cursor: pointer;
+          color: #ccc;
+          transition: color 0.2s;
+        }
+
+        .close-modal:hover {
+          color: #1a1a1a;
+        }
+
+        .modal-header {
+          margin-bottom: 32px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .modal-header h2 {
+          font-family: 'Cormorant Garamond', serif;
+          font-size: 2rem;
+          font-weight: 700;
+          font-style: italic;
+        }
+
+        .brand-badge {
+          background: #fdfaf7;
+          border: 1px solid #c69b7b;
+          color: #c69b7b;
+          padding: 4px 12px;
+          border-radius: 40px;
+          font-size: 0.7rem;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+        }
+
+        .shipping-section {
+          margin-bottom: 24px;
+        }
+
+        .shipping-section h3 {
+          font-size: 0.8rem;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: #c69b7b;
+          margin-bottom: 8px;
+          font-weight: 700;
+        }
+
+        .shipping-section p {
+          color: #666;
+          line-height: 1.6;
+          font-size: 0.95rem;
+        }
+
+        .shipping-section ul {
+          margin-top: 12px;
+          list-style: none;
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .shipping-section li {
+          font-size: 0.9rem;
+          color: #444;
+          padding-left: 20px;
+          position: relative;
+        }
+
+        .shipping-section li::before {
+          content: '•';
+          position: absolute;
+          left: 0;
+          color: #c69b7b;
         }
 
       `}</style>

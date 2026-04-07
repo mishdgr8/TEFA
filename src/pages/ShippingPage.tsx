@@ -20,49 +20,79 @@ export const ShippingPage: React.FC = () => {
                     <div className="shipping-card">
                         <Truck className="card-icon" />
                         <h3>Domestic (Nigeria)</h3>
-                        <p>Lagos: 1-3 business days</p>
-                        <p>Outside Lagos: 3-5 business days</p>
+                        <p>Lagos: 1-2 business days</p>
+                        <p>Outside Lagos: 2-3 business days</p>
                         <p className="price">Starting from ₦3,500</p>
                     </div>
 
                     <div className="shipping-card">
                         <Globe className="card-icon" />
                         <h3>International</h3>
-                        <p>DHL Express: 5-10 business days</p>
-                        <p>Covers USA, UK, Canada, and Europe</p>
+                        <p>DHL Express: 3-5 business days</p>
+                        <p>Global logistics partners</p>
                         <p className="price">Calculated at checkout</p>
                     </div>
 
                     <div className="shipping-card">
                         <Clock className="card-icon" />
-                        <h3>Processing Time</h3>
-                        <p>Ready-to-wear: 2-3 business days</p>
-                        <p>Pre-order: 14-21 business days</p>
-                        <p>Express Request: 14 business days</p>
+                        <h3>Pre-Order Timeline</h3>
+                        <p>Strictly PREORDER ONLY</p>
+                        <p>Handcrafted to order: 14-21 days</p>
+                        <p>Subject to dispatch date</p>
                     </div>
 
                     <div className="shipping-card">
                         <ShieldCheck className="card-icon" />
                         <h3>Tracking</h3>
-                        <p>Real-time updates via email/SMS</p>
-                        <p>Signature required upon delivery</p>
-                        <p>Fully insured shipments</p>
+                        <p>Tracking number via email</p>
+                        <p>Dispatched via trusted partners</p>
+                        <p>Insurance included</p>
                     </div>
                 </div>
 
                 <div className="shipping-details">
                     <section>
-                        <h2>International Customs & Duties</h2>
+                        <h2>General Shipping Policy</h2>
                         <p>
-                            Please note that international shipments may be subject to import duties and taxes, which are levied once a shipment reaches your country.
-                            <span className="font-brand"> TÉFA</span> has no control over these charges and cannot predict what they may be.
+                            <span className="font-brand">TÉFA</span> partners with trusted third-party logistics providers for local and international deliveries.
+                            When placing your order, please ensure billing and shipping address details are accurate, as we cannot modify them once the item has been ordered or dispatched.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2>Timelines</h2>
+                        <p>
+                            Shipping and delivery timelines start from the date of dispatch and are subject to the operations of our logistics partners.
+                        </p>
+                        <ul className="timeline-list">
+                            <li>Deliveries within Lagos: 1–2 business days</li>
+                            <li>Deliveries within Nigeria (outside Lagos): 2–3 business days</li>
+                            <li>International deliveries: 3–5 business days</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>Shipment Tracking</h2>
+                        <p>
+                            For shipments outside Lagos, a Shipment Tracking Number will be emailed to you once your order is dispatched.
+                            If you do not receive your order within 10 working days of dispatch, notify us promptly.
+                            If we do not hear from you within 14 working days of dispatch, we will assume the parcel was received in perfect condition.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2>Shipping Fees & Custom Duties</h2>
+                        <p>
+                            Shipping fees vary by destination and are shown at checkout. Product prices exclude shipping fees and taxes.
+                            Customs & Import taxes are your responsibility and vary by country.
+                            <span className="font-brand">TÉFA</span> is not liable for delays or additional fees imposed by customs or logistics providers.
                         </p>
                     </section>
 
                     <section>
                         <h2>Returns & Exchanges</h2>
                         <p>
-                            We want you to be completely satisfied with your purchase. Items can be returned for store credit or exchange within 7 days of receipt,
+                            We want you to be completely satisfied with your purchase. Every piece is handcrafted to order. Items can be returned for store credit or exchange within 7 days of receipt,
                             provided they are unworn, unwashed, and in their original packaging with tags attached.
                         </p>
                         <p className="note">Note: Custom orders and sale items are final sale.</p>
@@ -147,6 +177,15 @@ export const ShippingPage: React.FC = () => {
                 .shipping-details p {
                     line-height: 1.8;
                     color: var(--color-text-light);
+                }
+
+                .timeline-list {
+                    list-style: disc;
+                    padding-left: var(--space-6);
+                    color: var(--color-text-light);
+                    display: flex;
+                    flex-direction: column;
+                    gap: var(--space-2);
                 }
 
                 .note {
