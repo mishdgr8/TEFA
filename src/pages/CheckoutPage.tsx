@@ -7,10 +7,11 @@ import { SEOHead } from '../components/SEOHead';
 import { PaymentWrapper } from '../components/PaymentWrapper';
 import { SearchableDropdown } from '../components/SearchableDropdown';
 import { COUNTRIES } from '../data/countries';
+import { supabase } from '../lib/supabase';
 
 export const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
-  const { cart, currency, clearCart, user } = useStore();
+  const { cart, currency, clearCart, user, createOrder } = useStore();
 
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -54,6 +55,38 @@ export const CheckoutPage: React.FC = () => {
       sessionStorage.setItem('checkout_info', JSON.stringify(formData));
     }
   }, [formData]);
+
+  // Geolocation pre-fill
+  React.useEffect(() => {
+    const detectLocation = async () => {
+      // Only detect if country is not already manually set or loaded from session
+      if (formData.country) return;
+
+      try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+
+        if (data && data.country_name) {
+          const matchedCountry = COUNTRIES.find(c =>
+            c.name.toLowerCase() === data.country_name.toLowerCase() ||
+            c.code.toLowerCase() === data.country_code?.toLowerCase()
+          );
+
+          if (matchedCountry) {
+            setFormData(prev => ({
+              ...prev,
+              country: matchedCountry.name,
+              countryCode: matchedCountry.dialCode || prev.countryCode
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Checkout location detection failed:', error);
+      }
+    };
+
+    detectLocation();
+  }, []);
 
   const [showPayment, setShowPayment] = useState(false);
   const [promoCode, setPromoCode] = useState('');
@@ -349,8 +382,59 @@ export const CheckoutPage: React.FC = () => {
                         cart={cart}
                         customerInfo={formData}
                         userId={user?.uid}
-                        onSuccess={(ref) => {
+                        onSuccess={async (ref) => {
                           console.log('Payment Successful:', ref);
+                          try {
+                            const orderId = await createOrder({
+                              userId: user?.uid,
+                              customerInfo: formData,
+                              items: cart,
+                              total: total,
+                              currency: currency,
+                              paymentReference: ref,
+                              paymentStatus: 'success',
+                              orderStatus: 'new'
+                            });
+
+                            // Trigger Confirmation Email from Frontend Fallback
+                            if (orderId) {
+                              try {
+                                const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-order-email', {
+                                  body: {
+                                    order: {
+                                      id: orderId,
+                                      total: total,
+                                      currency: currency,
+                                      customer_location: {
+                                        address: formData.address,
+                                        city: formData.city,
+                                        country: formData.country,
+                                        postalCode: formData.postalCode
+                                      }
+                                    },
+                                    items: cart.map(item => ({
+                                      name: item.name,
+                                      qty: item.qty,
+                                      price: currency === 'USD' ? (item.priceUSD || item.price) : item.price,
+                                      selectedSize: item.selectedSize
+                                    })),
+                                    customerEmail: formData.email,
+                                    customerName: `${formData.firstName} ${formData.lastName}`.trim() || 'Valued Customer'
+                                  }
+                                });
+                                if (emailError) {
+                                  console.error('📧 Email function error:', emailError);
+                                } else {
+                                  console.log('📧 Email sent successfully:', emailResult);
+                                }
+                              } catch (emailErr) {
+                                console.error('📧 Frontend email trigger failed:', emailErr);
+                              }
+                            }
+                          } catch (err) {
+                            console.error('Frontend order creation failed:', err);
+                            // It might still be processed by the webhook
+                          }
                           clearCart();
                           setIsSuccess(true);
                         }}
@@ -416,11 +500,29 @@ export const CheckoutPage: React.FC = () => {
             </aside>
           </div>
         ) : (
-          <div className="success-screen">
-            <CheckCircle size={64} className="success-icon" />
-            <h2>Order Secured Successfully!</h2>
-            <p>Thank you for choosing TÉFA. We've sent a detailed receipt to <strong>{formData.email}</strong>. Our team will contact you shortly regarding delivery.</p>
-            <button onClick={() => navigate('/shop')} className="return-btn">Return to Collections</button>
+          <div className="success-screen-tefa">
+            <div className="success-card-tefa">
+              <div className="success-icon-wrap">
+                <CheckCircle size={48} strokeWidth={1.5} />
+              </div>
+
+              <h2 className="success-title">Selection Secured</h2>
+              <div className="success-divider"></div>
+
+              <div className="success-message">
+                <p>Your piece has been successfully secured in our collections. A detailed master-copy of your order receipt has been sent to <strong>{formData.email}</strong>.</p>
+                <p>Our concierge team will contact you via WhatsApp shortly to finalize delivery logistics for your location.</p>
+              </div>
+
+              <div className="next-steps">
+                <button onClick={() => navigate('/orders')} className="order-history-btn">View Order History</button>
+                <button onClick={() => navigate('/shop')} className="continue-btn">Examine More Collections</button>
+              </div>
+
+              <div className="success-footer">
+                TÉFA House of Luxury & Arts
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -995,6 +1097,114 @@ export const CheckoutPage: React.FC = () => {
           color: #aaa;
           line-height: 1.5;
           font-style: italic;
+        }
+
+        /* ═══════════ SUCCESS SCREEN REDESIGN ═══════════ */
+        .success-screen-tefa {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 40px 20px;
+          min-height: 60vh;
+        }
+
+        .success-card-tefa {
+          background: white;
+          width: 100%;
+          max-width: 550px;
+          padding: 60px 40px;
+          border-radius: 20px;
+          border: 1px solid #ebebeb;
+          text-align: center;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.03);
+        }
+
+        .success-icon-wrap {
+          color: #1a1a1a;
+          margin-bottom: 32px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 80px;
+          height: 80px;
+          background: #fdfaf7;
+          border-radius: 50%;
+        }
+
+        .success-title {
+          font-family: 'Cormorant Garamond', serif;
+          font-size: 2.2rem;
+          font-weight: 700;
+          font-style: italic;
+          color: #1a1a1a;
+          margin-bottom: 24px;
+        }
+
+        .success-divider {
+          width: 40px;
+          height: 1px;
+          background: #c69b7b;
+          margin: 0 auto 32px;
+        }
+
+        .success-message {
+          color: #666;
+          line-height: 1.7;
+          font-size: 1rem;
+          margin-bottom: 48px;
+        }
+
+        .success-message p {
+          margin-bottom: 16px;
+        }
+
+        .next-steps {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .continue-btn {
+          width: 100%;
+          padding: 16px;
+          background: transparent;
+          color: #1a1a1a;
+          border: 1px solid #1a1a1a;
+          border-radius: 12px;
+          font-family: 'Quicksand', sans-serif;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .continue-btn:hover {
+          background: #f9f9f9;
+        }
+
+        .order-history-btn {
+          width: 100%;
+          padding: 16px;
+          background: #1a1a1a;
+          color: white;
+          border: none;
+          border-radius: 12px;
+          font-family: 'Quicksand', sans-serif;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .order-history-btn:hover {
+          background: #333;
+        }
+
+        .success-footer {
+          margin-top: 60px;
+          font-family: 'Cormorant Garamond', serif;
+          font-style: italic;
+          color: #aaa;
+          font-size: 0.9rem;
+          letter-spacing: 0.05em;
         }
 
       `}</style>

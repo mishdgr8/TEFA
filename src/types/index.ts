@@ -141,6 +141,7 @@ export interface StoreActions {
 
   updateOrderStatus: (id: string, status: Order['orderStatus']) => Promise<void>;
   deleteOrder: (id: string) => Promise<void>;
+  createOrder: (orderData: Partial<Order>) => Promise<string>;
   updateProfile: (updates: Partial<AuthUser['metadata']>) => Promise<void>;
 
   addToCart: (item: CartItem) => void;

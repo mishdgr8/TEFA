@@ -52,6 +52,21 @@ export const PaymentWrapper: React.FC<PaymentWrapperProps> = ({
                     display_name: "Phone",
                     variable_name: "phone",
                     value: customerInfo.phone
+                },
+                {
+                    display_name: "Order Items",
+                    variable_name: "items_purchased",
+                    value: cart.map(i => `${i.qty}x ${i.name} (${i.selectedSize})`).join(', ')
+                },
+                {
+                    display_name: "Delivery Address",
+                    variable_name: "delivery_address",
+                    value: `${customerInfo.address}, ${customerInfo.city}, ${customerInfo.country}`
+                },
+                {
+                    display_name: "Delivery Notes",
+                    variable_name: "delivery_notes",
+                    value: customerInfo.note || 'None provided'
                 }
             ],
             cart_items: cart.map(item => ({
@@ -94,57 +109,75 @@ export const PaymentWrapper: React.FC<PaymentWrapperProps> = ({
     };
 
     return (
-        <div className="payment-container">
-            <button
-                className={`pay-btn ${currency === 'USD' ? 'usd' : 'ngn'}`}
-                onClick={handlePayment}
-                disabled={isInitializing}
-            >
-                {isInitializing ? (
-                    <><Loader2 className="animate-spin mr-2 h-4 w-4" /> Processing...</>
-                ) : (
-                    <><CreditCard className="mr-2 h-4 w-4" /> {`Pay ${formatPrice({ amount: total }, currency)} Now`}</>
-                )}
-            </button>
-            <div className="secure-badge mt-4 flex items-center justify-center gap-2 opacity-60 text-xs">
-                <ShieldCheck className="h-3 w-3" />
-                <span>Secured by Paystack</span>
+        <div className="tefa-payment-container">
+            <div className="tefa-payment-layout">
+                <button
+                    className="tefa-pay-btn"
+                    onClick={handlePayment}
+                    disabled={isInitializing}
+                >
+                    {isInitializing ? (
+                        <><Loader2 className="animate-spin" size={20} /> Processing Payment...</>
+                    ) : (
+                        <>Secure Order • {formatPrice({ amount: total }, currency)}</>
+                    )}
+                </button>
+                <div className="tefa-payment-footer">
+                    <ShieldCheck size={14} />
+                    <span>Payment secured by Paystack</span>
+                </div>
             </div>
 
             <style>{`
-                .payment-container {
+                .tefa-payment-container {
                     width: 100%;
-                    text-align: center;
                 }
-                .pay-btn {
+                .tefa-payment-layout {
                     width: 100%;
-                    padding: 1rem;
-                    border-radius: var(--radius-xl);
+                    margin-top: 12px;
+                }
+                .tefa-pay-btn {
+                    width: 100%;
+                    padding: 22px;
+                    background: #1a1a1a;
+                    color: white;
+                    border: none;
+                    border-radius: 12px;
+                    font-family: 'Quicksand', sans-serif;
                     font-weight: 700;
                     font-size: 1.1rem;
+                    letter-spacing: 0.02em;
+                    cursor: pointer;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    transition: all 0.2s;
-                    border: none;
-                    cursor: pointer;
-                    font-family: 'Quicksand', sans-serif;
+                    gap: 12px;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
                 }
-                .pay-btn.ngn {
-                    background: #09a5db; /* Paystack Blue */
-                    color: white;
-                }
-                .pay-btn.usd {
-                    background: var(--color-brown-dark); /* Brand Brown */
-                    color: white;
-                }
-                .pay-btn:hover {
-                    opacity: 0.9;
+                .tefa-pay-btn:hover:not(:disabled) {
+                    background: #333;
                     transform: translateY(-2px);
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
                 }
-                .pay-btn:disabled {
+                .tefa-pay-btn:active:not(:disabled) {
+                    transform: translateY(0);
+                }
+                .tefa-pay-btn:disabled {
                     opacity: 0.7;
+                    background: #666;
                     cursor: not-allowed;
+                }
+                .tefa-payment-footer {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    margin-top: 20px;
+                    color: #999;
+                    font-size: 0.75rem;
+                    font-family: 'Quicksand', sans-serif;
+                    letter-spacing: 0.01em;
                 }
                 .animate-spin {
                     animation: spin 1s linear infinite;

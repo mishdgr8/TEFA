@@ -25,7 +25,8 @@ import {
   subscribeToOrders,
   updateOrderStatusInFirestore,
   deleteOrderFromFirestore,
-  updateUserProfile
+  updateUserProfile,
+  createOrder
 } from '../lib/supabaseDb';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -142,6 +143,42 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
       if (authUnsubscribe) authUnsubscribe();
       if (profileUnsubscribe) profileUnsubscribe();
     };
+  }, []);
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Geolocation & Currency Detection
+  // ═══════════════════════════════════════════════════════════════════════════
+  useEffect(() => {
+    const detectLocation = async () => {
+      // Only auto-detect if the user hasn't manually set a currency yet in this session
+      const savedCurrency = localStorage.getItem(STORAGE_KEYS.CURRENCY);
+      if (savedCurrency) return;
+
+      try {
+        // Use ipapi.co for free geolocation (up to 1k requests/day for free)
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+
+        if (data && data.country_code) {
+          console.log(`🌍 Detected location: ${data.country_name} (${data.country_code})`);
+
+          // If outside Nigeria, default to USD
+          if (data.country_code !== 'NG') {
+            setCurrencyState('USD');
+            saveToStorage(STORAGE_KEYS.CURRENCY, 'USD');
+          } else {
+            setCurrencyState('NGN');
+            saveToStorage(STORAGE_KEYS.CURRENCY, 'NGN');
+          }
+        }
+      } catch (error) {
+        console.error('Location detection failed:', error);
+      }
+    };
+
+    // Slight delay to not compete with initial page load
+    const timeoutId = setTimeout(detectLocation, 3000);
+    return () => clearTimeout(timeoutId);
   }, []);
 
   // Load products from Firestore in real-time
@@ -451,6 +488,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     updateOrderStatus,
     deleteOrder,
     updateProfile,
+    createOrder,
   }), [
     products,
     categories,

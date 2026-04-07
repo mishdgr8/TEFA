@@ -76,49 +76,103 @@ export const OrdersPage: React.FC = () => {
                         {orders.map((order) => (
                             <m.div
                                 key={order.id}
-                                className="order-card"
+                                className="order-card-detailed"
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                             >
-                                <div className="order-main">
-                                    <div className="order-meta">
-                                        <div className="order-id">
-                                            <span>Order ID:</span>
-                                            <strong>#{order.id.slice(0, 8)}</strong>
-                                        </div>
-                                        <div className="order-date">
-                                            {new Date(order.createdAt).toLocaleDateString(undefined, {
-                                                year: 'numeric',
-                                                month: 'long',
-                                                day: 'numeric'
-                                            })}
+                                <div className="detail-header">
+                                    <div className="header-main">
+                                        <h2>Order #{order.id.slice(-6).toUpperCase()}</h2>
+                                        <div className="status-row">
+                                            <div className="status-badge-detailed" data-status={order.orderStatus}>
+                                                {getStatusIcon(order.orderStatus)}
+                                                Order {order.orderStatus}
+                                            </div>
+                                            <span className="order-date">Placed on {new Date(order.createdAt).toLocaleDateString(undefined, {
+                                                weekday: 'short',
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric'
+                                            })}</span>
                                         </div>
                                     </div>
-
-                                    <div className="order-items">
-                                        {order.items.map((item, idx) => (
-                                            <div key={idx} className="order-item-row">
-                                                <img src={item.image} alt={item.name} />
-                                                <div className="item-info">
-                                                    <h4>{item.name}</h4>
-                                                    <p>Size: {item.selectedSize} | Color: {item.selectedColor}</p>
-                                                    <span className="item-price">
-                                                        {item.qty} x {formatPrice(item.price, order.currency)}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        ))}
+                                    <div className="header-actions">
+                                        <div className="payment-status-pill" data-paid={order.paymentStatus === 'success'}>
+                                            {order.paymentStatus === 'success' ? 'Payment Successful' : 'Payment Pending'}
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="order-summary">
-                                    <div className="status-badge" data-status={order.orderStatus}>
-                                        {getStatusIcon(order.orderStatus)}
-                                        {order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
+                                <div className="detail-grid">
+                                    <div className="summary-section">
+                                        <h3>Order summary</h3>
+                                        <div className="items-list">
+                                            {order.items.map((item, idx) => (
+                                                <div key={idx} className="item-detail-row">
+                                                    <div className="item-img">
+                                                        <img src={item.image} alt={item.name} />
+                                                    </div>
+                                                    <div className="item-meta">
+                                                        <div className="item-name-row">
+                                                            <h4>{item.name}</h4>
+                                                            <span className="price-tag">{formatPrice(item.price * item.qty, order.currency)}</span>
+                                                        </div>
+                                                        <p className="item-specs">
+                                                            {item.selectedSize && `Size: ${item.selectedSize}`}
+                                                            {item.selectedColor && ` | Color: ${item.selectedColor}`}
+                                                        </p>
+                                                        <span className="item-qty">Qty: {item.qty}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="cost-breakdown">
+                                            <div className="cost-row">
+                                                <span>Subtotal</span>
+                                                <span>{formatPrice(order.total, order.currency)}</span>
+                                            </div>
+                                            <div className="cost-row">
+                                                <span>Shipping</span>
+                                                <span>{formatPrice(0, order.currency)}</span>
+                                            </div>
+                                            <div className="cost-row">
+                                                <span>Taxes</span>
+                                                <span>{formatPrice(0, order.currency)}</span>
+                                            </div>
+                                            <div className="cost-row total-row">
+                                                <span>Total</span>
+                                                <span className="total-val">{formatPrice(order.total, order.currency)} {order.currency}</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="order-total">
-                                        <span>Total Amount</span>
-                                        <strong>{formatPrice(order.total, order.currency)}</strong>
+
+                                    <div className="info-cols">
+                                        <div className="info-block">
+                                            <h3>Customer information</h3>
+                                            <div className="customer-info-grid">
+                                                <div className="info-group">
+                                                    <label>Shipping address</label>
+                                                    <p>{order.customerInfo.firstName} {order.customerInfo.lastName}</p>
+                                                    <p>{order.customerInfo.address}</p>
+                                                    <p>{order.customerInfo.city}</p>
+                                                    <p>{order.customerInfo.country}</p>
+                                                </div>
+                                                <div className="info-group">
+                                                    <label>Billing address</label>
+                                                    <p>{order.customerInfo.firstName} {order.customerInfo.lastName}</p>
+                                                    <p>{order.customerInfo.address}</p>
+                                                    <p>{order.customerInfo.city}</p>
+                                                    <p>{order.customerInfo.country}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {order.customer_note && (
+                                            <div className="info-block note-block">
+                                                <h3>Order Notes</h3>
+                                                <p className="note-text">{order.customer_note}</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </m.div>
@@ -131,153 +185,172 @@ export const OrdersPage: React.FC = () => {
                 .orders-page {
                     min-height: 100vh;
                     background: #fdfaf7;
-                    padding: 80px 20px;
+                    padding: 100px 5%;
                     font-family: 'Quicksand', sans-serif;
                 }
                 .orders-container {
-                    max-width: 900px;
+                    max-width: 1200px;
                     margin: 0 auto;
                 }
                 .back-link {
                     display: flex;
                     align-items: center;
                     gap: 8px;
-                    color: var(--color-brown);
+                    color: #666;
                     text-decoration: none;
-                    font-weight: 600;
+                    font-weight: 500;
                     margin-bottom: 24px;
-                    transition: transform 0.2s;
-                }
-                .back-link:hover {
-                    transform: translateX(-4px);
-                }
-                .orders-header h1 {
-                    font-family: 'Montserrat', sans-serif;
-                    font-size: 2rem;
-                    color: var(--color-brown-dark);
-                    margin-bottom: 8px;
-                }
-                .orders-header p {
-                    color: var(--color-text-muted);
-                    margin-bottom: 40px;
-                }
-                .no-orders {
-                    text-align: center;
-                    padding: 60px 0;
-                    background: white;
-                    border-radius: 20px;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-                }
-                .no-orders h2 {
-                    margin: 16px 0;
-                }
-                .shop-now-btn {
-                    display: inline-block;
-                    margin-top: 24px;
-                    padding: 14px 32px;
-                    background: var(--color-coral);
-                    color: white;
-                    text-decoration: none;
-                    border-radius: 12px;
-                    font-weight: 700;
-                }
-                .order-card {
-                    background: white;
-                    border-radius: 20px;
-                    overflow: hidden;
-                    margin-bottom: 24px;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-                    display: grid;
-                    grid-template-columns: 1fr 240px;
-                }
-                @media (max-width: 768px) {
-                    .order-card {
-                        grid-template-columns: 1fr;
-                    }
-                }
-                .order-main {
-                    padding: 24px;
-                }
-                .order-meta {
-                    display: flex;
-                    justify-content: space-between;
-                    border-bottom: 1px solid #eee;
-                    padding-bottom: 16px;
-                    margin-bottom: 16px;
-                }
-                .order-id span {
-                    color: #999;
-                    margin-right: 8px;
-                }
-                .order-date {
-                    color: #999;
                     font-size: 0.9rem;
                 }
-                .order-item-row {
+                .orders-header h1 {
+                    font-family: 'Cormorant Garamond', serif;
+                    font-size: 2.5rem;
+                    color: #1a1a1a;
+                    margin-bottom: 8px;
+                    font-style: italic;
+                }
+                .orders-header p {
+                    color: #666;
+                    margin-bottom: 40px;
+                }
+                .order-card-detailed {
+                    background: white;
+                    border-radius: 12px;
+                    border: 1px solid #ebebeb;
+                    margin-bottom: 40px;
+                    overflow: hidden;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+                }
+                .detail-header {
+                    padding: 24px 32px;
+                    background: #fafafb;
+                    border-bottom: 1px solid #eee;
                     display: flex;
-                    gap: 16px;
-                    margin-bottom: 16px;
-                }
-                .order-item-row img {
-                    width: 60px;
-                    height: 80px;
-                    object-fit: cover;
-                    border-radius: 8px;
-                }
-                .item-info h4 {
-                    margin: 0 0 4px 0;
-                    font-family: 'Montserrat', sans-serif;
-                    font-size: 0.95rem;
-                }
-                .item-info p {
-                    font-size: 0.85rem;
-                    color: #999;
-                    margin-bottom: 4px;
-                }
-                .item-price {
-                    font-weight: 600;
-                    color: var(--color-brown);
-                }
-                .order-summary {
-                    background: #fdfaf7;
-                    padding: 24px;
-                    display: flex;
-                    flex-direction: column;
                     justify-content: space-between;
-                    border-left: 1px solid #eee;
+                    align-items: flex-start;
                 }
-                @media (max-width: 768px) {
-                    .order-summary {
-                        border-left: none;
-                        border-top: 1px solid #eee;
-                    }
+                .header-main h2 {
+                    font-size: 1.1rem;
+                    color: #1a1a1a;
+                    margin-bottom: 8px;
                 }
-                .status-badge {
+                .status-row {
                     display: flex;
                     align-items: center;
-                    gap: 8px;
-                    padding: 8px 16px;
-                    border-radius: 100px;
-                    font-size: 0.85rem;
-                    font-weight: 700;
-                    width: fit-content;
+                    gap: 16px;
                 }
-                .status-badge[data-status='new'] { background: #E0F2FE; color: #0369A1; }
-                .status-badge[data-status='processing'] { background: #FEF3C7; color: #B45309; }
-                .status-badge[data-status='shipped'] { background: #F3E8FF; color: #7E22CE; }
-                .status-badge[data-status='delivered'] { background: #DCFCE7; color: #15803D; }
-                .status-badge[data-status='cancelled'] { background: #FEE2E2; color: #B91C1C; }
-                
-                .order-total span {
-                    display: block;
+                .status-badge-detailed {
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
                     font-size: 0.85rem;
-                    color: #999;
+                    font-weight: 600;
+                    color: #1a1a1a;
+                }
+                .order-date {
+                    font-size: 0.85rem;
+                    color: #666;
+                }
+                .payment-status-pill {
+                    padding: 6px 14px;
+                    border-radius: 100px;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    background: #f0f0f0;
+                }
+                .payment-status-pill[data-paid='true'] {
+                    background: #e6fcf5;
+                    color: #0ca678;
+                }
+
+                .detail-grid {
+                    display: grid;
+                    grid-template-columns: 1.5fr 1fr;
+                    padding: 32px;
+                    gap: 48px;
+                }
+                @media (max-width: 968px) {
+                    .detail-grid { grid-template-columns: 1fr; }
+                }
+
+                .summary-section h3, .info-block h3 {
+                    font-size: 0.9rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: #666;
+                    margin-bottom: 24px;
+                }
+
+                .item-detail-row {
+                    display: flex;
+                    gap: 20px;
+                    margin-bottom: 24px;
+                }
+                .item-img img {
+                    width: 70px;
+                    height: 90px;
+                    object-fit: cover;
+                    border-radius: 4px;
+                }
+                .item-meta { flex: 1; }
+                .item-name-row {
+                    display: flex;
+                    justify-content: space-between;
                     margin-bottom: 4px;
                 }
-                .order-total strong {
-                    font-size: 1.25rem;
-                    color: var(--color-brown-dark);
+                .item-name-row h4 { font-size: 1rem; color: #1a1a1a; }
+                .price-tag { font-weight: 600; }
+                .item-specs { font-size: 0.85rem; color: #666; margin-bottom: 4px; }
+                .item-qty { font-size: 0.8rem; color: #999; }
+
+                .cost-breakdown {
+                    margin-top: 32px;
+                    padding-top: 24px;
+                    border-top: 1px solid #eee;
                 }
+                .cost-row {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 12px;
+                    font-size: 0.95rem;
+                    color: #666;
+                }
+                .total-row {
+                    margin-top: 16px;
+                    padding-top: 16px;
+                    border-top: 2px solid #1a1a1a;
+                    color: #1a1a1a;
+                    font-weight: 700;
+                }
+                .total-val { font-size: 1.4rem; }
+
+                .customer-info-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 24px;
+                }
+                .info-group label {
+                    display: block;
+                    font-size: 0.75rem;
+                    color: #999;
+                    margin-bottom: 8px;
+                    text-transform: uppercase;
+                }
+                .info-group p {
+                    font-size: 0.9rem;
+                    color: #1a1a1a;
+                    margin-bottom: 4px;
+                    line-height: 1.4;
+                }
+                .note-block {
+                    margin-top: 32px;
+                    padding: 20px;
+                    background: #fdfaf7;
+                    border-radius: 8px;
+                }
+                .note-text { font-size: 0.9rem; color: #1a1a1a; font-style: italic; }
+
                 .orders-loading {
                     height: 60vh;
                     display: flex;
@@ -290,7 +363,7 @@ export const OrdersPage: React.FC = () => {
                     width: 40px;
                     height: 40px;
                     border: 3px solid #eee;
-                    border-top-color: var(--color-coral);
+                    border-top-color: #ff7f50;
                     border-radius: 50%;
                     animation: spin 1s linear infinite;
                 }

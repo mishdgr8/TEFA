@@ -75,8 +75,8 @@ serve(async (req) => {
             if (cartItems.length > 0) {
                 const itemsToInsert = cartItems.map((item: any) => ({
                     order_id: newOrder.id,
-                    product_id: item.id,
-                    variant_id: item.variantId || `${item.id}-${item.selectedSize || 'Auto'}`,
+                    product_id: item.productId,
+                    variant_id: item.variantId || `${item.productId}-${item.selectedSize || 'Auto'}`,
                     name: item.name,
                     qty: item.qty || 1,
                     price: item.price || 0,
@@ -90,6 +90,32 @@ serve(async (req) => {
                 if (itemsError) {
                     throw new Error(`Failed to insert order items: ${itemsError.message}`);
                 }
+            }
+
+            // 3. Send Confirmation Email
+            try {
+                await fetch(`${supabaseUrl}/functions/v1/send-order-email`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${supabaseKey}`
+                    },
+                    body: JSON.stringify({
+                        order: {
+                            id: newOrder.id,
+                            total: data.amount / 100,
+                            currency: data.currency || 'NGN',
+                            customer_location: metadata.customer_info || {}
+                        },
+                        items: cartItems,
+                        customerEmail: data.customer.email || metadata.customer_email,
+                        customerName: metadata.customer_info ? `${metadata.customer_info.firstName} ${metadata.customer_info.lastName}`.trim() : 'Valued Customer'
+                    })
+                });
+                console.log(`📧 Confirmation email triggered for order ${newOrder.id}`);
+            } catch (emailErr) {
+                console.error('Email sending failed:', emailErr);
+                // Don't fail the whole webhook if just email fails
             }
 
             console.log(`✅ Order ${data.reference} successfully processed by webhook.`);

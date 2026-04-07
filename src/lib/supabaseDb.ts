@@ -575,6 +575,54 @@ export const subscribeToOrders = (
     };
 };
 
+export const createOrder = async (orderData: Partial<Order>): Promise<string> => {
+    // Basic conversion for DB
+    const orderInsert = {
+        user_id: orderData.userId || null,
+        customer_name: `${orderData.customerInfo?.firstName} ${orderData.customerInfo?.lastName}`.trim(),
+        customer_email: orderData.customerInfo?.email || '',
+        customer_phone: orderData.customerInfo?.phone ? `${orderData.customerInfo.countryCode} ${orderData.customerInfo.phone}`.trim() : '',
+        customer_location: JSON.stringify(orderData.customerInfo || {}),
+        customer_note: orderData.customerInfo?.note || '',
+        total: orderData.total || 0,
+        currency: orderData.currency || 'NGN',
+        payment_reference: orderData.paymentReference || '',
+        payment_status: orderData.paymentStatus || 'success',
+        order_status: orderData.orderStatus || 'new',
+        payment_method: 'paystack'
+    };
+
+    const { data: newOrderData, error: orderError } = await supabase
+        .from('orders')
+        .insert(orderInsert as any)
+        .select('id')
+        .single();
+
+    const newOrder = newOrderData as any;
+
+    if (orderError) throw orderError;
+
+    if (orderData.items && orderData.items.length > 0) {
+        const itemsToInsert = orderData.items.map(item => ({
+            order_id: newOrder.id,
+            product_id: item.productId,
+            variant_id: item.variantId,
+            name: item.name,
+            qty: item.qty,
+            price: item.price,
+            selected_size: item.selectedSize
+        }));
+
+        const { error: itemsError } = await supabase
+            .from('order_items')
+            .insert(itemsToInsert);
+
+        if (itemsError) throw itemsError;
+    }
+
+    return newOrder.id;
+};
+
 export const updateOrderStatusInFirestore = async (
     id: string,
     status: Order['orderStatus']

@@ -173,8 +173,8 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
 
         {/* Right Actions */}
         <div className="header-actions">
-          {/* Currency Selector */}
-          <div className="currency-selector">
+          {/* Currency Selector (Hidden) */}
+          <div className="currency-selector" style={{ display: 'none' }}>
             <button
               className={`currency-btn ${isHome && !isScrolled ? 'transparent-mode' : ''}`}
               onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
@@ -343,8 +343,8 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
                   ))}
                 </div>
 
-                {/* Currency Selector in Mobile Menu */}
-                <div className="mobile-menu-currency">
+                {/* Currency Selector in Mobile Menu (Hidden) */}
+                {/* <div className="mobile-menu-currency">
                   <span className="mobile-menu-currency-label">Currency</span>
                   <div className="mobile-menu-currency-options">
                     {CURRENCIES.map(curr => (
@@ -358,7 +358,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
                       </button>
                     ))}
                   </div>
-                </div>
+                </div> */}
 
                 {user?.isAdmin && (
                   <div className="mobile-menu-footer">

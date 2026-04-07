@@ -55,7 +55,7 @@ export const AdminOrders: React.FC = () => {
                             <div className="col-customer">
                                 <span className="customer-name">{order.customerInfo.firstName} {order.customerInfo.lastName}</span>
                                 <span className="customer-email">{order.customerInfo.email}</span>
-                                <span className="customer-phone" style={{ fontSize: '10px', color: '#999', display: 'block' }}>{order.customerInfo.countryCode} {order.customerInfo.phone}</span>
+                                <span className="customer-phone" style={{ fontSize: '10px', color: '#999', display: 'block' }}>{order.customerInfo.phone}</span>
                                 <span className="customer-address" style={{ fontSize: '10px', color: '#666', marginTop: '4px', display: 'block' }}>
                                     {order.customerInfo.address}, {order.customerInfo.city}, {order.customerInfo.postalCode}<br />
                                     {order.customerInfo.country}
@@ -151,12 +151,12 @@ export const AdminOrders: React.FC = () => {
         .items-preview { display: flex; flex-wrap: wrap; gap: 4px; }
         .item-tag { 
           font-size: 10px; 
-          background: #fdfaf7; 
-          border: 1px solid #eee;
-          padding: 2px 6px; 
-          border-radius: 4px; 
+          background: #333; 
+          color: white;
+          padding: 4px 10px; 
+          border-radius: 6px; 
           white-space: nowrap;
-          color: #2C1810;
+          font-weight: 500;
         }
 
         .total-amount { font-weight: 700; color: #2C1810; font-size: 1.1rem; }
