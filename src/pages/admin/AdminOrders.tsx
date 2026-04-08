@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { OrderDetailsModal } from './OrderDetailsModal';
 import { ShoppingBag, Trash2, Loader2, Eye } from 'lucide-react';
 import { useStore, formatPrice } from '../../data/store';
@@ -6,8 +7,19 @@ import { Order } from '../../types';
 
 export const AdminOrders: React.FC = () => {
     const { orders, updateOrderStatus, deleteOrder } = useStore();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [updatingId, setUpdatingId] = React.useState<string | null>(null);
-    const [selectedOrder, setSelectedOrder] = React.useState<Order | null>(null);
+
+    const selectedOrderId = searchParams.get('orderId');
+    const selectedOrder = orders.find(o => o.id === selectedOrderId) || null;
+
+    const setSelectedOrder = (order: Order | null) => {
+        setSearchParams(prev => {
+            if (order) prev.set('orderId', order.id);
+            else prev.delete('orderId');
+            return prev;
+        });
+    };
 
     const handleStatusChange = async (orderId: string, newStatus: Order['orderStatus']) => {
         setUpdatingId(orderId);

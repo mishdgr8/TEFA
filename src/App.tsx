@@ -55,6 +55,7 @@ export const App: React.FC = () => {
     damping: 30,
     restDelta: 0.001
   });
+  const lenisRef = useRef<Lenis | null>(null);
   const [isScrolling, setIsScrolling] = useState(false);
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -64,6 +65,13 @@ export const App: React.FC = () => {
     scrollTimeout.current = setTimeout(() => setIsScrolling(false), 1500);
   });
 
+  // Disable browser scroll restoration
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+  }, []);
+
   // Initialize Lenis Smooth Scrolling
   useEffect(() => {
     const lenis = new Lenis({
@@ -71,6 +79,7 @@ export const App: React.FC = () => {
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
     });
+    lenisRef.current = lenis;
 
     function raf(time: number) {
       lenis.raf(time);
@@ -81,6 +90,7 @@ export const App: React.FC = () => {
 
     return () => {
       lenis.destroy();
+      lenisRef.current = null;
     };
   }, []);
 
@@ -139,11 +149,12 @@ export const App: React.FC = () => {
         <AnimatePresence mode="wait">
           <m.main
             key={location.pathname}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
           >
+            <ScrollToTop lenis={lenisRef.current} />
             <React.Suspense fallback={<PageLoader />}>
               <Routes location={location}>
                 <Route path="/" element={<HomePage />} />
@@ -292,4 +303,24 @@ export const App: React.FC = () => {
       </div>
     </LazyMotion>
   );
+};
+
+// Reset scroll on route changes - Defined OUTSIDE to prevent re-mounting glitches
+const ScrollToTop: React.FC<{ lenis: Lenis | null }> = ({ lenis }) => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    // Small timeout to ensure the new page layout is calculated
+    // and AnimatePresence/Lenis have settled
+    const timer = setTimeout(() => {
+      if (lenis) {
+        lenis.scrollTo(0, { immediate: true });
+      }
+      window.scrollTo(0, 0);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [pathname, lenis]);
+
+  return null;
 };

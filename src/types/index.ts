@@ -113,6 +113,7 @@ export interface StoreState {
   orders: Order[];
   user: AuthUser | null;
   loading: boolean;
+  authLoading: boolean;
   isSearchOpen: boolean;
   isAuthModalOpen: boolean;
   isProfileModalOpen: boolean;

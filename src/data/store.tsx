@@ -94,6 +94,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
 
   // Subscribe to auth state changes - Delayed to improve TBT and initial LCP
   useEffect(() => {
@@ -105,41 +106,40 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     let profileUnsubscribe: (() => void) | null = null;
     let authUnsubscribe: (() => void) | null = null;
 
-    // Delay auth initialization to reduce initial main-thread work and network contention
-    const timeoutId = setTimeout(() => {
-      authUnsubscribe = onAuthChange(async (firebaseUser: User | null) => {
-        if (profileUnsubscribe) {
-          profileUnsubscribe();
-          profileUnsubscribe = null;
-        }
+    // Remove the artificial 2s delay to fix refresh redirects
+    authUnsubscribe = onAuthChange(async (firebaseUser: User | null) => {
+      if (profileUnsubscribe) {
+        profileUnsubscribe();
+        profileUnsubscribe = null;
+      }
 
-        if (firebaseUser) {
-          // Ensure user document exists in Supabase Profiles
-          await ensureUserProfile(firebaseUser.id, firebaseUser.email || null, firebaseUser.user_metadata);
+      if (firebaseUser) {
+        // Ensure user document exists in Supabase Profiles
+        await ensureUserProfile(firebaseUser.id, firebaseUser.email || null, firebaseUser.user_metadata);
 
-          // Subscribe to user profile for Real-time admin/role updates
-          profileUnsubscribe = subscribeToUserProfile(firebaseUser.id, (profileData) => {
-            setUser({
-              uid: firebaseUser.id,
-              email: firebaseUser.email || null,
-              isAdmin: profileData.isAdmin || false,
-              metadata: {
-                ...firebaseUser.user_metadata,
-                first_name: profileData.first_name || firebaseUser.user_metadata?.first_name,
-                last_name: profileData.last_name || firebaseUser.user_metadata?.last_name,
-                phone: profileData.phone || firebaseUser.user_metadata?.phone,
-                country: profileData.country || firebaseUser.user_metadata?.country,
-              }
-            });
+        // Subscribe to user profile for Real-time admin/role updates
+        profileUnsubscribe = subscribeToUserProfile(firebaseUser.id, (profileData) => {
+          setUser({
+            uid: firebaseUser.id,
+            email: firebaseUser.email || null,
+            isAdmin: profileData.isAdmin || false,
+            metadata: {
+              ...firebaseUser.user_metadata,
+              first_name: profileData.first_name || firebaseUser.user_metadata?.first_name,
+              last_name: profileData.last_name || firebaseUser.user_metadata?.last_name,
+              phone: profileData.phone || firebaseUser.user_metadata?.phone,
+              country: profileData.country || firebaseUser.user_metadata?.country,
+            }
           });
-        } else {
-          setUser(null);
-        }
-      });
-    }, 2000);
+          setAuthLoading(false);
+        });
+      } else {
+        setUser(null);
+        setAuthLoading(false);
+      }
+    });
 
     return () => {
-      clearTimeout(timeoutId);
       if (authUnsubscribe) authUnsubscribe();
       if (profileUnsubscribe) profileUnsubscribe();
     };
@@ -497,6 +497,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     orders,
     user,
     loading,
+    authLoading,
     currency,
     isSearchOpen,
     isAuthModalOpen,

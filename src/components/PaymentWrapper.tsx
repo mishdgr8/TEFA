@@ -33,13 +33,18 @@ export const PaymentWrapper: React.FC<PaymentWrapperProps> = ({
     const { currency } = useStore();
     const [isInitializing, setIsInitializing] = useState(false);
 
+    // Paystack only supports NGN and USD for most Nigerian merchants.
+    // If user has GBP/EUR selected, we should calculate the USD equivalent for the gateway.
+    const effectiveCurrency = (currency === 'GBP' || currency === 'EUR') ? 'USD' : currency;
+
     // Paystack Configuration
     const config = {
         reference: `TEFA-${new Date().getTime()}-${Math.floor(Math.random() * 1000)}`,
         email: email,
         amount: Math.round(total * 100), // Subunits (Kobo for NGN / Cents for USD)
         publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
-        currency: currency.toUpperCase(),
+        currency: effectiveCurrency.toUpperCase(),
+        channels: ['card', 'bank', 'ussd', 'qr', 'mobile_money', 'bank_transfer'], // Explicitly enable card for intl
         metadata: {
             user_id: userId,
             custom_fields: [

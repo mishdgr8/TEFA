@@ -6,30 +6,26 @@ import { useStore } from '../data/store';
 
 export const ShopPage: React.FC = () => {
   const { categoryId } = useParams();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('search');
+  const currentPage = parseInt(searchParams.get('page') || '1');
   const navigate = useNavigate();
   const { products, categories, currency, loading } = useStore();
   const [activeCategory, setActiveCategory] = useState(categoryId || 'all');
 
-
-  const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10; // 2 columns x 5 rows on mobile
 
   useEffect(() => {
-    if (categoryId) {
-      setActiveCategory(categoryId);
-    } else {
-      setActiveCategory('all');
-    }
-    setCurrentPage(1); // Reset to first page on category change
-  }, [categoryId, searchQuery]);
+    setActiveCategory(categoryId || 'all');
+  }, [categoryId]);
 
   const handleCategoryChange = (id: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', '1');
     if (id === 'all') {
-      navigate('/shop');
+      navigate(`/shop?${params.toString()}`);
     } else {
-      navigate(`/shop/${id}`);
+      navigate(`/shop/${id}?${params.toString()}`);
     }
   };
 
@@ -37,8 +33,9 @@ export const ShopPage: React.FC = () => {
     let filtered = products;
 
     // Filter by Category
-    if (activeCategory !== 'all') {
-      filtered = filtered.filter(p => p.categoryId === activeCategory);
+    const catId = categoryId || 'all';
+    if (catId !== 'all') {
+      filtered = filtered.filter(p => p.categoryId === catId);
     }
 
     // Filter by Search
@@ -52,7 +49,7 @@ export const ShopPage: React.FC = () => {
     }
 
     return filtered;
-  }, [activeCategory, searchQuery, products]);
+  }, [activeCategory, searchQuery, products, categoryId]);
 
   // Pagination Logic
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -62,7 +59,9 @@ export const ShopPage: React.FC = () => {
   }, [filteredProducts, currentPage]);
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    const params = new URLSearchParams(searchParams);
+    params.set('page', page.toString());
+    setSearchParams(params);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -171,7 +170,7 @@ export const ShopPage: React.FC = () => {
           to { transform: rotate(360deg); }
         }
         .shop-page {
-          padding-top: 120px;
+          padding-top: 140px;
           padding-bottom: var(--space-24);
         }
 

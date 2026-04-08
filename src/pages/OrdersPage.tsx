@@ -7,12 +7,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { m } from 'framer-motion';
 
 export const OrdersPage: React.FC = () => {
-    const { user, currency } = useStore();
+    const { user, currency, authLoading } = useStore();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
+        if (authLoading) return; // Wait for auth check
+
         if (!user) {
             navigate('/');
             return;
@@ -191,7 +193,7 @@ export const OrdersPage: React.FC = () => {
                 .orders-page {
                     min-height: 100vh;
                     background: #fdfaf7;
-                    padding: 100px 5%;
+                    padding: 140px 5% 80px;
                     font-family: 'Quicksand', sans-serif;
                 }
                 .orders-container {

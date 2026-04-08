@@ -5,7 +5,7 @@ import { useStore } from '../data/store';
 import { COUNTRIES } from '../data/countries';
 
 export const AccountPage: React.FC = () => {
-    const { user, updateProfile } = useStore();
+    const { user, updateProfile, authLoading } = useStore();
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -49,10 +49,23 @@ export const AccountPage: React.FC = () => {
         }
     };
 
+    if (authLoading) {
+        return (
+            <div className="account-page">
+                <div className="account-loading">
+                    <div className="loading-spinner" />
+                    <p>Loading your account...</p>
+                </div>
+            </div>
+        );
+    }
+
     if (!user) {
         return (
-            <div className="account-page-error">
-                <p>Please sign in to view your account settings.</p>
+            <div className="account-page">
+                <div className="account-page-error">
+                    <p>Please sign in to view your account settings.</p>
+                </div>
             </div>
         );
     }
@@ -147,7 +160,7 @@ export const AccountPage: React.FC = () => {
             <style>{`
                 .account-page {
                     min-height: 100vh;
-                    padding: 120px 20px 60px;
+                    padding: 140px 20px 60px;
                     background: var(--color-cream);
                     display: flex;
                     justify-content: center;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Package,
   Plus,
@@ -42,10 +42,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     deleteReview,
     orders,
     user,
-    loading
+    loading,
+    authLoading
   } = useStore();
 
-  const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'reviews' | 'orders'>('products');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = (searchParams.get('tab') as 'products' | 'categories' | 'reviews' | 'orders') || 'products';
+
+  const setActiveTab = (tab: string) => {
+    setSearchParams({ tab });
+  };
+
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [repairing, setRepairing] = useState(false);
 
@@ -136,6 +143,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setEditingReview(review || null);
     setIsReviewFormOpen(true);
   };
+
+  if (authLoading) {
+    return (
+      <div className="admin-page">
+        <div className="admin-loading">
+          <div className="loading-spinner" />
+          <p>Verifying admin access...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Show login prompt if not authenticated
   if (!user) {
@@ -439,7 +457,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       <style>{`
         .admin-page {
-          padding-top: 100px;
+          padding-top: 140px;
           padding-bottom: 80px;
           background: #fdfaf7;
           min-height: 100vh;
