@@ -20,9 +20,6 @@ import { CategoryForm } from './CategoryForm';
 import { ReviewForm } from './ReviewForm';
 import { AdminOrders } from './AdminOrders';
 import { Category, CustomerReview } from '../../types';
-import { seedProducts, seedCategories } from '../../lib/supabaseDb';
-import { DEFAULT_PRODUCTS } from '../../data/products';
-import { CATEGORIES } from '../../data/categories';
 import { OptimizedImage } from '../../components/OptimizedImage';
 
 interface AdminDashboardProps {
@@ -54,7 +51,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [repairing, setRepairing] = useState(false);
 
   // Modals for Categories and Reviews
   const [isCategoryFormOpen, setIsCategoryFormOpen] = useState(false);
@@ -104,35 +100,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  const handleRepair = async (e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
 
-    if (window.confirm('This will synchronize all Firestore images and data with your local stable files to fix missing images. Continue?')) {
-      setRepairing(true);
-      try {
-        console.log('REPAIR_LOG: Starting database repair session...');
-
-        console.log('REPAIR_LOG: Seeding Categories...');
-        await seedCategories(CATEGORIES);
-        console.log('REPAIR_LOG: Categories seeded successfully.');
-
-        console.log('REPAIR_LOG: Seeding Products...');
-        await seedProducts(DEFAULT_PRODUCTS);
-        console.log('REPAIR_LOG: Products seeded successfully.');
-
-        alert('Database repair complete! Images should now appear correctly.');
-        window.location.reload();
-      } catch (error) {
-        console.error('REPAIR_LOG_ERROR:', error);
-        alert('Failed to repair database. Error: ' + (error instanceof Error ? error.message : String(error)));
-      } finally {
-        setRepairing(false);
-      }
-    }
-  };
 
   const openCategoryForm = (category?: Category) => {
     setEditingCategory(category || null);
@@ -252,59 +220,64 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     <div className="admin-page">
       <div className="admin-container">
         <div className="admin-header">
-          <div>
+          <div className="admin-title-area">
             <h1>Admin Dashboard</h1>
-            <p>Manage your <span className="font-brand">TÉFA</span> products and inventory</p>
           </div>
           <div className="admin-header-actions">
-            <button
-              onClick={handleRepair}
-              className="admin-repair-btn"
-              disabled={repairing}
-              title="Fix missing images by syncing database with local files"
-            >
-              {repairing ? <Loader2 size={18} className="spin" /> : <Settings size={18} />}
-              {repairing ? 'Repairing...' : 'Fix Sync'}
-            </button>
             <button onClick={() => navigate('/')} className="admin-back-btn">
-              <Home size={18} /> View Store
+              <Home size={18} /> <span>Store</span>
             </button>
             <button onClick={() => onOpenProductForm()} className="admin-add-btn">
-              <Plus size={18} /> Add Product
+              <Plus size={18} /> <span>Product</span>
             </button>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="admin-tabs">
-          <button
-            className={`tab-btn ${activeTab === 'products' ? 'active' : ''}`}
-            onClick={() => setActiveTab('products')}
-          >
-            <Package size={18} />
-            Products
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'categories' ? 'active' : ''}`}
-            onClick={() => setActiveTab('categories')}
-          >
-            <Grid3X3 size={18} />
-            Categories
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'reviews' ? 'active' : ''}`}
-            onClick={() => setActiveTab('reviews')}
-          >
-            <MessageSquare size={18} />
-            Customer Reviews
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
-            onClick={() => setActiveTab('orders')}
-          >
-            <ShoppingBag size={18} />
-            Orders
-          </button>
+        {/* Tabs - Mobile Dropdown / Desktop List */}
+        <div className="admin-tabs-container">
+          <div className="admin-tabs-mobile">
+            <select
+              value={activeTab}
+              onChange={(e) => setActiveTab(e.target.value)}
+              className="admin-tab-select"
+            >
+              <option value="products">📦 Products</option>
+              <option value="categories">🗂️ Categories</option>
+              <option value="reviews">💬 Customer Reviews</option>
+              <option value="orders">🛍️ Orders</option>
+            </select>
+          </div>
+
+          <div className="admin-tabs-desktop">
+            <button
+              className={`tab-btn ${activeTab === 'products' ? 'active' : ''}`}
+              onClick={() => setActiveTab('products')}
+            >
+              <Package size={18} />
+              Products
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'categories' ? 'active' : ''}`}
+              onClick={() => setActiveTab('categories')}
+            >
+              <Grid3X3 size={18} />
+              Categories
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'reviews' ? 'active' : ''}`}
+              onClick={() => setActiveTab('reviews')}
+            >
+              <MessageSquare size={18} />
+              Customer Reviews
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
+              onClick={() => setActiveTab('orders')}
+            >
+              <ShoppingBag size={18} />
+              Orders
+            </button>
+          </div>
         </div>
 
         {/* Tab Content */}
@@ -497,11 +470,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           display: flex;
           align-items: center;
           gap: 8px;
-          padding: 10px 20px;
+          padding: 10px 16px;
           border-radius: 8px;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.2s;
+          font-size: 0.9rem;
         }
 
         .admin-back-btn {
@@ -510,40 +484,40 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           border: 1px solid #eee;
         }
 
-        .admin-repair-btn {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 10px 20px;
-          border-radius: 8px;
-          font-weight: 600;
-          cursor: pointer;
-          background: #fdfaf7;
-          border: 1px solid #ef4444;
-          color: #ef4444;
-          transition: all 0.2s;
-        }
-
-        .admin-repair-btn:hover:not(:disabled) {
-          background: #ef4444;
-          color: white;
-        }
-
-        .admin-repair-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
         .admin-add-btn {
           background: #ff7f50;
           color: white;
           border: none;
         }
 
-        .admin-tabs {
+        .admin-tabs-container {
+          margin-bottom: 32px;
+        }
+
+        .admin-tabs-mobile {
+          display: none;
+        }
+
+        .admin-tab-select {
+          width: 100%;
+          padding: 15px;
+          background: white;
+          border: 1px solid #eee;
+          border-radius: 12px;
+          font-family: 'Quicksand', sans-serif;
+          font-weight: 600;
+          color: #2C1810;
+          appearance: none;
+          background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+          background-repeat: no-repeat;
+          background-position: right 15px center;
+          background-size: 15px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .admin-tabs-desktop {
           display: flex;
           gap: 4px;
-          margin-bottom: 32px;
           background: white;
           padding: 4px;
           border-radius: 12px;
@@ -562,6 +536,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           font-weight: 600;
           color: #666;
           cursor: pointer;
+          white-space: nowrap;
         }
 
         .tab-btn.active {
@@ -576,12 +551,41 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           overflow: hidden;
         }
 
-        .section-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 24px;
-          border-bottom: 1px solid #eee;
+        @media (max-width: 768px) {
+          .admin-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 20px;
+          }
+
+          .admin-header-actions {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+          }
+
+          .admin-back-btn, .admin-add-btn {
+            justify-content: center;
+          }
+
+          .admin-tabs-desktop {
+            display: none;
+          }
+
+          .admin-tabs-mobile {
+            display: block;
+          }
+
+          .section-header {
+            flex-direction: column;
+            gap: 16px;
+            align-items: flex-start;
+          }
+
+          .section-add-btn {
+            width: 100%;
+            justify-content: center;
+          }
         }
 
         .section-header h2 {
