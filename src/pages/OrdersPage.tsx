@@ -130,12 +130,18 @@ export const OrdersPage: React.FC = () => {
                                         <div className="cost-breakdown">
                                             <div className="cost-row">
                                                 <span>Subtotal</span>
-                                                <span>{formatPrice(order.total, order.currency)}</span>
+                                                <span>{formatPrice(order.subtotal || order.total, order.currency)}</span>
                                             </div>
                                             <div className="cost-row">
                                                 <span>Shipping</span>
-                                                <span>{formatPrice(0, order.currency)}</span>
+                                                <span>{formatPrice(order.shippingPrice || 0, order.currency)}</span>
                                             </div>
+                                            {order.discountAmount > 0 && (
+                                                <div className="cost-row discount">
+                                                    <span>Discount</span>
+                                                    <span>-{formatPrice(order.discountAmount, order.currency)}</span>
+                                                </div>
+                                            )}
                                             <div className="cost-row">
                                                 <span>Taxes</span>
                                                 <span>{formatPrice(0, order.currency)}</span>
@@ -322,6 +328,10 @@ export const OrdersPage: React.FC = () => {
                     border-top: 2px solid #1a1a1a;
                     color: #1a1a1a;
                     font-weight: 700;
+                }
+                .cost-row.discount {
+                    color: #0ca678;
+                    font-weight: 600;
                 }
                 .total-val { font-size: 1.4rem; }
 

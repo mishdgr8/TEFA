@@ -3,6 +3,7 @@ import { m, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, User, Loader2, AlertCircle } from 'lucide-react';
 import { signUp, signIn, signInWithGoogle } from '../lib/supabaseAuth';
 import { SearchableDropdown } from './SearchableDropdown';
+import { OptimizedImage } from './OptimizedImage';
 import { COUNTRIES } from '../data/countries';
 
 interface AuthModalProps {
@@ -127,19 +128,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
             <div className="auth-modal-split">
               {/* Left Side: Branding / Image */}
               <div className="auth-modal-brand">
-                <img src="/assets/auth/brand-image.png" alt="TÉFA Branding" className="brand-bg" />
-                <div className="brand-content">
-                  <div className="brand-logo-small">TÉFA</div>
-                  <h3>House of Luxury & Arts</h3>
-                  <div className="brand-perks">
-                    <p>Unlock an elevated artisan experience.</p>
-                    <ul>
-                      <li>Save Your Curated Selections</li>
-                      <li>Priority Concierge Support</li>
-                      <li>Exclusive Collection Previews</li>
-                    </ul>
-                  </div>
-                </div>
+                <img
+                  src="/assets/branding/tefa-branding.webp"
+                  alt="Branding"
+                  className="brand-bg"
+                  style={{ objectFit: 'cover' }}
+                />
               </div>
 
               {/* Right Side: Form */}
@@ -371,7 +365,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
               width: 100%;
               height: 100%;
               object-fit: cover;
-              filter: brightness(0.7);
               transition: transform 10s ease;
             }
 

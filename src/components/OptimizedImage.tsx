@@ -82,15 +82,16 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     style,
     ...rest
 }) => {
-    // If src is missing, fall back to a plain <img> (which won't render much anyway)
-    if (!src) {
+    const [failed, setFailed] = React.useState(false);
+
+    // If src is missing or Cloudinary failed, fall back to a plain <img>
+    if (!src || failed) {
         return (
             <img
                 src={src}
                 alt={alt}
                 loading={priority ? 'eager' : loading || 'lazy'}
                 decoding={priority ? 'sync' : decoding || 'async'}
-                crossOrigin="anonymous"
                 style={style}
                 {...rest}
             />
@@ -106,6 +107,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
             loading={priority ? 'eager' : loading || 'lazy'}
             decoding={priority ? 'sync' : decoding || 'async'}
             crossOrigin="anonymous"
+            onError={() => setFailed(true)}
             // @ts-ignore — fetchPriority is valid HTML but not yet in React's TS defs
             fetchPriority={priority ? 'high' : undefined}
             style={style}

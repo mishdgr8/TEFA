@@ -76,7 +76,9 @@ export const PaymentWrapper: React.FC<PaymentWrapperProps> = ({
                 qty: item.qty,
                 price: item.price,
                 priceUSD: item.priceUSD || (item.price / 1500),
-                selectedSize: item.selectedSize
+                selectedSize: item.selectedSize,
+                selectedColor: item.selectedColor || null,
+                image: item.image || null
             })),
             customer_info: customerInfo,
             order_currency: currency

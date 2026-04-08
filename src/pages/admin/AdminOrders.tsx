@@ -1,11 +1,13 @@
 import React from 'react';
-import { ShoppingBag, Trash2, Loader2 } from 'lucide-react';
+import { OrderDetailsModal } from './OrderDetailsModal';
+import { ShoppingBag, Trash2, Loader2, Eye } from 'lucide-react';
 import { useStore, formatPrice } from '../../data/store';
 import { Order } from '../../types';
 
 export const AdminOrders: React.FC = () => {
     const { orders, updateOrderStatus, deleteOrder } = useStore();
     const [updatingId, setUpdatingId] = React.useState<string | null>(null);
+    const [selectedOrder, setSelectedOrder] = React.useState<Order | null>(null);
 
     const handleStatusChange = async (orderId: string, newStatus: Order['orderStatus']) => {
         setUpdatingId(orderId);
@@ -46,7 +48,7 @@ export const AdminOrders: React.FC = () => {
 
                 <div className="table-body">
                     {orders.map(order => (
-                        <div key={order.id} className="table-row order-grid">
+                        <div key={order.id} className="table-row order-grid clickable-row" onClick={() => setSelectedOrder(order)}>
                             <div className="col-date">
                                 <span className="order-date">{new Date(order.createdAt).toLocaleDateString()}</span>
                                 <span className="order-id">#{order.id.slice(-6).toUpperCase()}</span>
@@ -87,7 +89,7 @@ export const AdminOrders: React.FC = () => {
                             </div>
 
                             <div className="col-status">
-                                <div className="status-container">
+                                <div className="status-container" onClick={e => e.stopPropagation()}>
                                     <select
                                         value={order.orderStatus}
                                         onChange={(e) => handleStatusChange(order.id, e.target.value as Order['orderStatus'])}
@@ -109,17 +111,26 @@ export const AdminOrders: React.FC = () => {
                             </div>
 
                             <div className="col-actions">
-                                <button
-                                    onClick={() => {
-                                        if (window.confirm('Are you sure you want to delete this order record?')) {
-                                            deleteOrder(order.id);
-                                        }
-                                    }}
-                                    className="action-btn delete"
-                                    title="Delete Order"
-                                >
-                                    <Trash2 size={16} />
-                                </button>
+                                <div className="action-stack" onClick={e => e.stopPropagation()}>
+                                    <button
+                                        onClick={() => setSelectedOrder(order)}
+                                        className="action-btn view"
+                                        title="View Details"
+                                    >
+                                        <Eye size={16} />
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            if (window.confirm('Are you sure you want to delete this order record?')) {
+                                                deleteOrder(order.id);
+                                            }
+                                        }}
+                                        className="action-btn delete"
+                                        title="Delete Order"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -133,13 +144,42 @@ export const AdminOrders: React.FC = () => {
                 </div>
             </div>
 
+            {selectedOrder && (
+                <OrderDetailsModal
+                    order={selectedOrder}
+                    onClose={() => setSelectedOrder(null)}
+                />
+            )}
+
             <style>{`
         .orders-table {
           overflow-x: auto;
         }
 
         .order-grid {
-          grid-template-columns: 120px 180px 1fr 120px 150px 150px 80px !important;
+          grid-template-columns: 120px 180px 1fr 120px 150px 150px 100px !important;
+        }
+
+        .clickable-row {
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        .clickable-row:hover {
+          background: #f8f9fa;
+        }
+
+        .action-stack {
+          display: flex;
+          gap: 8px;
+          justify-content: center;
+        }
+        
+        .action-btn.view {
+          color: #2563eb;
+          background: #eff6ff;
+        }
+        .action-btn.view:hover {
+          background: #dbeafe;
         }
 
         .order-date { display: block; font-weight: 600; color: #2C1810; }

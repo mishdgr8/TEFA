@@ -39,9 +39,26 @@ serve(async (req) => {
         const currencySymbol = order.currency === 'USD' ? '$' : '₦';
         const formattedTotal = `${currencySymbol}${order.total.toLocaleString()}`;
 
-        const itemsHtml = items.map((item: any) => `
+        const itemsHtml = items.map((item: any) => {
+            // Ensure the image URL is absolute for emails. Fallback to a placeholder if none.
+            let imageUrl = item.image || '';
+            if (imageUrl.startsWith('/')) {
+                // Construct Cloudinary URL similar to OptimizedImage
+                const cloudName = Deno.env.get('CLOUDINARY_CLOUD_NAME') || 'dzfrrcacc';
+                const publicIdBase = `TEFA/${imageUrl.substring(1).replace(/\//g, '_').replace(/\.[^/.]+$/, "")}`;
+                imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_80,w_100/${encodeURIComponent(publicIdBase)}`;
+            } else if (imageUrl.startsWith('http') && !imageUrl.includes('res.cloudinary.com')) {
+                // Use fetch to proxy external images via Cloudinary for optimization
+                const cloudName = Deno.env.get('CLOUDINARY_CLOUD_NAME') || 'dzfrrcacc';
+                imageUrl = `https://res.cloudinary.com/${cloudName}/image/fetch/f_auto,q_80,w_100/${encodeURIComponent(imageUrl)}`;
+            }
+
+            return `
             <tr>
-                <td style="padding: 12px 0; border-bottom: 1px solid #eee;">
+                <td style="padding: 12px 0; border-bottom: 1px solid #eee; width: 60px;">
+                    <img src="${imageUrl}" alt="${item.name}" style="width: 50px; height: 65px; object-fit: cover; border-radius: 4px; display: block; background: #eee;" />
+                </td>
+                <td style="padding: 12px 0; padding-left: 15px; border-bottom: 1px solid #eee;">
                     <div style="font-weight: 600;">${item.name}</div>
                     <div style="font-size: 0.85rem; color: #666;">Size: ${item.selected_size || item.selectedSize || 'N/A'} | Qty: ${item.qty}</div>
                 </td>
@@ -49,7 +66,8 @@ serve(async (req) => {
                     ${currencySymbol}${((item.price || 0) * (item.qty || 1)).toLocaleString()}
                 </td>
             </tr>
-        `).join('');
+            `;
+        }).join('');
 
         const mailOptions = {
             from: `"TÉFA Luxury" <${emailUser}>`,
@@ -69,7 +87,7 @@ serve(async (req) => {
                     <table style="width: 100%; border-collapse: collapse;">
                         ${itemsHtml}
                         <tr>
-                            <td style="padding: 20px 0 0; font-weight: 700;">Total</td>
+                            <td colspan="2" style="padding: 20px 0 0; font-weight: 700;">Total</td>
                             <td style="padding: 20px 0 0; text-align: right; font-weight: 700; font-size: 1.2rem;">${formattedTotal}</td>
                         </tr>
                     </table>

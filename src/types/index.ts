@@ -75,6 +75,7 @@ export interface CustomerInfo {
   address: string;
   postalCode: string;
   note: string;
+  shippingMethod?: 'pickup' | 'door';
 }
 
 export interface Order {
@@ -82,6 +83,9 @@ export interface Order {
   userId?: string;
   customerInfo: CustomerInfo;
   items: CartItem[];
+  subtotal: number;
+  shippingPrice: number;
+  discountAmount: number;
   total: number;
   totalUSD?: number;
   currency: CurrencyCode;

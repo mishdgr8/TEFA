@@ -101,7 +101,21 @@ const rowToOrder = (row: any): Order => {
             postalCode: parsedInfo.postalCode || '',
             note: row.customer_note || '',
         },
-        items: row.order_items || [],
+        items: (row.order_items || []).map((item: any) => ({
+            productId: item.product_id,
+            variantId: item.variant_id,
+            name: item.name,
+            qty: item.qty,
+            price: Number(item.price),
+            priceUSD: item.price_usd ? Number(item.price_usd) : undefined,
+            selectedSize: item.selected_size,
+            selectedColor: item.selected_color || '',
+            image: item.image || '',
+            slug: item.slug || ''
+        })),
+        subtotal: Number(row.subtotal || row.total || 0),
+        shippingPrice: Number(row.shipping_cost || 0),
+        discountAmount: Number(row.discount_amount || 0),
         total: Number(row.total),
         totalUSD: row.total_usd ? Number(row.total_usd) : undefined,
         currency: row.currency,
@@ -584,7 +598,11 @@ export const createOrder = async (orderData: Partial<Order>): Promise<string> =>
         customer_phone: orderData.customerInfo?.phone ? `${orderData.customerInfo.countryCode} ${orderData.customerInfo.phone}`.trim() : '',
         customer_location: JSON.stringify(orderData.customerInfo || {}),
         customer_note: orderData.customerInfo?.note || '',
+        subtotal: orderData.subtotal || 0,
+        shipping_cost: orderData.shippingPrice || 0,
+        discount_amount: orderData.discountAmount || 0,
         total: orderData.total || 0,
+        total_usd: orderData.totalUSD || 0,
         currency: orderData.currency || 'NGN',
         payment_reference: orderData.paymentReference || '',
         payment_status: orderData.paymentStatus || 'success',
@@ -610,12 +628,15 @@ export const createOrder = async (orderData: Partial<Order>): Promise<string> =>
             name: item.name,
             qty: item.qty,
             price: item.price,
-            selected_size: item.selectedSize
+            price_usd: item.priceUSD || null,
+            selected_size: item.selectedSize,
+            selected_color: item.selectedColor || null,
+            image: item.image || null
         }));
 
         const { error: itemsError } = await supabase
             .from('order_items')
-            .insert(itemsToInsert);
+            .insert(itemsToInsert as any);
 
         if (itemsError) throw itemsError;
     }

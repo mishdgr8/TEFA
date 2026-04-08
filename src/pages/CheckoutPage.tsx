@@ -48,7 +48,8 @@ export const CheckoutPage: React.FC = () => {
       country: '',
       address: '',
       postalCode: '',
-      note: ''
+      note: '',
+      shippingMethod: undefined
     };
   });
 
@@ -126,9 +127,18 @@ export const CheckoutPage: React.FC = () => {
     return acc + (itemPrice * (item.qty || 1));
   }, 0);
 
+  const SHIPPING_RATES = {
+    pickup: 5600,
+    door: 7500
+  };
+
+  const shippingCost = (formData.country === 'Nigeria' && formData.shippingMethod)
+    ? (currency === 'USD' ? (SHIPPING_RATES[formData.shippingMethod] * rate) : SHIPPING_RATES[formData.shippingMethod])
+    : 0;
+
   // Convert discount amount if needed
   const discountAmount = appliedDiscount ? (currency === 'USD' ? (appliedDiscount.amount * rate) : appliedDiscount.amount) : 0;
-  const total = subtotal - discountAmount;
+  const total = subtotal - discountAmount + shippingCost;
 
   if (cart.length === 0 && !isSuccess) {
     return (
@@ -308,9 +318,40 @@ export const CheckoutPage: React.FC = () => {
                 </div>
               </section>
 
+              {formData.country === 'Nigeria' && (
+                <section className="checkout-section shipping-choice-section">
+                  <div className="section-title">
+                    <span className="step">2</span>
+                    <h2>Shipping Method</h2>
+                  </div>
+                  <div className="shipping-options">
+                    <div
+                      className={`shipping-option ${formData.shippingMethod === 'pickup' ? 'active' : ''}`}
+                      onClick={() => setFormData({ ...formData, shippingMethod: 'pickup' })}
+                    >
+                      <div className="option-info">
+                        <span className="option-name">Logistics Pickup</span>
+                        <span className="option-desc">Pick up at the logistics company station</span>
+                      </div>
+                      <span className="option-price">{formatPrice({ amount: currency === 'USD' ? (SHIPPING_RATES.pickup * rate) : SHIPPING_RATES.pickup }, currency)}</span>
+                    </div>
+                    <div
+                      className={`shipping-option ${formData.shippingMethod === 'door' ? 'active' : ''}`}
+                      onClick={() => setFormData({ ...formData, shippingMethod: 'door' })}
+                    >
+                      <div className="option-info">
+                        <span className="option-name">Door Delivery</span>
+                        <span className="option-desc">Direct delivery to your provided address</span>
+                      </div>
+                      <span className="option-price">{formatPrice({ amount: currency === 'USD' ? (SHIPPING_RATES.door * rate) : SHIPPING_RATES.door }, currency)}</span>
+                    </div>
+                  </div>
+                </section>
+              )}
+
               <section className="checkout-section payment-box" style={{ textAlign: 'left' }}>
                 <div className="section-title">
-                  <span className="step">2</span>
+                  <span className="step">{formData.country === 'Nigeria' ? '3' : '2'}</span>
                   <h2>Payment</h2>
                 </div>
                 <p className="payment-helper">All transactions are secure and encrypted.</p>
@@ -381,6 +422,7 @@ export const CheckoutPage: React.FC = () => {
                       className="review-order-btn"
                       onClick={() => {
                         if (!formData.email) { alert("Please provide an email."); return; }
+                        if (formData.country === 'Nigeria' && !formData.shippingMethod) { alert("Please select a shipping method."); return; }
                         setShowPayment(true);
                       }}
                     >
@@ -408,6 +450,9 @@ export const CheckoutPage: React.FC = () => {
                               userId: user?.uid,
                               customerInfo: formData,
                               items: cart,
+                              subtotal: subtotal,
+                              shippingPrice: shippingCost,
+                              discountAmount: discountAmount,
                               total: total,
                               currency: currency,
                               paymentReference: ref,
@@ -422,6 +467,9 @@ export const CheckoutPage: React.FC = () => {
                                   body: {
                                     order: {
                                       id: orderId,
+                                      subtotal: subtotal,
+                                      shippingPrice: shippingCost,
+                                      shippingMethod: formData.shippingMethod,
                                       total: total,
                                       currency: currency,
                                       customer_location: {
@@ -435,7 +483,8 @@ export const CheckoutPage: React.FC = () => {
                                       name: item.name,
                                       qty: item.qty,
                                       price: currency === 'USD' ? (item.priceUSD || item.price) : item.price,
-                                      selectedSize: item.selectedSize
+                                      selectedSize: item.selectedSize,
+                                      image: item.image
                                     })),
                                     customerEmail: formData.email,
                                     customerName: `${formData.firstName} ${formData.lastName}`.trim() || 'Valued Customer'
@@ -505,7 +554,11 @@ export const CheckoutPage: React.FC = () => {
                       Shipping
                       <button className="info-trigger" onClick={() => setIsShippingModalOpen(true)} aria-label="Shipping information">?</button>
                     </span>
-                    <span className="shipping-text">Calculated later</span>
+                    {shippingCost > 0 ? (
+                      <span className="shipping-cost">{formatPrice({ amount: shippingCost }, currency)}</span>
+                    ) : (
+                      <span className="shipping-text">Calculated later</span>
+                    )}
                   </div>
                   {appliedDiscount && (
                     <div className="total-row discount">
@@ -773,6 +826,65 @@ export const CheckoutPage: React.FC = () => {
           outline: none;
           background: white;
           border-color: #c69b7b;
+        }
+
+        .shipping-options {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+          margin-top: 24px;
+        }
+
+        @media (max-width: 600px) {
+          .shipping-options {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        .shipping-option {
+          padding: 20px;
+          background: #f9f9f9;
+          border: 1px solid #eee;
+          border-radius: 16px;
+          cursor: pointer;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          transition: all 0.2s ease;
+        }
+
+        .shipping-option:hover {
+          border-color: #c69b7b;
+          background: #fff;
+        }
+
+        .shipping-option.active {
+          border-color: #c69b7b;
+          background: #fdfaf7;
+          box-shadow: 0 4px 20px rgba(198, 155, 123, 0.1);
+        }
+
+        .option-info {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .option-name {
+          font-weight: 700;
+          font-size: 1rem;
+          color: #1a1a1a;
+        }
+
+        .option-desc {
+          font-size: 0.8rem;
+          color: #888;
+        }
+
+        .option-price {
+          font-weight: 700;
+          color: #c69b7b;
+          font-size: 1.1rem;
         }
 
         .payment-box {
@@ -1491,6 +1603,6 @@ export const CheckoutPage: React.FC = () => {
         }
 
       `}</style>
-    </div>
+    </div >
   );
 };
