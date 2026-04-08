@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, User, Loader2, AlertCircle } from 'lucide-react';
 import { signUp, signIn, signInWithGoogle } from '../lib/supabaseAuth';
@@ -26,6 +26,57 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [country, setCountry] = useState('');
+  const [showProfileCompletion, setShowProfileCompletion] = useState(false);
+  const [loggedInUser, setLoggedInUser] = useState<any>(null);
+
+  useEffect(() => {
+    const handleAuthState = async (user: any) => {
+      if (user) {
+        setLoggedInUser(user);
+        // Check if profile exists and has a phone number
+        const { supabase } = await import('../lib/supabase');
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        const castProfile = profile as any;
+
+        if (!castProfile || !castProfile.phone) {
+          setError('');
+          setShowProfileCompletion(true);
+          // Pre-fill from metadata if available
+          setFirstName(castProfile?.first_name || user.user_metadata?.full_name?.split(' ')[0] || user.user_metadata?.first_name || '');
+          setLastName(castProfile?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || user.user_metadata?.last_name || '');
+        } else {
+          // Profile is complete, just close or notify
+          if (isOpen && !showProfileCompletion) {
+            onSuccess();
+            onClose();
+          }
+        }
+      }
+    };
+
+    const initAuth = async () => {
+      const { getCurrentUser, onAuthChange } = await import('../lib/supabaseAuth');
+      const user = await getCurrentUser();
+      handleAuthState(user);
+      return onAuthChange(handleAuthState);
+    };
+
+    let unsubscribe: (() => void) | undefined;
+    if (isOpen) {
+      initAuth().then(unsub => {
+        unsubscribe = unsub;
+      });
+    }
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [isOpen, showProfileCompletion, onSuccess, onClose]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,13 +98,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
       if (mode === 'signin') {
         await signIn(email, password);
       } else {
-        await signUp(email, password, {
+        const signUpData = await signUp(email, password, {
           first_name: firstName,
           last_name: lastName,
           phone: phone,
           country: country
         });
-        setSuccess('Account created! Sign in to continue.');
+
+        // If Supabase returns a session, it means email confirmation is disabled
+        if (signUpData.session) {
+          onSuccess();
+          onClose();
+          return;
+        }
+
+        setSuccess('Account created! Please check your email for confirmation.');
         setMode('signin');
         setPassword('');
         setConfirmPassword('');
@@ -94,15 +153,48 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
     setLoading(true);
     try {
       await signInWithGoogle();
+      // On success, the page redirects. Handling of success will be done on mount or after redirect.
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign in with Google');
+      setLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    setLoading(true);
+    try {
+      const { signOut } = await import('../lib/supabaseAuth');
+      await signOut();
+      setShowProfileCompletion(false);
+      setLoggedInUser(null);
+      setMode('signin');
+      onClose();
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign out');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCompleteProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phone) {
+      setError('Phone number is required');
+      return;
+    }
+    setLoading(true);
+    try {
+      const { updateUserProfile } = await import('../lib/supabaseDb');
+      await updateUserProfile(loggedInUser.id, {
+        phone: phone,
+        country: country,
+        first_name: firstName,
+        last_name: lastName
+      });
       onSuccess();
       onClose();
     } catch (err: any) {
-      const msg = (err.message || '').toLowerCase();
-      if (msg.includes('popup') || msg.includes('cancelled')) {
-        setError('Sign in cancelled');
-      } else {
-        setError('Failed to sign in with Google. Please try again.');
-      }
+      setError(err.message || 'Failed to update profile');
     } finally {
       setLoading(false);
     }
@@ -142,32 +234,44 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                   <X size={20} />
                 </button>
 
-                <div className="auth-modal-header">
-                  <h2>{mode === 'signin' ? 'Welcome Back' : 'Create Account'}</h2>
-                  <p>
-                    {mode === 'signin'
-                      ? 'Sign in to access your curated dashboard'
-                      : <>Join <span className="font-brand">TÉFA</span> to elevate your collection</>}
-                  </p>
-                </div>
+                {!showProfileCompletion && (
+                  <div className="auth-modal-header">
+                    <h2>{mode === 'signin' ? 'Welcome Back' : 'Create Account'}</h2>
+                    <p>
+                      {mode === 'signin'
+                        ? 'Sign in to access your curated dashboard'
+                        : <>Join <span className="font-brand">TÉFA</span> to elevate your collection</>}
+                    </p>
+                  </div>
+                )}
 
-                {error && (
+                {!showProfileCompletion && error && (
                   <div className="auth-error">
                     <AlertCircle size={16} />
                     <span>{error}</span>
                   </div>
                 )}
 
-                {success && (
+                {!showProfileCompletion && success && (
                   <div className="auth-success">
                     <AlertCircle size={16} className="rotate-180" />
                     <span>{success}</span>
                   </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="auth-form" data-lenis-prevent>
-                  <div className="form-scroll-area">
-                    {mode === 'signup' && (
+                {showProfileCompletion ? (
+                  <form onSubmit={handleCompleteProfile} className="auth-form" data-lenis-prevent>
+                    <div className="auth-modal-header">
+                      <h2 className="profile-completion-title">Almost There</h2>
+                      <p>Just a few more details to personalize your experience</p>
+                    </div>
+                    {error && (
+                      <div className="auth-error">
+                        <AlertCircle size={16} />
+                        <span>{error}</span>
+                      </div>
+                    )}
+                    <div className="form-scroll-area">
                       <div className="auth-row">
                         <div className="auth-field">
                           <label>First Name</label>
@@ -190,126 +294,196 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                           />
                         </div>
                       </div>
-                    )}
+                      <div className="auth-field">
+                        <label>Phone Number</label>
+                        <input
+                          type="text"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="+234..."
+                          required
+                        />
+                      </div>
+                      <div className="auth-field">
+                        <label>Country</label>
+                        <SearchableDropdown
+                          options={COUNTRIES.map(c => ({
+                            label: `${c.flag} ${c.name}`,
+                            value: c.name,
+                            icon: c.flag,
+                            searchStr: c.name
+                          }))}
+                          value={country}
+                          onChange={(val) => setCountry(val)}
+                          placeholder="Select Country"
+                        />
+                      </div>
+                    </div>
+                    <div className="profile-completion-actions">
+                      <button type="submit" className="auth-submit" disabled={loading}>
+                        {loading ? <Loader2 size={18} className="spin" /> : 'Complete Setup'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="auth-cancel-btn"
+                        disabled={loading}
+                      >
+                        Sign Out / Switch Account
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <form onSubmit={handleSubmit} className="auth-form" data-lenis-prevent>
+                    <div className="form-scroll-area">
+                      {mode === 'signup' && (
+                        <div className="auth-row">
+                          <div className="auth-field">
+                            <label>First Name</label>
+                            <input
+                              type="text"
+                              value={firstName}
+                              onChange={(e) => setFirstName(e.target.value)}
+                              placeholder="Jane"
+                              required
+                            />
+                          </div>
+                          <div className="auth-field">
+                            <label>Last Name</label>
+                            <input
+                              type="text"
+                              value={lastName}
+                              onChange={(e) => setLastName(e.target.value)}
+                              placeholder="Doe"
+                              required
+                            />
+                          </div>
+                        </div>
+                      )}
 
-                    <div className="auth-field">
-                      <label>
-                        <Mail size={16} strokeWidth={1.5} />
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="your@email.com"
-                        required
-                      />
+                      <div className="auth-field">
+                        <label>
+                          <Mail size={16} strokeWidth={1.5} />
+                          Email Address
+                        </label>
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="your@email.com"
+                          required
+                        />
+                      </div>
+
+                      <div className="auth-field">
+                        <label>
+                          <Lock size={16} strokeWidth={1.5} />
+                          Password
+                        </label>
+                        <input
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="••••••••"
+                          required
+                        />
+                      </div>
+
+                      {mode === 'signup' && (
+                        <>
+                          <div className="auth-field">
+                            <label>
+                              <Lock size={16} strokeWidth={1.5} />
+                              Confirm Password
+                            </label>
+                            <input
+                              type="password"
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              placeholder="••••••••"
+                              required
+                            />
+                          </div>
+
+                          <div className="auth-field">
+                            <label>Phone Number</label>
+                            <input
+                              type="text"
+                              value={phone}
+                              onChange={(e) => setPhone(e.target.value)}
+                              placeholder="+234..."
+                              required
+                            />
+                          </div>
+                          <div className="auth-field">
+                            <label>Country</label>
+                            <SearchableDropdown
+                              options={COUNTRIES.map(c => ({
+                                label: `${c.flag} ${c.name}`,
+                                value: c.name,
+                                icon: c.flag,
+                                searchStr: c.name
+                              }))}
+                              value={country}
+                              onChange={(val) => setCountry(val)}
+                              placeholder="Select Country"
+                            />
+                          </div>
+                        </>
+                      )}
                     </div>
 
-                    <div className="auth-field">
-                      <label>
-                        <Lock size={16} strokeWidth={1.5} />
-                        Password
-                      </label>
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        required
-                      />
-                    </div>
-
-                    {mode === 'signup' && (
-                      <>
-                        <div className="auth-field">
-                          <label>
-                            <Lock size={16} strokeWidth={1.5} />
-                            Confirm Password
-                          </label>
-                          <input
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            placeholder="••••••••"
-                            required
-                          />
-                        </div>
-
-                        <div className="auth-field">
-                          <label>Phone Number</label>
-                          <input
-                            type="text"
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            placeholder="+234..."
-                            required
-                          />
-                        </div>
-                        <div className="auth-field">
-                          <label>Country</label>
-                          <SearchableDropdown
-                            options={COUNTRIES.map(c => ({
-                              label: `${c.flag} ${c.name}`,
-                              value: c.name,
-                              icon: c.flag,
-                              searchStr: c.name
-                            }))}
-                            value={country}
-                            onChange={(val) => setCountry(val)}
-                            placeholder="Select Country"
-                          />
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  <button type="submit" className="auth-submit" disabled={loading}>
-                    {loading ? (
-                      <>
-                        <Loader2 size={18} className="spin" />
-                        {mode === 'signin' ? 'Opening Vault...' : 'Creating Masterpiece...'}
-                      </>
-                    ) : (
-                      <>
-                        <User size={18} strokeWidth={1.5} />
-                        {mode === 'signin' ? 'Sign In' : 'Create Account'}
-                      </>
-                    )}
-                  </button>
-                </form>
-
-                <div className="auth-footer-actions">
-                  <div className="auth-divider">
-                    <span>or</span>
-                  </div>
-
-                  <button
-                    onClick={handleGoogleSignIn}
-                    className="auth-google-btn"
-                    disabled={loading}
-                    type="button"
-                  >
-                    <svg viewBox="0 0 24 24" width="18" height="18">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                    </svg>
-                    Continue with Google
-                  </button>
-
-                  <div className="auth-toggle">
-                    <span>
-                      {mode === 'signin'
-                        ? "New to TÉFA?"
-                        : 'Already have an account?'}
-                    </span>
-                    <button onClick={toggleMode}>
-                      {mode === 'signin' ? 'Create Account' : 'Sign In'}
+                    <button type="submit" className="auth-submit" disabled={loading}>
+                      {loading ? (
+                        <>
+                          <Loader2 size={18} className="spin" />
+                          {mode === 'signin' ? 'Opening Vault...' : 'Creating Masterpiece...'}
+                        </>
+                      ) : (
+                        <>
+                          <User size={18} strokeWidth={1.5} />
+                          {mode === 'signin' ? 'Sign In' : 'Create Account'}
+                        </>
+                      )}
                     </button>
+                  </form>
+                )}
+
+                {!showProfileCompletion && (
+                  <div className="auth-footer-actions">
+                    <div className="auth-divider">
+                      <span>or</span>
+                    </div>
+
+                    <div className="social-auth-single">
+                      <button
+                        onClick={handleGoogleSignIn}
+                        className="auth-social-btn"
+                        disabled={loading}
+                        type="button"
+                      >
+                        <svg viewBox="0 0 24 24" width="18" height="18">
+                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                        </svg>
+                        Continue with Google
+                      </button>
+                    </div>
+
+                    <div className="auth-toggle">
+                      <span>
+                        {mode === 'signin'
+                          ? "New to TÉFA?"
+                          : 'Already have an account?'}
+                      </span>
+                      <button onClick={toggleMode} type="button">
+                        {mode === 'signin' ? 'Create Account' : 'Sign In'}
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </m.div>
@@ -618,7 +792,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
               letter-spacing: 0.1em;
             }
 
-            .auth-google-btn {
+            .auth-social-btn {
               display: flex;
               align-items: center;
               justify-content: center;
@@ -636,9 +810,37 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
               transition: all 0.2s;
             }
 
-            .auth-google-btn:hover:not(:disabled) {
+            .auth-social-btn:hover:not(:disabled) {
               background: #FAFAFA;
               border-color: #DDD;
+            }
+
+            .social-auth-single {
+              display: flex;
+              justify-content: center;
+              width: 100%;
+            }
+
+            .profile-completion-actions {
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+            }
+
+            .auth-cancel-btn {
+              background: none;
+              border: none;
+              color: #888;
+              font-size: 0.85rem;
+              font-weight: 600;
+              cursor: pointer;
+              text-decoration: underline;
+              transition: color 0.2s;
+              padding: 10px;
+            }
+
+            .auth-cancel-btn:hover {
+              color: #1a1a1a;
             }
 
             .auth-toggle {

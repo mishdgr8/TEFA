@@ -28,6 +28,22 @@ export const signInWithGoogle = async () => {
         provider: 'google',
         options: {
             redirectTo: window.location.origin,
+            queryParams: {
+                access_type: 'offline',
+                prompt: 'consent',
+            },
+        },
+    });
+    if (error) throw error;
+    return data;
+};
+
+// Sign in with Apple (OAuth)
+export const signInWithApple = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'apple',
+        options: {
+            redirectTo: window.location.origin,
         },
     });
     if (error) throw error;

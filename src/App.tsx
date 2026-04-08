@@ -90,6 +90,32 @@ export const App: React.FC = () => {
     };
   }, []);
 
+  // Handle Profile Completion for OAuth
+  useEffect(() => {
+    const checkProfile = async () => {
+      const { getCurrentUser } = await import('./lib/supabaseAuth');
+      const user = await getCurrentUser();
+
+      if (user) {
+        const { supabase } = await import('./lib/supabase');
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('phone')
+          .eq('id', user.id)
+          .single();
+
+        const castProfile = profile as any;
+        if (!castProfile || !castProfile.phone) {
+          setIsAuthModalOpen(true);
+        }
+      }
+    };
+
+    // Slight delay to ensure store/auth is ready
+    const timer = setTimeout(checkProfile, 1000);
+    return () => clearTimeout(timer);
+  }, [setIsAuthModalOpen]);
+
 
   const openProductForm = (productId?: string) => {
     setEditingProductId(productId);
