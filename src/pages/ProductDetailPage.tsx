@@ -313,9 +313,6 @@ export const ProductDetailPage: React.FC = () => {
                   <ShoppingBag size={20} />
                   {product.soldOut ? (isExpress ? 'Add Express Request' : 'Sold Out') : 'Add to Cart'}
                 </button>
-                <button onClick={handleDirectChat} className="direct-chat-btn">
-                  Direct Chat
-                </button>
               </div>
             </div>
 

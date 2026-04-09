@@ -573,7 +573,7 @@ export const CheckoutPage: React.FC = () => {
                 </div>
 
                 <p className="delivery-note">
-                  * Shipping rates will be updated via email/WhatsApp based on your location.
+                  * Shipping rates are calculated based on your location.
                 </p>
               </div>
             </aside>
@@ -590,7 +590,7 @@ export const CheckoutPage: React.FC = () => {
 
               <div className="success-message">
                 <p>Your piece has been successfully secured in our collections. A detailed master-copy of your order receipt has been sent to <strong>{formData.email}</strong>.</p>
-                <p>Our concierge team will contact you via WhatsApp shortly to finalize delivery logistics for your location.</p>
+                <p>Our concierge team will contact you via email shortly to finalize delivery logistics for your location.</p>
               </div>
 
               <div className="next-steps">

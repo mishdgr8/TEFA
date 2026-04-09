@@ -7,7 +7,7 @@ export const ContactPage: React.FC = () => {
         <div className="support-page contact-page">
             <SEOHead
                 title="Contact Us"
-                description="Get in touch with TÉFA — premium African fashion from Lagos. Email hello@houseoftefa.com, WhatsApp, or visit our studio in Victoria Island, Lagos."
+                description="Get in touch with TÉFA — premium African fashion from Lagos. Email hello@houseoftefa.com or visit our studio in Victoria Island, Lagos."
                 path="/contact"
             />
             <div className="container">
@@ -79,7 +79,7 @@ export const ContactPage: React.FC = () => {
                             <button type="submit" className="submit-btn" disabled>
                                 <Send size={18} /> Send Message
                             </button>
-                            <p className="form-note">Note: This form is currently under maintenance. Please contact us via email or WhatsApp.</p>
+                            <p className="form-note">Note: This form is currently under maintenance. Please contact us via email.</p>
                         </form>
                     </div>
                 </div>

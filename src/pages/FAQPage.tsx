@@ -15,7 +15,7 @@ const FAQ_DATA: Record<string, FAQItem[]> = {
         },
         {
             question: "How do I place an order?",
-            answer: "Simply browse our collection, select your size and color, and 'Add to Inquiry'. Once finished, head to checkout or use the 'Direct Chat' button to finalize your order with our concierge via WhatsApp."
+            answer: "Simply browse our collection, select your size and color, and 'Add to Cart'. Once you're ready, head to your shopping bag to checkout and pay securely via Paystack."
         },
         {
             question: "What payment methods do you accept?",

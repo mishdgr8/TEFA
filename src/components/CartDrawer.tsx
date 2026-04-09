@@ -127,7 +127,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   Checkout <ArrowRight size={18} />
                 </button>
                 <p className="cart-footer-note">
-                  Orders are finalized via Instagram or WhatsApp
+                  Secure Checkout via Paystack
                 </p>
               </div>
             )}
