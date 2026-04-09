@@ -350,6 +350,7 @@
     }
 }
 
+/* ─── CTA Pattern Buffer Sections ─── */
 .cta-pattern-top,
 .cta-pattern-bottom {
     position: relative;
@@ -406,7 +407,7 @@
     .shop-all-cta,
     .cta-pattern-top,
     .cta-pattern-bottom {
-        height: 30vh;
+        height: 35vh;
     }
 
     .shop-all-cta {

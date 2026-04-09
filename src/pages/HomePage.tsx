@@ -327,9 +327,7 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Pattern Stack Section */}
-      <section className="cta-pattern-top" />
-
+      {/* Shop All Button Section */}
       <section className="shop-all-cta">
         <m.button
           onClick={() => navigate('/shop')}
@@ -343,8 +341,6 @@ export const HomePage: React.FC = () => {
           Explore All Shop
         </m.button>
       </section>
-
-      <section className="cta-pattern-bottom" />
 
       <NewsletterModal
         isOpen={isNewsletterOpen}
