@@ -220,6 +220,12 @@
     z-index: 2;
 }
 
+@media (max-width: 768px) {
+    .categories .container {
+        padding: 0 var(--space-2);
+    }
+}
+
 .categories.section {
     padding-top: var(--space-16);
     padding-bottom: var(--space-16);

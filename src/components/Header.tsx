@@ -413,6 +413,13 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
           position: relative;
         }
 
+        @media (max-width: 768px) {
+          .header-inner {
+            padding: var(--space-2) var(--space-3);
+            height: 70px;
+          }
+        }
+
         /* Mobile Menu Button */
         .header-menu-btn {
           display: block;

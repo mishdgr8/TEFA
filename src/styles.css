@@ -380,6 +380,12 @@ h6 {
   }
 }
 
+@media (max-width: 767px) {
+  .container {
+    padding: 0 var(--space-2);
+  }
+}
+
 .section {
   padding: var(--space-16) 0;
 }
