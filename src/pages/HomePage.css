@@ -424,21 +424,20 @@
     font-size: 0.875rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
-    padding: var(--space-2) var(--space-8);
-    background: #FFFFFF;
-    color: #111111;
-    border: 1px solid #111111;
+    letter-spacing: 0.25em;
+    padding: 18px 80px;
+    background: #111111;
+    color: #FFFFFF;
+    border: none;
     border-radius: 0;
     cursor: pointer;
     transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .shop-all-btn:hover {
-    background: #111111;
+    background: #222222;
     color: #FFFFFF;
-    letter-spacing: 0.2em;
-    padding-left: var(--space-12);
-    padding-right: var(--space-12);
+    letter-spacing: 0.3em;
+    transform: translateY(-2px);
 }
