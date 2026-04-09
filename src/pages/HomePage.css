@@ -380,15 +380,12 @@
     justify-content: center;
     padding: 128px 0;
     position: relative;
-    /* The magic trick for mobile parallax: clip-path creates a 'window' */
     clip-path: inset(0);
-    background-color: #f9f9f9;
 }
 
 .shop-all-cta::before {
     content: '';
     position: fixed;
-    /* Fixed relative to viewport */
     top: 0;
     left: 0;
     width: 100%;
@@ -401,24 +398,10 @@
     will-change: transform;
 }
 
-/* Mobile adjustments */
-@media (max-width: 1024px) {
-
-    .shop-all-cta,
-    .cta-pattern-top,
-    .cta-pattern-bottom {
-        height: 35vh;
-    }
-
-    .shop-all-cta {
-        padding: 60px 0;
-    }
-}
-
 .shop-all-btn {
     position: relative;
     z-index: 2;
-    font-family: 'Quicksand', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     font-size: 0.875rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -439,4 +422,24 @@
     letter-spacing: 0.35em;
     padding-left: var(--space-20);
     padding-right: var(--space-20);
+}
+
+/* Mobile adjustments */
+@media (max-width: 1024px) {
+
+    .shop-all-cta,
+    .cta-pattern-top,
+    .cta-pattern-bottom {
+        height: 35vh;
+    }
+
+    .shop-all-cta {
+        padding: 40px 0;
+    }
+
+    .shop-all-btn {
+        padding: var(--space-4) var(--space-10);
+        font-size: 0.75rem;
+        letter-spacing: 0.2em;
+    }
 }
