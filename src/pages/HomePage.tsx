@@ -20,164 +20,17 @@ const heroImages = [
   '/assets/Hero/Screenshot 2026-02-07 at 09.31.22.webp',
 ];
 
-// Story Stack Images
-const storyImages = [
-  '/assets/images/Screenshot 2026-02-07 at 11.32.55.webp',
-  '/assets/images/Screenshot 2026-02-07 at 11.33.18.webp',
-  '/assets/images/Screenshot 2026-02-07 at 11.51.16.webp',
-];
 
-// Instagram review videos (placeholders - replace with real embed URLs)
-const instagramReviews: CustomerReview[] = [
-  { id: '1', thumbnail: '/assets/images/Screenshot 2026-02-07 at 11.32.55.webp', username: '@tefa_customer1', platform: 'instagram', videoUrl: '' },
-  { id: '2', thumbnail: '/assets/images/Screenshot 2026-02-07 at 11.33.18.webp', username: '@mish_mordi', platform: 'instagram', videoUrl: '' },
-  { id: '3', thumbnail: '/assets/images/Screenshot 2026-02-07 at 11.51.16.webp', username: '@fashion_ng', platform: 'instagram', videoUrl: '' },
-  { id: '4', thumbnail: '/assets/Hero/Screenshot 2026-02-06 at 13.44.48.webp', username: '@fashion_ng', platform: 'instagram', videoUrl: '' },
-];
 
-const ReviewCard = React.memo(({ review, idx }: { review: CustomerReview; idx: number }) => {
-  const videoRef = React.useRef<HTMLVideoElement>(null);
-  const [isInView, setIsInView] = useState(false);
-  const cardRef = React.useRef<HTMLDivElement>(null);
-  const [videoError, setVideoError] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsInView(entry.isIntersecting);
-      },
-      { threshold: 0.6 } // Play when 60% of the card is visible
-    );
-
-    if (cardRef.current) {
-      observer.observe(cardRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (videoRef.current && !videoError) {
-      if (isInView) {
-        videoRef.current.play().catch(() => {
-          // Autoplay might be blocked if not muted/interacted with
-        });
-      } else {
-        videoRef.current.pause();
-      }
-    }
-  }, [isInView, videoError]);
-
-  return (
-    <m.div
-      ref={cardRef}
-      className="review-card"
-      role="button"
-      tabIndex={0}
-      aria-label={`View review from ${review.username}`}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          if (review.externalLink) {
-            window.open(review.externalLink, '_blank');
-          } else if (review.username.startsWith('@')) {
-            const handle = review.username.substring(1);
-            window.open(`https://instagram.com/${handle}`, '_blank');
-          }
-        }
-      }}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: idx * 0.1 }}
-      onClick={() => {
-        if (review.externalLink) {
-          window.open(review.externalLink, '_blank');
-        } else if (review.username.startsWith('@')) {
-          const handle = review.username.substring(1);
-          window.open(`https://instagram.com/${handle}`, '_blank');
-        }
-      }}
-    >
-      <div className="review-thumbnail">
-        {review.videoUrl && !videoError ? (
-          <video
-            ref={videoRef}
-            src={review.videoUrl}
-            poster={review.thumbnail}
-            muted
-            loop
-            playsInline
-            className="review-video"
-            onError={(e) => {
-              // Only fail if we really can't load it after removal of CORS attribute
-              console.warn(`Video load failed for ${review.username}:`, e);
-              setVideoError(true);
-            }}
-            onMouseEnter={(e) => e.currentTarget.play()}
-            onMouseLeave={(e) => {
-              if (!isInView) {
-                e.currentTarget.pause();
-              }
-            }}
-          />
-        ) : (
-          <OptimizedImage
-            src={review.thumbnail}
-            alt={`Customer review from ${review.username}`}
-            sizes="(max-width: 768px) 50vw, 25vw"
-            quality={70}
-            priority={idx < 4}
-          />
-        )}
-      </div>
-      <span className="review-username">{review.username}</span>
-    </m.div>
-  );
-});
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const { products, categories, reviews, loading, currency, isSearchOpen } = useStore();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [storyStack, setStoryStack] = useState(storyImages);
-  const [hoveredCategoryId, setHoveredCategoryId] = useState<string | null>(null);
-  const [showScrollHint, setShowScrollHint] = useState(true);
   const [isNewsletterOpen, setIsNewsletterOpen] = useState(false);
 
 
-  const categoriesRef = React.useRef<HTMLDivElement>(null);
 
-  // Use default products while loading to ensure featured section always shows
-  const displayProducts = products.length > 0 ? products : DEFAULT_PRODUCTS;
-
-  // Intersection Observer for Category Scroll Hint (Better than scroll listener)
-  useEffect(() => {
-    const categoriesElement = categoriesRef.current;
-    if (!categoriesElement) return;
-
-    // Use a small spacer at the start to detect if we've scrolled
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setShowScrollHint(entry.isIntersecting);
-      },
-      { root: categoriesElement, threshold: 0.1 }
-    );
-
-    // Create a sentinel element if it doesn't exist
-    let sentinel = categoriesElement.querySelector('.scroll-sentinel');
-    if (!sentinel) {
-      sentinel = document.createElement('div');
-      sentinel.className = 'scroll-sentinel';
-      sentinel.style.width = '1px';
-      sentinel.style.height = '1px';
-      sentinel.style.position = 'absolute';
-      sentinel.style.left = '0';
-      categoriesElement.prepend(sentinel);
-    }
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [categories]);
 
   const { scrollY } = useScroll();
   const [rects, setRects] = useState<{ hero: DOMRect | null; nav: DOMRect | null }>({ hero: null, nav: null });
@@ -262,56 +115,7 @@ export const HomePage: React.FC = () => {
     img.src = heroImages[nextIndex];
   }, [currentSlide]);
 
-  // Shuffle story stack every 4 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setStoryStack((prev) => {
-        const next = [...prev];
-        const first = next.shift();
-        if (first) next.push(first);
-        return next;
-      });
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
 
-  // Auto-scroll categories every 5 seconds
-  useEffect(() => {
-    const section = document.querySelector('.categories');
-    if (!section) return;
-
-    let intervalId: NodeJS.Timeout;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          intervalId = setInterval(() => {
-            if (categoriesRef.current) {
-              const { scrollLeft, scrollWidth, clientWidth } = categoriesRef.current;
-              const maxScroll = scrollWidth - clientWidth;
-              const nextScroll = scrollLeft + 300;
-
-              if (nextScroll >= maxScroll) {
-                categoriesRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-              } else {
-                categoriesRef.current.scrollTo({ left: nextScroll, behavior: 'smooth' });
-              }
-            }
-          }, 5000);
-        } else {
-          clearInterval(intervalId);
-        }
-      },
-      { threshold: 0.5 }
-    );
-
-    observer.observe(section);
-
-    return () => {
-      observer.disconnect();
-      clearInterval(intervalId);
-    };
-  }, []);
 
   // Newsletter Trigger
   useEffect(() => {
@@ -423,7 +227,16 @@ export const HomePage: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.8 }}
-            className="hero-tagline font-decorative"
+            className="hero-tagline font-brand"
+            style={{
+              letterSpacing: '0.05em',
+              fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
+              fontWeight: 600,
+              display: 'inline-block',
+              transform: 'scaleY(1.4)',
+              transformOrigin: 'center',
+              textTransform: 'uppercase'
+            }}
           >
             PROUDLY NIGERIAN
           </m.p>
@@ -447,238 +260,88 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Categories Section */}
+      {/* Categories Header Section */}
       <section className="categories section">
-        <div className="container">
-          <div className="categories-header">
-            <h2>Browse Collections</h2>
-            <button onClick={() => navigate('/shop')}>See All Shop</button>
-          </div>
-          <div className="categories-wrapper">
-            <div
-              className="categories-grid"
-              ref={categoriesRef}
-            >
-              {categories.map((cat, idx) => (
-                <m.div
-                  key={cat.id}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`Browse ${cat.name} collection`}
-                  onKeyDown={(e) => e.key === 'Enter' && navigate(`/shop/${cat.id}`)}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  onClick={() => navigate(`/shop/${cat.id}`)}
-                  onMouseEnter={() => setHoveredCategoryId(cat.id)}
-                  onMouseLeave={() => setHoveredCategoryId(null)}
-                  className="category-card"
-                >
-                  <OptimizedImage
-                    src={hoveredCategoryId === cat.id && cat.hoverImage ? cat.hoverImage : cat.image}
-                    alt={cat.name}
-                    sizes="(max-width: 768px) 75vw, 25vw"
-                    quality={75}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      transition: 'transform 0.7s ease',
-                      transform: hoveredCategoryId === cat.id ? 'scale(1.05)' : 'scale(1)',
-                    }}
-                  />
-                  <div className="category-overlay" />
-                  <div className="category-content">
-                    <h3>{cat.name}</h3>
-                    <div className="category-line" />
-                  </div>
-                </m.div>
-              ))}
-            </div>
-
-            <AnimatePresence>
-              {showScrollHint && (
-                <m.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{
-                    opacity: 1,
-                    x: [0, -10, 0],
-                  }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{
-                    x: {
-                      repeat: Infinity,
-                      duration: 1.5,
-                      ease: "easeInOut"
-                    },
-                    opacity: { duration: 0.3 }
-                  }}
-                  className="scroll-hint"
-                >
-                  <span>Scroll to explore</span>
-                  <ArrowRight size={16} />
-                </m.div>
-              )}
-            </AnimatePresence>
-          </div>
+        <div className="categories-header">
+          <h2>Browse Collections</h2>
         </div>
       </section>
 
-      {/* Brand Story Section */}
-      <section className="story section">
-        <div className="container-full">
-          <div className="story-grid">
-            <div className="story-text">
-              <h2 className="story-title">
-                CLOTHES WITH A STORY
-              </h2>
-              <p className="story-description">
-                Every TEFA piece has its own unique story. <br /><br />
-                Adire is a traditional textile art from Nigeria, particularly the Yoruba people, known for its distinctive indigo-dyed patterns and complex designs. It involves various re-sist-dyeing
-                techniques, including "tie and dye" where fabric is tied and then dyed to create patterns.
-                The name "Adire" itself translates to "tie and dye" in Yoruba. <br /><br />
-                Adire is "handmade"
-                , it goes
-                through a series of processes for the designs to be created and for that reason mistakes would be made which are those small stains you see which is almost inevitable, we hope everyone understands this
-              </p>
-              <button onClick={() => navigate('/about')} className="story-link-btn">
-                Discover what's new
-                <WheatIcon1 className="wheat-icon-1" />
-                <WheatIcon2 className="wheat-icon-2" />
-                <WheatIcon3 className="wheat-icon-3" />
-              </button>
-            </div>
-            <div className="story-image-container">
-              <div className="image-stack">
-                <AnimatePresence mode="popLayout">
-                  {storyStack.map((src, index) => {
-                    const isCenter = index === storyStack.length - 1;
-                    const isLeft = index === storyStack.length - 2;
-                    const isRight = index === storyStack.length - 3;
-
-                    if (index < storyStack.length - 3) return null;
-
-                    return (
-                      <m.div
-                        key={src}
-                        className={`stack-card ${isCenter ? 'center' : isLeft ? 'left' : 'right'}`}
-                        initial={{ opacity: 0, scale: 0.5, y: 50 }}
-                        animate={{
-                          x: isCenter ? 0 : isLeft ? -120 : 120,
-                          y: isCenter ? 0 : 30,
-                          rotate: isCenter ? 0 : isLeft ? -15 : 15,
-                          scale: isCenter ? 1 : 0.85,
-                          zIndex: isCenter ? 10 : 5,
-                          opacity: 1
-                        }}
-                        exit={{
-                          opacity: 0,
-                          scale: 0.5,
-                          x: isCenter ? 200 : isLeft ? -200 : 0,
-                          y: 100
-                        }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 260,
-                          damping: 20
-                        }}
-                      >
-                        <OptimizedImage src={src} alt="Brand Story" sizes="(max-width: 768px) 80vw, 40vw" quality={75} />
-                      </m.div>
-                    );
-                  })}
-                </AnimatePresence>
-              </div>
-            </div>
-          </div>
+      {/* New 3-Category Layout */}
+      <section className="collection-grid">
+        <div className="collection-row">
+          {['Dresses', 'Pants'].map((name) => {
+            const cat = categories.find(c => c.name.toLowerCase() === name.toLowerCase());
+            if (!cat) return null;
+            return (
+              <m.div
+                key={cat.id}
+                className="collection-item half"
+                onClick={() => navigate(`/shop/${cat.id}`)}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+              >
+                <OptimizedImage
+                  src={cat.image}
+                  alt={cat.name}
+                  sizes="50vw"
+                  quality={80}
+                  className="collection-image"
+                />
+                <div className="collection-label">
+                  <span className="label-text">{cat.name}</span>
+                </div>
+              </m.div>
+            );
+          })}
+        </div>
+        <div className="collection-row">
+          {['Sets'].map((name) => {
+            const cat = categories.find(c => c.name.toLowerCase() === name.toLowerCase());
+            if (!cat) return null;
+            return (
+              <m.div
+                key={cat.id}
+                className="collection-item full"
+                onClick={() => navigate(`/shop/${cat.id}`)}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+              >
+                <OptimizedImage
+                  src={cat.image}
+                  alt={cat.name}
+                  sizes="100vw"
+                  quality={80}
+                  className="collection-image"
+                />
+                <div className="collection-label">
+                  <span className="label-text">{cat.name}</span>
+                </div>
+              </m.div>
+            );
+          })}
         </div>
       </section>
 
-      {/* Featured Products Section */}
-      <section className="featured section">
-        <div className="container">
-          <h2 className="featured-title">Featured Pieces</h2>
-          <div className="featured-grid">
-            {displayProducts.slice(0, 3).map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-          <div className="featured-cta">
-            <button onClick={() => navigate('/shop')}>
-              Explore Full Shop
-            </button>
-          </div>
-        </div>
+      {/* Shop All Button Section */}
+      <section className="shop-all-cta">
+        <m.button
+          onClick={() => navigate('/shop')}
+          className="shop-all-btn"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          Explore All Shop
+        </m.button>
       </section>
 
-      {/* Instagram Customer Reviews Section */}
-      <section className="instagram-reviews section">
-        <div className="container">
-          <div className="reviews-header">
-            <h2>Customer Spotlight</h2>
-            <a href="https://www.instagram.com/shop.tefa" target="_blank" rel="noopener noreferrer" className="instagram-link">
-              <Instagram size={20} />
-              @shop.tefa
-            </a>
-          </div>
-          <p className="reviews-subtitle">See us on our customers and friends of the brand.</p>
-          <div className="reviews-grid">
-            {(reviews.length > 0 ? reviews : instagramReviews).map((review, idx) => (
-              <ReviewCard key={review.id} review={review} idx={idx} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Promo Icons Section */}
-      <section className="promo-icons section">
-        <div className="container">
-          <div className="promo-grid">
-            <m.div
-              className="promo-item"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0 }}
-            >
-              <div className="promo-icon">
-                <Truck size={48} strokeWidth={1.5} />
-              </div>
-              <h3>FREE NIGERIA SHIPPING</h3>
-              <p>On orders above ₦50,000</p>
-            </m.div>
-
-            <m.div
-              className="promo-item"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-            >
-              <div className="promo-icon">
-                <Tag size={48} strokeWidth={1.5} />
-              </div>
-              <h3>WANT 10% OFF?</h3>
-              <p>Sign up to our newsletter</p>
-            </m.div>
-
-            <m.div
-              className="promo-item"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="promo-icon">
-                <Globe size={48} strokeWidth={1.5} />
-              </div>
-              <h3>WORLD WIDE SHIPPING</h3>
-              <p>We deliver globally</p>
-            </m.div>
-          </div>
-        </div>
-      </section>
       <NewsletterModal
         isOpen={isNewsletterOpen}
         onClose={() => setIsNewsletterOpen(false)}

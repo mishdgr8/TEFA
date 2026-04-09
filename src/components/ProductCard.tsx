@@ -56,7 +56,7 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) 
 
       <div className="product-card-content">
         <h3 className="product-card-title">
-          {product.name} <span className="separator">-</span> {getCategoryName(product.categoryId, categories)}
+          {product.name}
         </h3>
         <p className="product-card-price">
           {(() => {

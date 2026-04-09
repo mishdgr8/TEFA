@@ -17,6 +17,7 @@ const HomePage = React.lazy(() => import('./pages/HomePage').then(m => ({ defaul
 const ShopPage = React.lazy(() => import('./pages/ShopPage').then(m => ({ default: m.ShopPage })));
 const ProductDetailPage = React.lazy(() => import('./pages/ProductDetailPage').then(m => ({ default: m.ProductDetailPage })));
 const CheckoutPage = React.lazy(() => import('./pages/CheckoutPage').then(m => ({ default: m.CheckoutPage })));
+const CartPage = React.lazy(() => import('./pages/CartPage').then(m => ({ default: m.CartPage })));
 const AboutPage = React.lazy(() => import('./pages/AboutPage').then(m => ({ default: m.AboutPage })));
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const ProductForm = React.lazy(() => import('./pages/admin/ProductForm').then(m => ({ default: m.ProductForm })));
@@ -139,6 +140,17 @@ export const App: React.FC = () => {
 
   const isAdminRoute = location.pathname.startsWith('/admin');
 
+  // Stop Lenis when modals are open
+  useEffect(() => {
+    if (isProductFormOpen || isAuthModalOpen || isCartOpen) {
+      lenisRef.current?.stop();
+      document.body.classList.add('modal-open');
+    } else {
+      lenisRef.current?.start();
+      document.body.classList.remove('modal-open');
+    }
+  }, [isProductFormOpen, isAuthModalOpen, isCartOpen]);
+
   return (
     <LazyMotion features={domAnimation}>
       <div className="app-wrapper">
@@ -161,6 +173,7 @@ export const App: React.FC = () => {
                 <Route path="/shop" element={<ShopPage />} />
                 <Route path="/shop/:categoryId" element={<ShopPage />} />
                 <Route path="/product/:slug" element={<ProductDetailPage />} />
+                <Route path="/cart" element={<CartPage />} />
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
@@ -298,6 +311,11 @@ export const App: React.FC = () => {
           border-radius: var(--radius-full);
           opacity: 0.6;
           pointer-events: none;
+        }
+
+        body.modal-open {
+          overflow: hidden !important;
+          height: 100vh;
         }
       `}</style>
       </div>

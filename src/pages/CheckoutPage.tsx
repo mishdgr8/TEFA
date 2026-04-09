@@ -190,8 +190,8 @@ export const CheckoutPage: React.FC = () => {
 
       <div className="checkout-container">
         <header className="checkout-header">
-          <button onClick={() => navigate(-1)} className="back-link">
-            <ArrowLeft size={16} /> Back to Shop
+          <button onClick={() => navigate('/cart')} className="back-link">
+            <ArrowLeft size={16} /> Back to Cart
           </button>
           <h1>Secure Your Pieces</h1>
           <p className="subtitle">Finalize your selection and secure your order.</p>

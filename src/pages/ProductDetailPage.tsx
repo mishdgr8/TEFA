@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ChevronLeft, ShoppingBag, Plus, Minus, Sparkles, Truck, Play, X } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { ChevronLeft, ShoppingBag, Plus, Minus, Sparkles, Truck, Play, X, CheckCircle2 } from 'lucide-react';
+import { m, AnimatePresence } from 'framer-motion';
+import { ProductCard } from '../components/ProductCard';
 import { useStore, formatPrice, getProductPrice } from '../data/store';
 import { CartItem } from '../types';
 import { SizeGuideModal } from '../components/SizeGuideModal';
@@ -15,6 +17,14 @@ export const ProductDetailPage: React.FC = () => {
   const { products, addToCart, currency } = useStore();
   const product = products.find(p => p.slug === slug);
 
+  // Recommendations: Other products in same category
+  const recommendations = useMemo(() => {
+    if (!product) return [];
+    return products
+      .filter(p => p.categoryId === product.categoryId && p.id !== product.id)
+      .slice(0, 4);
+  }, [products, product]);
+
   // Combine main images with gallery images
   const allImages = product ? [...product.images, ...(product.galleryImages || [])] : [];
 
@@ -25,6 +35,7 @@ export const ProductDetailPage: React.FC = () => {
   const [qty, setQty] = useState(1);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [isExpress, setIsExpress] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   const sizeRanges: Record<string, string> = {
     'XS': '24-25.5"',
@@ -77,6 +88,9 @@ export const ProductDetailPage: React.FC = () => {
       isExpress,
     };
     addToCart(item);
+    setShowSuccessToast(true);
+    // Auto hide after 5 seconds
+    setTimeout(() => setShowSuccessToast(false), 5000);
   };
 
   const handleDirectChat = () => {
@@ -297,7 +311,7 @@ export const ProductDetailPage: React.FC = () => {
                   disabled={product.soldOut && !isExpress}
                 >
                   <ShoppingBag size={20} />
-                  {product.soldOut ? (isExpress ? 'Add Express Request' : 'Sold Out') : 'Add to Inquiry'}
+                  {product.soldOut ? (isExpress ? 'Add Express Request' : 'Sold Out') : 'Add to Cart'}
                 </button>
                 <button onClick={handleDirectChat} className="direct-chat-btn">
                   Direct Chat
@@ -324,12 +338,52 @@ export const ProductDetailPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Recommendations Section */}
+      {recommendations.length > 0 && (
+        <section className="product-recommendations section">
+          <div className="container">
+            <h2 className="recommendations-title">You May Also Like</h2>
+            <div className="recommendations-grid">
+              {recommendations.map(rp => (
+                <ProductCard key={rp.id} product={rp} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       <SizeGuideModal
         isOpen={isSizeGuideOpen}
         onClose={() => setIsSizeGuideOpen(false)}
       />
 
-
-    </div >
+      {/* Success Notification Toast */}
+      <AnimatePresence>
+        {showSuccessToast && (
+          <m.div
+            initial={{ opacity: 0, y: 50, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: 20, x: '-50%' }}
+            className="add-success-toast"
+          >
+            <div className="toast-content">
+              <CheckCircle2 className="toast-icon" size={20} />
+              <div className="toast-text">
+                <span className="toast-product-name">{product.name}</span> has been added to your cart
+              </div>
+              <Link to="/cart" className="toast-view-cart-btn">
+                View Cart
+              </Link>
+              <button
+                onClick={() => setShowSuccessToast(false)}
+                className="toast-close"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </m.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };

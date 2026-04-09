@@ -1,8 +1,8 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
 import { SEOHead } from '../components/SEOHead';
-import { useStore } from '../data/store';
+import { useStore, formatPrice, getProductPrice } from '../data/store';
 
 export const ShopPage: React.FC = () => {
   const { categoryId } = useParams();
@@ -11,9 +11,39 @@ export const ShopPage: React.FC = () => {
   const currentPage = parseInt(searchParams.get('page') || '1');
   const navigate = useNavigate();
   const { products, categories, currency, loading } = useStore();
+  const [sortBy, setSortBy] = useState('newest');
   const [activeCategory, setActiveCategory] = useState(categoryId || 'all');
+  const [openFilter, setOpenFilter] = useState<string | null>(null);
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+  const [availability, setAvailability] = useState(['in-stock']);
+  const filterSectionRef = useRef<HTMLDivElement>(null);
 
-  const ITEMS_PER_PAGE = 10; // 2 columns x 5 rows on mobile
+  // Close filter on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterSectionRef.current && !filterSectionRef.current.contains(event.target as Node)) {
+        setOpenFilter(null);
+      }
+    };
+
+    if (openFilter) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openFilter]);
+
+  const maxPrice = useMemo(() => {
+    if (products.length === 0) return 0;
+    const prices = products.map(p => {
+      const { original } = getProductPrice(p, currency);
+      return original;
+    });
+    return Math.max(...prices);
+  }, [products, currency]);
+
+  const ITEMS_PER_PAGE = 20; // Show more items in the clean grid
 
   useEffect(() => {
     setActiveCategory(categoryId || 'all');
@@ -30,7 +60,7 @@ export const ShopPage: React.FC = () => {
   };
 
   const filteredProducts = useMemo(() => {
-    let filtered = products;
+    let filtered = [...products];
 
     // Filter by Category
     const catId = categoryId || 'all';
@@ -48,8 +78,45 @@ export const ShopPage: React.FC = () => {
       );
     }
 
+    // Filter by Availability
+    if (availability.length > 0) {
+      filtered = filtered.filter(p => {
+        if (availability.includes('in-stock') && !p.soldOut) return true;
+        if (availability.includes('out-of-stock') && p.soldOut) return true;
+        return false;
+      });
+    }
+
+    // Filter by Price Range
+    if (priceRange.min || priceRange.max) {
+      const min = parseFloat(priceRange.min) || 0;
+      const max = parseFloat(priceRange.max) || Infinity;
+
+      filtered = filtered.filter(p => {
+        const { original } = getProductPrice(p, currency);
+        return original >= min && original <= max;
+      });
+    }
+
+    // Sort
+    if (sortBy === 'price-asc') {
+      filtered.sort((a, b) => {
+        const p1 = getProductPrice(a, currency).original;
+        const p2 = getProductPrice(b, currency).original;
+        return p1 - p2;
+      });
+    } else if (sortBy === 'price-desc') {
+      filtered.sort((a, b) => {
+        const p1 = getProductPrice(a, currency).original;
+        const p2 = getProductPrice(b, currency).original;
+        return p2 - p1;
+      });
+    } else if (sortBy === 'newest') {
+      filtered.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    }
+
     return filtered;
-  }, [activeCategory, searchQuery, products, categoryId]);
+  }, [activeCategory, searchQuery, products, categoryId, sortBy, priceRange, availability, currency]);
 
   // Pagination Logic
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -74,24 +141,105 @@ export const ShopPage: React.FC = () => {
       />
       <div className="container">
         <div className="shop-header">
-          <h1><span className="font-brand">TÉFA</span> Collection</h1>
-
-          <div className="shop-filters">
-            <button
-              onClick={() => handleCategoryChange('all')}
-              className={`shop-filter-btn ${activeCategory === 'all' && !searchQuery ? 'active' : ''}`}
+          <div className="category-dropdown">
+            <select
+              value={activeCategory}
+              onChange={(e) => handleCategoryChange(e.target.value)}
+              className="category-select"
             >
-              All Pieces
-            </button>
-            {categories.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => handleCategoryChange(cat.id)}
-                className={`shop-filter-btn ${activeCategory === cat.id ? 'active' : ''}`}
-              >
-                {cat.name}
-              </button>
-            ))}
+              <option value="all">All Pieces</option>
+              {categories.map(cat => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="shop-controls-bar">
+            <div className="filters-left" ref={filterSectionRef}>
+              <span className="control-label">Filter:</span>
+
+              <div className="dropdown-container">
+                <div
+                  className={`dropdown-filter ${openFilter === 'availability' ? 'active' : ''}`}
+                  onClick={() => setOpenFilter(openFilter === 'availability' ? null : 'availability')}
+                >
+                  <span className={availability.length > 0 ? 'filter-underlined' : ''}>Availability</span>
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                </div>
+                {openFilter === 'availability' && (
+                  <div className="filter-popover">
+                    <div className="popover-header">
+                      <span>{availability.length} selected</span>
+                      <button className="reset-btn" onClick={() => setAvailability([])}>Reset</button>
+                    </div>
+                    <div className="popover-content">
+                      <label className="checkbox-item">
+                        <input
+                          type="checkbox"
+                          checked={availability.includes('in-stock')}
+                          onChange={() => {
+                            setAvailability(prev =>
+                              prev.includes('in-stock')
+                                ? prev.filter(item => item !== 'in-stock')
+                                : [...prev, 'in-stock']
+                            );
+                          }}
+                        />
+                        <span>In stock ({products.filter(p => !p.soldOut).length})</span>
+                      </label>
+                      <label className="checkbox-item disabled">
+                        <input type="checkbox" checked={availability.includes('out-of-stock')} disabled />
+                        <span>Out of stock (0)</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="dropdown-container">
+                <div
+                  className={`dropdown-filter ${openFilter === 'price' ? 'active' : ''}`}
+                  onClick={() => setOpenFilter(openFilter === 'price' ? null : 'price')}
+                >
+                  <span>Price</span>
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                </div>
+                {openFilter === 'price' && (
+                  <div className="filter-popover price-popover">
+                    <div className="popover-header">
+                      <span>The highest price is {formatPrice({ amount: maxPrice }, currency)}</span>
+                      <button className="reset-btn" onClick={() => setPriceRange({ min: '', max: '' })}>Reset</button>
+                    </div>
+                    <div className="popover-content price-inputs">
+                      <div className="input-group">
+                        <span className="currency-symbol">{currency === 'NGN' ? '₦' : '$'}</span>
+                        <input type="text" placeholder="From" value={priceRange.min} onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value })} />
+                      </div>
+                      <div className="input-group">
+                        <span className="currency-symbol">{currency === 'NGN' ? '₦' : '$'}</span>
+                        <input type="text" placeholder="To" value={priceRange.max} onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value })} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="filters-right">
+              <div className="sort-group">
+                <span className="control-label">Sort by:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="sort-select"
+                >
+                  <option value="newest">Date, new to old</option>
+                  <option value="price-asc">Price, low to high</option>
+                  <option value="price-desc">Price, high to low</option>
+                </select>
+              </div>
+              <span className="product-count">{filteredProducts.length} products</span>
+            </div>
           </div>
         </div>
 
@@ -174,59 +322,187 @@ export const ShopPage: React.FC = () => {
           padding-bottom: var(--space-24);
         }
 
+        .shop-page .container {
+          max-width: 1400px;
+          padding: 0 var(--space-12);
+        }
+
         .shop-header {
-          margin-bottom: var(--space-10);
-        }
-
-        .shop-header h1 {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: clamp(2.5rem, 5vw, 3.5rem);
-          font-weight: 700;
-          font-style: italic;
-          margin-bottom: var(--space-8);
-        }
-
-        .shop-filters {
+          margin-bottom: var(--space-12);
           display: flex;
-          flex-wrap: wrap;
-          gap: var(--space-2);
+          flex-direction: column;
+          gap: var(--space-8);
         }
 
-        .shop-filter-btn {
-          padding: var(--space-2) var(--space-5);
-          background: var(--color-cream-dark);
-          color: var(--color-brown);
+        .category-dropdown {
+          display: flex;
+          justify-content: flex-start;
+        }
+
+        .category-select {
+          font-family: 'Montserrat', sans-serif;
+          font-size: clamp(1.5rem, 4vw, 2.25rem);
+          font-weight: 700;
+          text-transform: uppercase;
           border: none;
-          border-radius: var(--radius-full);
-          font-family: 'Quicksand', sans-serif;
-          font-size: 0.875rem;
-          font-weight: 600;
+          background: transparent;
           cursor: pointer;
-          transition: all var(--transition-fast);
+          color: var(--color-brown-dark);
+          padding: 0;
+          outline: none;
+          display: block;
+          appearance: none;
+          -webkit-appearance: none;
         }
 
-        .shop-filter-btn:hover {
-          background: var(--color-nude);
+        .shop-controls-bar {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: var(--space-4) 0;
+          border-top: 1px solid rgba(0,0,0,0.08);
+          border-bottom: 1px solid rgba(0,0,0,0.08);
+          font-family: 'Quicksand', sans-serif;
+          font-size: 0.8125rem;
+          color: var(--color-brown);
         }
 
-        .shop-filter-btn.active {
-          background: var(--color-coral);
-          color: white;
+        .filters-left, .filters-right {
+          display: flex;
+          align-items: center;
+          gap: var(--space-6);
+        }
+
+        .control-label {
+          font-weight: 700;
+          color: #111;
+        }
+
+        .dropdown-container {
+          position: relative;
+        }
+
+        .filter-underlined {
+          text-decoration: underline;
+          text-underline-offset: 4px;
+        }
+
+        .dropdown-filter.active svg {
+          transform: rotate(180deg);
+        }
+
+        .filter-popover {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          width: 300px;
+          background: white;
+          border: 1px solid #E5E5E5;
+          margin-top: 10px;
+          z-index: 100;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .popover-header {
+          display: flex;
+          justify-content: space-between;
+          padding: 15px 20px;
+          border-bottom: 1px solid #F0F0F0;
+          color: #111;
+        }
+
+        .reset-btn {
+          background: none;
+          border: none;
+          color: #333;
+          text-decoration: underline;
+          cursor: pointer;
+          font-weight: 500;
+        }
+
+        .popover-content {
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .checkbox-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          cursor: pointer;
+        }
+
+        .checkbox-item.disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+
+        .price-inputs {
+          display: flex;
+          flex-direction: row;
+          gap: 15px;
+          padding: 20px;
+        }
+
+        .input-group {
+          position: relative;
+          flex: 1;
+        }
+
+        .currency-symbol {
+          position: absolute;
+          left: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #666;
+        }
+
+        .input-group input {
+          width: 100%;
+          padding: 10px 10px 10px 25px;
+          border: 1px solid #999;
+          font-family: inherit;
+          outline: none;
+        }
+
+        .sort-group {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .sort-select {
+          border: 1px solid #ccc;
+          background: white;
+          padding: 6px 12px;
+          font-size: 0.8125rem;
+          cursor: pointer;
+          outline: none;
+        }
+
+        .product-count {
+          color: #666;
+          font-weight: 700;
+          font-family: 'Cormorant Garamond', serif;
+          font-style: normal;
+          font-size: 1rem;
         }
 
         .shop-grid {
           display: grid;
-          grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
-          column-gap: 4px; /* Reduced horizontal gap */
-          row-gap: var(--space-12); /* Increased vertical gap to separate items */
-          margin: var(--space-8) 0; /* Add top/bottom margin to the grid container */
+          grid-template-columns: repeat(2, 1fr);
+          column-gap: 2px; 
+          row-gap: var(--space-10);
+          margin: var(--space-12) 0;
         }
 
         @media (min-width: 1024px) {
           .shop-grid {
-            grid-template-columns: repeat(3, 1fr);
-            column-gap: 4px; /* Consistent small horizontal gap */
-            row-gap: var(--space-16); /* Even more space on larger screens */
+            grid-template-columns: repeat(4, 1fr);
+            column-gap: 2px;
+            row-gap: var(--space-16);
           }
         }
 

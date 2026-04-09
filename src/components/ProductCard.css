@@ -13,7 +13,7 @@
 
 .product-card-image {
     position: relative;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 2 / 3.2;
     overflow: hidden;
     background: var(--color-nude-light);
 }
@@ -101,14 +101,14 @@
 }
 
 .product-card-title {
-    font-family: 'Quicksand', sans-serif;
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--color-brown-dark);
-    transition: color var(--transition-fast);
-    line-height: 1.4;
+    color: #111111;
+    line-height: 1.5;
+    margin-bottom: 2px;
 }
 
 .separator {
@@ -120,8 +120,8 @@
 }
 
 .product-card-price {
-    font-family: 'Quicksand', sans-serif;
-    font-size: 0.875rem;
-    font-weight: 400;
-    color: var(--color-text-muted);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #111111;
 }

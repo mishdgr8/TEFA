@@ -50,7 +50,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             {/* Header */}
             <div className="cart-header">
               <h2 className="cart-title">
-                <ShoppingBag size={20} /> Inquiry Cart
+                <ShoppingBag size={20} /> Shopping Bag
               </h2>
               <button onClick={onClose} className="cart-close" aria-label="Close cart">
                 <X size={24} />
@@ -58,11 +58,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             </div>
 
             {/* Items */}
-            <div className="cart-items">
+            <div className="cart-items" data-lenis-prevent>
               {items.length === 0 ? (
                 <div className="cart-empty">
                   <ShoppingBag size={48} />
-                  <p>Your inquiry cart is empty.</p>
+                  <p>Your shopping bag is empty.</p>
                   <button onClick={onClose} className="cart-empty-btn">
                     Start Browsing
                   </button>
@@ -124,7 +124,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   <span className="cart-total-amount">{formatPrice({ amount: total }, currency)}</span>
                 </div>
                 <button onClick={onCheckout} className="cart-checkout-btn">
-                  Confirm Inquiry <ArrowRight size={18} />
+                  Checkout <ArrowRight size={18} />
                 </button>
                 <p className="cart-footer-note">
                   Orders are finalized via Instagram or WhatsApp

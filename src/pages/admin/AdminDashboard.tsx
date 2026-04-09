@@ -575,16 +575,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           .admin-tabs-mobile {
             display: block;
           }
+        }
 
+        .section-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 24px 32px;
+          border-bottom: 1px solid #eee;
+          background: white;
+        }
+
+        @media (max-width: 768px) {
           .section-header {
-            flex-direction: column;
-            gap: 16px;
-            align-items: flex-start;
-          }
-
-          .section-add-btn {
-            width: 100%;
-            justify-content: center;
+             flex-direction: column;
+             gap: 16px;
+             align-items: flex-start;
+             padding: 20px;
           }
         }
 
@@ -596,13 +603,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         .section-add-btn {
           display: flex;
           align-items: center;
-          gap: 4px;
-          padding: 8px 16px;
-          background: #fdfaf7;
-          border: 1px solid #eee;
-          border-radius: 6px;
+          gap: 8px;
+          padding: 10px 20px;
+          background: #2C1810;
+          color: white;
+          border: none;
+          border-radius: 8px;
           font-weight: 600;
+          font-size: 0.9rem;
           cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .section-add-btn:hover {
+          background: #111111;
+          transform: translateY(-1px);
         }
 
         .products-table {
@@ -626,8 +641,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           display: grid;
           grid-template-columns: 80px 2fr 1fr 120px 100px 120px;
           gap: 16px;
-          padding: 16px 24px;
+          padding: 20px 32px;
           align-items: center;
+          border-bottom: 1px solid #f9f9f9;
         }
 
         .col-image img {

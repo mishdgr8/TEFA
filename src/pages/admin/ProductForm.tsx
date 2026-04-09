@@ -275,374 +275,376 @@ export const ProductForm: React.FC<ProductFormProps> = ({ productId, onClose }) 
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="product-form">
-          <div className="form-grid">
-            {/* Left Column */}
-            <div className="form-column">
-              <div className="form-group">
-                <label htmlFor="name">Product Name *</label>
-                <input
-                  id="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., Indigo Flow Kaftan"
-                  className={errors.name ? 'error' : ''}
-                />
-                {errors.name && <span className="error-text">{errors.name}</span>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="description">Description *</label>
-                <textarea
-                  id="description"
-                  rows={4}
-                  value={formData.description}
-                  onChange={e => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Describe your product..."
-                  className={errors.description ? 'error' : ''}
-                />
-                {errors.description && <span className="error-text">{errors.description}</span>}
-              </div>
-
-              <div className="form-row">
+        <form onSubmit={handleSubmit} style={{ height: 'calc(100% - 70px)', display: 'flex', flexDirection: 'column' }}>
+          <div className="product-form" data-lenis-prevent>
+            <div className="form-grid">
+              {/* Left Column */}
+              <div className="form-column">
                 <div className="form-group">
-                  <label htmlFor="price">Price (₦) *</label>
+                  <label htmlFor="name">Product Name *</label>
                   <input
-                    id="price"
-                    type="number"
-                    value={formData.price}
-                    onChange={e => {
-                      const newPrice = e.target.value;
-                      const pct = formData.discountPercentage;
-                      let newSalePrice = formData.salePrice;
-
-                      if (pct && !isNaN(Number(pct)) && newPrice && !isNaN(Number(newPrice))) {
-                        newSalePrice = Math.round(Number(newPrice) * (1 - Number(pct) / 100)).toString();
-                      }
-
-                      setFormData({
-                        ...formData,
-                        price: newPrice,
-                        salePrice: newSalePrice
-                      });
-                    }}
-                    placeholder="45000"
-                    className={errors.price ? 'error' : ''}
+                    id="name"
+                    type="text"
+                    value={formData.name}
+                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="e.g., Indigo Flow Kaftan"
+                    className={errors.name ? 'error' : ''}
                   />
-
-                  {errors.price && <span className="error-text">{errors.price}</span>}
+                  {errors.name && <span className="error-text">{errors.name}</span>}
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="priceUSD">Price (USD $)</label>
-                  <input
-                    id="priceUSD"
-                    type="number"
-                    step="0.01"
-                    value={formData.priceUSD}
-                    onChange={e => setFormData({ ...formData, priceUSD: e.target.value })}
-                    placeholder="e.g. 29.99"
+                  <label htmlFor="description">Description *</label>
+                  <textarea
+                    id="description"
+                    rows={4}
+                    value={formData.description}
+                    onChange={e => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Describe your product..."
+                    className={errors.description ? 'error' : ''}
                   />
-                  <span className="helper-text" style={{ fontSize: '0.75rem', color: '#888' }}>
-                    Leave blank to use auto-conversion from Naira.
-                  </span>
+                  {errors.description && <span className="error-text">{errors.description}</span>}
                 </div>
 
-                <div className="form-group">
-                  <label htmlFor="discountPercentage">Discount (%) <span style={{ fontWeight: 'normal', color: '#666' }}>(Optional)</span></label>
-                  <input
-                    id="discountPercentage"
-                    type="number"
-                    min="0"
-                    max="99"
-                    value={formData.discountPercentage}
-                    onChange={e => {
-                      const pct = e.target.value;
-                      const price = Number(formData.price);
-                      let newSalePrice = '';
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="price">Price (₦) *</label>
+                    <input
+                      id="price"
+                      type="number"
+                      value={formData.price}
+                      onChange={e => {
+                        const newPrice = e.target.value;
+                        const pct = formData.discountPercentage;
+                        let newSalePrice = formData.salePrice;
 
-                      if (pct && !isNaN(Number(pct)) && price) {
-                        newSalePrice = Math.round(price * (1 - Number(pct) / 100)).toString();
-                      }
+                        if (pct && !isNaN(Number(pct)) && newPrice && !isNaN(Number(newPrice))) {
+                          newSalePrice = Math.round(Number(newPrice) * (1 - Number(pct) / 100)).toString();
+                        }
 
-                      setFormData({
-                        ...formData,
-                        discountPercentage: pct,
-                        salePrice: newSalePrice
-                      });
-                    }}
-                    placeholder="e.g. 20"
-                    className={errors.discountPercentage ? 'error' : ''}
-                  />
-                  {formData.salePrice && (
-                    <span className="helper-text" style={{ fontSize: '0.8rem', color: '#22c55e', marginTop: '4px', display: 'block' }}>
-                      Sale Price: ₦{Number(formData.salePrice).toLocaleString()}
+                        setFormData({
+                          ...formData,
+                          price: newPrice,
+                          salePrice: newSalePrice
+                        });
+                      }}
+                      placeholder="45000"
+                      className={errors.price ? 'error' : ''}
+                    />
+
+                    {errors.price && <span className="error-text">{errors.price}</span>}
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="priceUSD">Price (USD $)</label>
+                    <input
+                      id="priceUSD"
+                      type="number"
+                      step="0.01"
+                      value={formData.priceUSD}
+                      onChange={e => setFormData({ ...formData, priceUSD: e.target.value })}
+                      placeholder="e.g. 29.99"
+                    />
+                    <span className="helper-text" style={{ fontSize: '0.75rem', color: '#888' }}>
+                      Leave blank to use auto-conversion from Naira.
                     </span>
-                  )}
-                  {errors.discountPercentage && <span className="error-text">{errors.discountPercentage}</span>}
-                </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="discountPercentage">Discount (%) <span style={{ fontWeight: 'normal', color: '#666' }}>(Optional)</span></label>
+                    <input
+                      id="discountPercentage"
+                      type="number"
+                      min="0"
+                      max="99"
+                      value={formData.discountPercentage}
+                      onChange={e => {
+                        const pct = e.target.value;
+                        const price = Number(formData.price);
+                        let newSalePrice = '';
+
+                        if (pct && !isNaN(Number(pct)) && price) {
+                          newSalePrice = Math.round(price * (1 - Number(pct) / 100)).toString();
+                        }
+
+                        setFormData({
+                          ...formData,
+                          discountPercentage: pct,
+                          salePrice: newSalePrice
+                        });
+                      }}
+                      placeholder="e.g. 20"
+                      className={errors.discountPercentage ? 'error' : ''}
+                    />
+                    {formData.salePrice && (
+                      <span className="helper-text" style={{ fontSize: '0.8rem', color: '#22c55e', marginTop: '4px', display: 'block' }}>
+                        Sale Price: ₦{Number(formData.salePrice).toLocaleString()}
+                      </span>
+                    )}
+                    {errors.discountPercentage && <span className="error-text">{errors.discountPercentage}</span>}
+                  </div>
 
 
-                <div className="form-group">
-                  <label htmlFor="category">Category</label>
-                  <select
-                    id="category"
-                    value={formData.categoryId}
-                    onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
-                  >
-                    {categories.map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
-                    ))}
-                  </select>
+                  <div className="form-group">
+                    <label htmlFor="category">Category</label>
+                    <select
+                      id="category"
+                      value={formData.categoryId}
+                      onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
+                    >
+                      {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Right Column */}
-            <div className="form-column">
+              {/* Right Column */}
+              <div className="form-column">
+                <div className="form-group">
+                  <label htmlFor="imageUrl">Main Image *</label>
+                  <div className="upload-section">
+                    <input
+                      id="imageUrl"
+                      type="text"
+                      value={formData.imageUrl.startsWith('data:') ? '' : formData.imageUrl}
+                      onChange={e => setFormData({ ...formData, imageUrl: e.target.value })}
+                      placeholder="Paste URL or upload from device..."
+                      className={errors.imageUrl ? 'error' : ''}
+                    />
+                    <input
+                      ref={mainImageInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleMainImageUpload}
+                      style={{ display: 'none' }}
+                    />
+                    <button
+                      type="button"
+                      className="upload-btn"
+                      onClick={() => mainImageInputRef.current?.click()}
+                      disabled={uploadingMain}
+                    >
+                      <Upload size={16} />
+                      {uploadingMain ? 'Uploading...' : 'Upload'}
+                    </button>
+                  </div>
+                  {uploadingMain && (
+                    <div className="upload-progress-container">
+                      <div className="upload-progress-bar" style={{ width: `${mainProgress}%` }} />
+                      <span className="upload-progress-text">{mainProgress}%</span>
+                    </div>
+                  )}
+                  {errors.imageUrl && <span className="error-text">{errors.imageUrl}</span>}
+
+                  {formData.imageUrl && (
+                    <div className="image-preview">
+                      <OptimizedImage
+                        src={formData.imageUrl}
+                        alt="Preview"
+                      />
+                      {formData.imageUrl.startsWith('data:') && (
+                        <span className="upload-badge">Uploaded from device</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Gallery Images */}
+                <div className="form-group">
+                  <label>Gallery Images (Additional Views)</label>
+                  <div className="gallery-list">
+                    {formData.galleryImages.map((url, index) => (
+                      <div key={index} className="gallery-row">
+                        {url.startsWith('data:') ? (
+                          <div className="gallery-preview-inline">
+                            <OptimizedImage src={url} alt={`Gallery ${index + 1}`} />
+                            <span>Uploaded image</span>
+                          </div>
+                        ) : (
+                          <input
+                            type="text"
+                            value={url}
+                            onChange={e => {
+                              const newGallery = [...formData.galleryImages];
+                              newGallery[index] = e.target.value;
+                              setFormData({ ...formData, galleryImages: newGallery });
+                            }}
+                            placeholder="https://..."
+                          />
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newGallery = formData.galleryImages.filter((_, i) => i !== index);
+                            setFormData({ ...formData, galleryImages: newGallery });
+                          }}
+                          className="remove-gallery-btn"
+                          title="Remove image"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {uploadingGallery && (
+                    <div className="upload-progress-container">
+                      <div className="upload-progress-bar" style={{ width: `${galleryProgress}%` }} />
+                      <span className="upload-progress-text">{galleryProgress}%</span>
+                    </div>
+                  )}
+
+                  <div className="gallery-actions">
+                    <input
+                      ref={galleryImageInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleGalleryImageUpload}
+                      style={{ display: 'none' }}
+                    />
+                    <button
+                      type="button"
+                      className="add-gallery-btn"
+                      onClick={() => galleryImageInputRef.current?.click()}
+                      disabled={uploadingGallery}
+                    >
+                      <Plus size={16} />
+                      {uploadingGallery ? 'Uploading Gallery...' : 'Add Gallery Images'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Video */}
               <div className="form-group">
-                <label htmlFor="imageUrl">Main Image *</label>
+                <label htmlFor="videoUrl">Video (Optional)</label>
                 <div className="upload-section">
                   <input
-                    id="imageUrl"
+                    id="videoUrl"
                     type="text"
-                    value={formData.imageUrl.startsWith('data:') ? '' : formData.imageUrl}
-                    onChange={e => setFormData({ ...formData, imageUrl: e.target.value })}
-                    placeholder="Paste URL or upload from device..."
-                    className={errors.imageUrl ? 'error' : ''}
+                    value={formData.videoUrl.startsWith('data:') ? '' : formData.videoUrl}
+                    onChange={e => setFormData({ ...formData, videoUrl: e.target.value })}
+                    placeholder="Paste YouTube URL or upload video..."
                   />
                   <input
-                    ref={mainImageInputRef}
+                    ref={videoInputRef}
                     type="file"
-                    accept="image/*"
-                    onChange={handleMainImageUpload}
+                    accept="video/*"
+                    onChange={handleVideoUpload}
                     style={{ display: 'none' }}
                   />
                   <button
                     type="button"
                     className="upload-btn"
-                    onClick={() => mainImageInputRef.current?.click()}
-                    disabled={uploadingMain}
+                    onClick={() => videoInputRef.current?.click()}
+                    disabled={uploadingVideo}
                   >
-                    <Upload size={16} />
-                    {uploadingMain ? 'Uploading...' : 'Upload'}
+                    <Video size={16} />
+                    {uploadingVideo ? 'Uploading...' : 'Upload'}
                   </button>
                 </div>
-                {uploadingMain && (
+                {uploadingVideo && (
                   <div className="upload-progress-container">
-                    <div className="upload-progress-bar" style={{ width: `${mainProgress}%` }} />
-                    <span className="upload-progress-text">{mainProgress}%</span>
+                    <div className="upload-progress-bar" style={{ width: `${videoProgress}%` }} />
+                    <span className="upload-progress-text">{videoProgress}%</span>
                   </div>
                 )}
-                {errors.imageUrl && <span className="error-text">{errors.imageUrl}</span>}
-
-                {formData.imageUrl && (
-                  <div className="image-preview">
-                    <OptimizedImage
-                      src={formData.imageUrl}
-                      alt="Preview"
-                    />
-                    {formData.imageUrl.startsWith('data:') && (
-                      <span className="upload-badge">Uploaded from device</span>
-                    )}
-                  </div>
+                {formData.videoUrl.startsWith('data:') && (
+                  <span className="upload-badge" style={{ marginTop: '8px' }}>Video uploaded from device</span>
                 )}
               </div>
 
-              {/* Gallery Images */}
+              {/* Quantity */}
               <div className="form-group">
-                <label>Gallery Images (Additional Views)</label>
-                <div className="gallery-list">
-                  {formData.galleryImages.map((url, index) => (
-                    <div key={index} className="gallery-row">
-                      {url.startsWith('data:') ? (
-                        <div className="gallery-preview-inline">
-                          <OptimizedImage src={url} alt={`Gallery ${index + 1}`} />
-                          <span>Uploaded image</span>
-                        </div>
-                      ) : (
-                        <input
-                          type="text"
-                          value={url}
-                          onChange={e => {
-                            const newGallery = [...formData.galleryImages];
-                            newGallery[index] = e.target.value;
-                            setFormData({ ...formData, galleryImages: newGallery });
-                          }}
-                          placeholder="https://..."
-                        />
+                <label htmlFor="quantity">Stock Quantity</label>
+                <input
+                  id="quantity"
+                  type="number"
+                  min="0"
+                  value={formData.quantity}
+                  onChange={e => setFormData({ ...formData, quantity: e.target.value })}
+                  placeholder="10"
+                  disabled={formData.soldOut}
+                />
+              </div>
+
+              {/* Sold Out Toggle */}
+              <div className="form-group sold-out-toggle">
+                <label className="toggle-label">
+                  <input
+                    type="checkbox"
+                    checked={formData.soldOut}
+                    onChange={e => setFormData({
+                      ...formData,
+                      soldOut: e.target.checked,
+                      quantity: e.target.checked ? '0' : formData.quantity
+                    })}
+                  />
+                  <span className="toggle-slider" />
+                  <span className="toggle-text">
+                    {formData.soldOut ? '🔴 SOLD OUT' : '🟢 In Stock'}
+                  </span>
+                </label>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="tags">Tags (comma-separated)</label>
+                <input
+                  id="tags"
+                  type="text"
+                  value={formData.tags}
+                  onChange={e => setFormData({ ...formData, tags: e.target.value })}
+                  placeholder="Best Seller, New Arrival"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="sizes">Sizes (comma-separated)</label>
+                <input
+                  id="sizes"
+                  type="text"
+                  value={formData.sizes}
+                  onChange={e => setFormData({ ...formData, sizes: e.target.value })}
+                  placeholder="S, M, L, XL"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Colors</label>
+                <div className="colors-list">
+                  {formData.colors.map((color, index) => (
+                    <div key={index} className="color-row">
+                      <input
+                        type="color"
+                        value={color.hex}
+                        onChange={e => updateColor(index, 'hex', e.target.value)}
+                        className="color-picker"
+                      />
+                      <input
+                        type="text"
+                        value={color.name}
+                        onChange={e => updateColor(index, 'name', e.target.value)}
+                        placeholder="Color name"
+                        className="color-name"
+                      />
+                      {formData.colors.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeColor(index)}
+                          className="color-remove"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       )}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newGallery = formData.galleryImages.filter((_, i) => i !== index);
-                          setFormData({ ...formData, galleryImages: newGallery });
-                        }}
-                        className="remove-gallery-btn"
-                        title="Remove image"
-                      >
-                        <Trash2 size={16} />
-                      </button>
                     </div>
                   ))}
-                </div>
-
-                {uploadingGallery && (
-                  <div className="upload-progress-container">
-                    <div className="upload-progress-bar" style={{ width: `${galleryProgress}%` }} />
-                    <span className="upload-progress-text">{galleryProgress}%</span>
-                  </div>
-                )}
-
-                <div className="gallery-actions">
-                  <input
-                    ref={galleryImageInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleGalleryImageUpload}
-                    style={{ display: 'none' }}
-                  />
-                  <button
-                    type="button"
-                    className="add-gallery-btn"
-                    onClick={() => galleryImageInputRef.current?.click()}
-                    disabled={uploadingGallery}
-                  >
-                    <Plus size={16} />
-                    {uploadingGallery ? 'Uploading Gallery...' : 'Add Gallery Images'}
+                  <button type="button" onClick={addColor} className="add-color-btn">
+                    <Plus size={16} /> Add Color
                   </button>
                 </div>
-              </div>
-            </div>
-
-            {/* Video */}
-            <div className="form-group">
-              <label htmlFor="videoUrl">Video (Optional)</label>
-              <div className="upload-section">
-                <input
-                  id="videoUrl"
-                  type="text"
-                  value={formData.videoUrl.startsWith('data:') ? '' : formData.videoUrl}
-                  onChange={e => setFormData({ ...formData, videoUrl: e.target.value })}
-                  placeholder="Paste YouTube URL or upload video..."
-                />
-                <input
-                  ref={videoInputRef}
-                  type="file"
-                  accept="video/*"
-                  onChange={handleVideoUpload}
-                  style={{ display: 'none' }}
-                />
-                <button
-                  type="button"
-                  className="upload-btn"
-                  onClick={() => videoInputRef.current?.click()}
-                  disabled={uploadingVideo}
-                >
-                  <Video size={16} />
-                  {uploadingVideo ? 'Uploading...' : 'Upload'}
-                </button>
-              </div>
-              {uploadingVideo && (
-                <div className="upload-progress-container">
-                  <div className="upload-progress-bar" style={{ width: `${videoProgress}%` }} />
-                  <span className="upload-progress-text">{videoProgress}%</span>
-                </div>
-              )}
-              {formData.videoUrl.startsWith('data:') && (
-                <span className="upload-badge" style={{ marginTop: '8px' }}>Video uploaded from device</span>
-              )}
-            </div>
-
-            {/* Quantity */}
-            <div className="form-group">
-              <label htmlFor="quantity">Stock Quantity</label>
-              <input
-                id="quantity"
-                type="number"
-                min="0"
-                value={formData.quantity}
-                onChange={e => setFormData({ ...formData, quantity: e.target.value })}
-                placeholder="10"
-                disabled={formData.soldOut}
-              />
-            </div>
-
-            {/* Sold Out Toggle */}
-            <div className="form-group sold-out-toggle">
-              <label className="toggle-label">
-                <input
-                  type="checkbox"
-                  checked={formData.soldOut}
-                  onChange={e => setFormData({
-                    ...formData,
-                    soldOut: e.target.checked,
-                    quantity: e.target.checked ? '0' : formData.quantity
-                  })}
-                />
-                <span className="toggle-slider" />
-                <span className="toggle-text">
-                  {formData.soldOut ? '🔴 SOLD OUT' : '🟢 In Stock'}
-                </span>
-              </label>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="tags">Tags (comma-separated)</label>
-              <input
-                id="tags"
-                type="text"
-                value={formData.tags}
-                onChange={e => setFormData({ ...formData, tags: e.target.value })}
-                placeholder="Best Seller, New Arrival"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="sizes">Sizes (comma-separated)</label>
-              <input
-                id="sizes"
-                type="text"
-                value={formData.sizes}
-                onChange={e => setFormData({ ...formData, sizes: e.target.value })}
-                placeholder="S, M, L, XL"
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Colors</label>
-              <div className="colors-list">
-                {formData.colors.map((color, index) => (
-                  <div key={index} className="color-row">
-                    <input
-                      type="color"
-                      value={color.hex}
-                      onChange={e => updateColor(index, 'hex', e.target.value)}
-                      className="color-picker"
-                    />
-                    <input
-                      type="text"
-                      value={color.name}
-                      onChange={e => updateColor(index, 'name', e.target.value)}
-                      placeholder="Color name"
-                      className="color-name"
-                    />
-                    {formData.colors.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeColor(index)}
-                        className="color-remove"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-                ))}
-                <button type="button" onClick={addColor} className="add-color-btn">
-                  <Plus size={16} /> Add Color
-                </button>
               </div>
             </div>
           </div>
@@ -673,24 +675,28 @@ export const ProductForm: React.FC<ProductFormProps> = ({ productId, onClose }) 
         .modal-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.5);
-          backdrop-filter: blur(4px);
-          z-index: 200;
+          background: rgba(0, 0, 0, 0.7);
+          backdrop-filter: blur(8px);
+          z-index: 1000;
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: var(--space-4);
+          padding: 20px;
+          overflow: hidden;
         }
 
         .modal-content {
           width: 100%;
-          max-width: 900px;
-          max-height: 90vh;
+          max-width: 1000px;
+          height: 85vh;
+          max-height: 850px;
           background: white;
           border-radius: var(--radius-xl);
           overflow: hidden;
           display: flex;
           flex-direction: column;
+          box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+          position: relative;
         }
 
         .modal-header {
@@ -724,8 +730,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({ productId, onClose }) 
 
         .product-form {
           flex: 1;
-          overflow-y: auto;
-          padding: var(--space-6);
+          overflow-y: auto !important;
+          -webkit-overflow-scrolling: touch;
+          padding: var(--space-8);
+          background: #fff;
         }
 
         .form-grid {
@@ -1005,9 +1013,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({ productId, onClose }) 
           display: flex;
           justify-content: flex-end;
           gap: var(--space-3);
-          padding-top: var(--space-6);
+          padding: 24px 32px 32px;
           border-top: 1px solid var(--color-nude-light);
-          margin-top: var(--space-6);
+          background: white;
         }
 
         .cancel-btn {

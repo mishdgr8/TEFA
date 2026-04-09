@@ -92,7 +92,7 @@
     width: 70px;
     height: 80px;
     flex-shrink: 0;
-    border-radius: var(--radius-md);
+    border-radius: 0;
     overflow: hidden;
     background: var(--color-nude-light);
     cursor: pointer;
@@ -133,10 +133,10 @@
 .product-main-image {
     flex: 1;
     aspect-ratio: 3 / 4;
-    border-radius: var(--radius-xl);
+    border-radius: 0;
     overflow: hidden;
-    background: var(--color-nude-light);
-    border: 2px solid var(--color-coral);
+    background: none;
+    border: none;
 }
 
 .product-main-image img {
@@ -222,11 +222,13 @@
 }
 
 .product-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(2rem, 4vw, 2.5rem);
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.2rem);
     font-weight: 700;
-    font-style: italic;
+    font-style: normal;
     margin-bottom: var(--space-2);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
 }
 
 .product-price {
@@ -367,7 +369,7 @@
     padding: var(--space-2) var(--space-3);
     background: none;
     border: 2px solid var(--color-nude-light);
-    border-radius: var(--radius-md);
+    border-radius: 0;
     font-family: 'Quicksand', sans-serif;
     color: var(--color-brown);
     cursor: pointer;
@@ -404,7 +406,7 @@
     display: inline-flex;
     align-items: center;
     border: 2px solid var(--color-nude-light);
-    border-radius: var(--radius-md);
+    border-radius: 0;
     padding: var(--space-1);
 }
 
@@ -451,7 +453,7 @@
     background: var(--color-coral);
     color: white;
     border: none;
-    border-radius: var(--radius-xl);
+    border-radius: 0;
     font-family: 'Quicksand', sans-serif;
     font-size: 1rem;
     font-weight: 700;
@@ -508,7 +510,7 @@
     background: none;
     color: var(--color-brown-dark);
     border: 2px solid var(--color-brown-dark);
-    border-radius: var(--radius-xl);
+    border-radius: 0;
     font-family: 'Quicksand', sans-serif;
     font-size: 1rem;
     font-weight: 700;
@@ -525,6 +527,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
+    margin-bottom: var(--space-24);
 }
 
 .trust-badge {
@@ -555,4 +558,121 @@
 .trust-badge span {
     font-size: 0.875rem;
     color: var(--color-text-muted);
+}
+
+/* Recommendations Section */
+.product-recommendations {
+    padding-top: 40px;
+    border-top: 1px solid var(--color-nude-light);
+}
+
+.recommendations-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
+    font-weight: 700;
+    font-style: normal;
+    margin-bottom: var(--space-8);
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.recommendations-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 2px;
+    row-gap: var(--space-10);
+}
+
+@media (min-width: 1024px) {
+    .recommendations-grid {
+        grid-template-columns: repeat(4, 1fr);
+        column-gap: 2px;
+        row-gap: var(--space-16);
+    }
+}
+
+/* Success Toast */
+.add-success-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: 90%;
+    max-width: 500px;
+}
+
+.toast-content {
+    background: #111111;
+    color: white;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+.toast-icon {
+    color: #4ade80;
+    flex-shrink: 0;
+}
+
+.toast-text {
+    flex: 1;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.toast-product-name {
+    font-weight: 700;
+}
+
+.toast-view-cart-btn {
+    background: white;
+    color: black;
+    padding: 8px 16px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.toast-view-cart-btn:hover {
+    background: #f0f0f0;
+    transform: translateY(-1px);
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.toast-close:hover {
+    color: white;
+}
+
+@media (max-width: 480px) {
+    .toast-content {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+        gap: 12px;
+    }
+
+    .toast-view-cart-btn {
+        width: 100%;
+    }
 }
