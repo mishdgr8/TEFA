@@ -523,7 +523,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
         .header-actions {
           display: flex;
           align-items: center;
-          gap: var(--space-3);
+          gap: var(--space-1);
           margin-left: auto;
         }
 
@@ -618,7 +618,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
         }
 
         .header-icon-btn {
-          padding: var(--space-2);
+          padding: 4px;
           background: none;
           border: none;
           color: #111111;
@@ -637,10 +637,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
         .header-search-container {
           display: flex;
           align-items: center;
-          background: var(--color-cream-dark);
-          border: 1px solid var(--color-nude);
+          background: transparent;
+          border: 1px solid transparent;
           border-radius: var(--radius-full);
-          padding: 4px 12px;
+          padding: 0;
           transition: all var(--transition-fast);
           position: relative;
         }
@@ -649,6 +649,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
            background: rgba(255, 255, 255, 1);
            backdrop-filter: blur(20px);
            border-color: var(--color-brown);
+           padding: 4px 12px;
            z-index: 25;
            position: relative;
         }
@@ -715,10 +716,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
           }
         }
 
-        /* Hide cart icon on mobile (using floating cart instead) */
+        /* Show cart icon on mobile */
         @media (max-width: 1023px) {
           .header-cart-icon {
-            display: none;
+            display: flex;
           }
         }
 

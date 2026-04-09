@@ -203,21 +203,6 @@ export const App: React.FC = () => {
           }}
         />
 
-        {/* Floating Cart Button (Mobile) */}
-        {!isAdminRoute && location.pathname !== '/checkout' && (
-          <button
-            onClick={() => setIsCartOpen(true)}
-            className="floating-cart-btn"
-            aria-label="Open cart"
-          >
-            <ShoppingBag size={24} />
-            {cart.length > 0 && (
-              <span className="floating-cart-badge">
-                {cart.reduce((a, b) => a + b.qty, 0)}
-              </span>
-            )}
-          </button>
-        )}
 
         {/* Product Form Modal */}
         {isProductFormOpen && (
@@ -227,8 +212,6 @@ export const App: React.FC = () => {
           />
         )}
 
-        {/* Chat Widget */}
-        {!isAdminRoute && <ChatWidget />}
 
         {/* Global Auth Modal */}
         <AuthModal

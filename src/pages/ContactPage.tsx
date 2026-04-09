@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { Mail, Instagram, Facebook, Music, Send } from 'lucide-react';
 import { SEOHead } from '../components/SEOHead';
 
 export const ContactPage: React.FC = () => {
@@ -31,23 +31,34 @@ export const ContactPage: React.FC = () => {
 
                         <div className="info-item">
                             <div className="info-icon">
-                                <Phone size={24} />
+                                <Instagram size={24} />
                             </div>
                             <div className="info-text">
-                                <h3>Phone</h3>
-                                <p>+234 (0) 800 000 0000</p>
-                                <p>Available Mon-Sat, 9am - 6pm WAT</p>
+                                <h3>Instagram</h3>
+                                <p>@houseoftefa</p>
+                                <a href="https://instagram.com/houseoftefa" target="_blank" rel="noopener noreferrer" className="contact-link">Follow us</a>
                             </div>
                         </div>
 
                         <div className="info-item">
                             <div className="info-icon">
-                                <MapPin size={24} />
+                                <Music size={24} />
                             </div>
                             <div className="info-text">
-                                <h3>Studio</h3>
-                                <p>123 TÉFA Street, Victoria Island</p>
-                                <p>Lagos, Nigeria</p>
+                                <h3>TikTok</h3>
+                                <p>@houseoftefa</p>
+                                <a href="https://tiktok.com/@houseoftefa" target="_blank" rel="noopener noreferrer" className="contact-link">Watch our story</a>
+                            </div>
+                        </div>
+
+                        <div className="info-item">
+                            <div className="info-icon">
+                                <Facebook size={24} />
+                            </div>
+                            <div className="info-text">
+                                <h3>Facebook</h3>
+                                <p>House of TÉFA</p>
+                                <a href="https://facebook.com/houseoftefa" target="_blank" rel="noopener noreferrer" className="contact-link">Connect with us</a>
                             </div>
                         </div>
                     </div>
@@ -209,6 +220,20 @@ export const ContactPage: React.FC = () => {
                     text-align: center;
                     margin-top: var(--space-2);
                     font-style: italic;
+                }
+                .contact-link {
+                    display: inline-block;
+                    margin-top: var(--space-1);
+                    color: var(--color-coral);
+                    font-size: 0.8125rem;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    text-decoration: none;
+                }
+
+                .contact-link:hover {
+                    text-decoration: underline;
                 }
             `}</style>
         </div>
