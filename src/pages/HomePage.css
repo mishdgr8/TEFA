@@ -354,7 +354,7 @@
 .cta-pattern-top,
 .cta-pattern-bottom {
     position: relative;
-    height: 40vh;
+    height: 25vh;
     clip-path: inset(0);
 }
 
@@ -380,6 +380,7 @@
     justify-content: center;
     padding: 128px 0;
     position: relative;
+    min-height: 30vh;
     /* The magic trick for mobile parallax: clip-path creates a 'window' */
     clip-path: inset(0);
     background-color: #f9f9f9;
@@ -407,11 +408,12 @@
     .shop-all-cta,
     .cta-pattern-top,
     .cta-pattern-bottom {
-        height: 35vh;
+        height: 20vh;
+        min-height: 20vh;
     }
 
     .shop-all-cta {
-        padding: 60px 0;
+        padding: 40px 0;
     }
 }
 
