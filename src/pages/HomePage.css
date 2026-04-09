@@ -378,9 +378,11 @@
 .shop-all-cta {
     display: flex;
     justify-content: center;
-    padding: 128px 0;
+    padding: 120px 0;
     position: relative;
     clip-path: inset(0);
+    background-color: #111111;
+    /* Dark fallback */
 }
 
 .shop-all-cta::before {
@@ -402,11 +404,11 @@
     position: relative;
     z-index: 2;
     font-family: 'Montserrat', sans-serif;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.3em;
-    padding: var(--space-6) var(--space-16);
+    letter-spacing: 0.25em;
+    padding: 16px 40px;
     background: #FFFFFF;
     color: #111111;
     border: 1px solid #111111;
@@ -419,26 +421,19 @@
 .shop-all-btn:hover {
     background: #111111;
     color: #FFFFFF;
-    letter-spacing: 0.35em;
-    padding-left: var(--space-20);
-    padding-right: var(--space-20);
+    letter-spacing: 0.3em;
+    padding-left: 48px;
+    padding-right: 48px;
 }
 
 /* Mobile adjustments */
 @media (max-width: 1024px) {
-
-    .shop-all-cta,
-    .cta-pattern-top,
-    .cta-pattern-bottom {
-        height: 35vh;
-    }
-
     .shop-all-cta {
-        padding: 40px 0;
+        padding: 80px 0;
     }
 
     .shop-all-btn {
-        padding: var(--space-4) var(--space-10);
+        padding: 14px 32px;
         font-size: 0.75rem;
         letter-spacing: 0.2em;
     }
