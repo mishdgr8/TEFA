@@ -28,6 +28,7 @@ interface FormData {
   tags: string;
   sizes: string;
   colors: ProductColor[];
+  weight: string;
 }
 
 const initialFormData: FormData = {
@@ -48,6 +49,7 @@ const initialFormData: FormData = {
   tags: '',
   sizes: 'S, M, L',
   colors: [{ name: 'Default', hex: '#000000' }],
+  weight: '0.65',
 };
 
 export const ProductForm: React.FC<ProductFormProps> = ({ productId, onClose }) => {
@@ -163,6 +165,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ productId, onClose }) 
         tags: existingProduct.tags.join(', '),
         sizes: existingProduct.sizes.join(', '),
         colors: existingProduct.colors.length > 0 ? existingProduct.colors : [{ name: 'Default', hex: '#000000' }],
+        weight: (existingProduct.weight ?? 0.65).toString(),
       });
     }
   }, [existingProduct]);
@@ -219,6 +222,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ productId, onClose }) 
         tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
         sizes: formData.sizes.split(',').map(s => s.trim()).filter(Boolean),
         colors: formData.colors.filter(c => c.name.trim()),
+        weight: Number(formData.weight) || 0.65,
       };
 
       if (isEditing && productId) {
@@ -610,6 +614,21 @@ export const ProductForm: React.FC<ProductFormProps> = ({ productId, onClose }) 
                   onChange={e => setFormData({ ...formData, sizes: e.target.value })}
                   placeholder="S, M, L, XL"
                 />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="weight">Item Weight (kg)</label>
+                <input
+                  id="weight"
+                  type="number"
+                  step="0.01"
+                  value={formData.weight}
+                  onChange={e => setFormData({ ...formData, weight: e.target.value })}
+                  placeholder="0.65"
+                />
+                <span className="helper-text" style={{ fontSize: '0.75rem', color: '#888' }}>
+                  Default is 0.65kg. Used for international shipping calculation.
+                </span>
               </div>
 
               <div className="form-group">

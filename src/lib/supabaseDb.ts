@@ -53,6 +53,7 @@ const rowToProduct = (row: any): Product => {
         tags: row.tags || [],
         sizes: row.sizes || [],
         colors: (row.colors as any[]) || [],
+        weight: Number(row.weight || 0.65),
         createdAt: row.created_at ? new Date(row.created_at).getTime() : undefined,
         updatedAt: row.updated_at ? new Date(row.updated_at).getTime() : undefined,
     };
@@ -217,6 +218,7 @@ export const addProductToFirestore = async (
             tags: productData.tags,
             sizes: productData.sizes,
             colors: productData.colors as any,
+            weight: productData.weight || 0.65,
         })
         .select('id')
         .single();
@@ -254,6 +256,7 @@ export const updateProductInFirestore = async (
     if (updates.tags !== undefined) updateData.tags = updates.tags;
     if (updates.sizes !== undefined) updateData.sizes = updates.sizes;
     if (updates.colors !== undefined) updateData.colors = updates.colors as any;
+    if (updates.weight !== undefined) updateData.weight = updates.weight;
 
     const { error } = await supabase
         .from('products')
@@ -290,6 +293,7 @@ export const seedProducts = async (products: Product[]): Promise<void> => {
         tags: p.tags,
         sizes: p.sizes,
         colors: p.colors as any,
+        weight: p.weight || 0.65,
     }));
 
     const { error } = await supabase.from('products').insert(rows);

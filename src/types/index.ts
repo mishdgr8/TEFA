@@ -22,6 +22,7 @@ export interface Product {
   tags: string[];
   sizes: string[];
   colors: ProductColor[];
+  weight: number;            // Weight in kg
   createdAt?: number;
   updatedAt?: number;
 }

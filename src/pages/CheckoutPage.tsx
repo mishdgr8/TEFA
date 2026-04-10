@@ -8,10 +8,11 @@ import { PaymentWrapper } from '../components/PaymentWrapper';
 import { SearchableDropdown } from '../components/SearchableDropdown';
 import { COUNTRIES } from '../data/countries';
 import { supabase } from '../lib/supabase';
+import { getInternationalRate } from '../data/shippingRates';
 
 export const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
-  const { cart, currency, clearCart, user, createOrder } = useStore();
+  const { cart, products, currency, clearCart, user, createOrder } = useStore();
 
   const [isSuccess, setIsSuccess] = useState(false);
   const [isShippingModalOpen, setIsShippingModalOpen] = useState(false);
@@ -132,9 +133,11 @@ export const CheckoutPage: React.FC = () => {
     door: 7500
   };
 
+  const totalWeight = cart.reduce((acc, item) => acc + ((products.find(p => p.id === item.productId)?.weight || 0.65) * item.qty), 0);
+
   const shippingCost = (formData.country === 'Nigeria' && formData.shippingMethod)
     ? (currency === 'USD' ? (SHIPPING_RATES[formData.shippingMethod] * rate) : SHIPPING_RATES[formData.shippingMethod])
-    : 0;
+    : (formData.country !== 'Nigeria' ? (getInternationalRate(formData.country) || 0) * (currency === 'USD' ? rate : 1) : 0);
 
   // Convert discount amount if needed
   const discountAmount = appliedDiscount ? (currency === 'USD' ? (appliedDiscount.amount * rate) : appliedDiscount.amount) : 0;
@@ -573,7 +576,10 @@ export const CheckoutPage: React.FC = () => {
                 </div>
 
                 <p className="delivery-note">
-                  * Shipping rates are calculated based on your location.
+                  * Shipping rates are calculated based on your location and total parcel weight ({totalWeight.toFixed(2)}kg{formData.country === 'United States' ? ` / ${(totalWeight * 2.2046).toFixed(2)}lbs` : ''}).
+                </p>
+                <p className="shipping-disclaimer" style={{ fontSize: '0.7rem', color: '#888', marginTop: '8px', fontStyle: 'italic' }}>
+                  Kindly note that these prices are subject to the weight of the items and might increase if the total weight exceeds 2kg.
                 </p>
               </div>
             </aside>
