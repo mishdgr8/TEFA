@@ -12,7 +12,7 @@ import { getInternationalRate } from '../data/shippingRates';
 
 export const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
-  const { cart, products, currency, clearCart, user, createOrder } = useStore();
+  const { cart, user, currency, setCurrency, products, exchangeRates, isSearchOpen, setIsSearchOpen, isAuthModalOpen, setIsAuthModalOpen, isProfileModalOpen, setIsProfileModalOpen, clearCart, createOrder } = useStore();
 
   const [isSuccess, setIsSuccess] = useState(false);
   const [isShippingModalOpen, setIsShippingModalOpen] = useState(false);
@@ -119,8 +119,7 @@ export const CheckoutPage: React.FC = () => {
     saveInfo: false
   });
 
-  const currentCurrency = CURRENCIES.find(c => c.code === currency);
-  const rate = currentCurrency?.rate || 1;
+  const rate = exchangeRates[currency] || 1;
 
   const subtotal = cart.reduce((acc, item) => {
     // If USD, use priceUSD or fall back to converted price

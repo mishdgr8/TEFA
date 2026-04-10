@@ -93,6 +93,12 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [exchangeRates, setExchangeRates] = useState<Record<string, number>>({
+    NGN: 1,
+    USD: 0.00065,
+    GBP: 0.00051,
+    EUR: 0.00060,
+  });
   const [loading, setLoading] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
 
@@ -179,6 +185,35 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     // Slight delay to not compete with initial page load
     const timeoutId = setTimeout(detectLocation, 3000);
     return () => clearTimeout(timeoutId);
+  }, []);
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Live Currency Rates Fetching
+  // ═══════════════════════════════════════════════════════════════════════════
+  useEffect(() => {
+    const fetchRates = async () => {
+      try {
+        const response = await fetch('https://open.er-api.com/v6/latest/NGN');
+        const data = await response.json();
+
+        if (data && data.result === 'success' && data.rates) {
+          console.log('✅ Live currency rates updated');
+          setExchangeRates({
+            NGN: 1,
+            USD: data.rates.USD || 0.00065,
+            GBP: data.rates.GBP || 0.00051,
+            EUR: data.rates.EUR || 0.00060,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch live currency rates:', error);
+      }
+    };
+
+    fetchRates();
+    // Refresh every 6 hours
+    const intervalId = setInterval(fetchRates, 6 * 60 * 60 * 1000);
+    return () => clearInterval(intervalId);
   }, []);
 
   // Load products from Firestore in real-time
@@ -501,7 +536,8 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     currency,
     isSearchOpen,
     isAuthModalOpen,
-    isProfileModalOpen
+    isProfileModalOpen,
+    exchangeRates,
   ]);
 
   return (

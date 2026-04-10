@@ -118,6 +118,7 @@ export interface StoreState {
   isSearchOpen: boolean;
   isAuthModalOpen: boolean;
   isProfileModalOpen: boolean;
+  exchangeRates: Record<string, number>;
 }
 
 export interface AuthUser {
@@ -168,7 +169,7 @@ export interface CurrencyInfo {
   code: CurrencyCode;
   symbol: string;
   name: string;
-  rate: number; // Exchange rate relative to NGN
+  rate: number; // Current exchange rate relative to NGN
 }
 
 export const CURRENCIES: CurrencyInfo[] = [

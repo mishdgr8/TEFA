@@ -43,10 +43,11 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
-  const { cart, user, currency, setCurrency, products, isSearchOpen, setIsSearchOpen, isAuthModalOpen, setIsAuthModalOpen, isProfileModalOpen, setIsProfileModalOpen } = useStore();
+  const { cart, user, currency, setCurrency, products, exchangeRates, isSearchOpen, setIsSearchOpen, isAuthModalOpen, setIsAuthModalOpen, isProfileModalOpen, setIsProfileModalOpen } = useStore();
   const cartCount = cart.reduce((sum, i) => sum + i.qty, 0);
 
   const currentCurrency = CURRENCIES.find(c => c.code === currency) || CURRENCIES[0];
+  const rate = exchangeRates[currency] || 1;
 
   // Currency selector outside click
   useEffect(() => {
