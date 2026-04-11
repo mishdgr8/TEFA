@@ -3,34 +3,11 @@ import { Product, CartItem, Category, StoreContextType, AuthUser, CurrencyCode, 
 import { DEFAULT_PRODUCTS } from './products';
 import { CATEGORIES } from './categories';
 import { onAuthChange, User } from '../lib/supabaseAuth';
-import { isSupabaseConfigValid as isFirebaseConfigValid } from '../lib/supabase';
-import {
-  getProducts,
-  subscribeToProducts,
-  addProductToFirestore,
-  updateProductInFirestore,
-  deleteProductFromFirestore,
-  subscribeToCategories,
-  addCategoryToFirestore,
-  updateCategoryInFirestore,
-  deleteCategoryFromFirestore,
-  subscribeToReviews,
-  addReviewToFirestore,
-  updateReviewInFirestore,
-  deleteReviewFromFirestore,
-  seedCategories,
-  seedProducts,
-  subscribeToUserProfile,
-  ensureUserProfile,
-  subscribeToOrders,
-  updateOrderStatusInFirestore,
-  deleteOrderFromFirestore,
-  updateUserProfile,
-  createOrder
-} from '../lib/supabaseDb';
+import { isSupabaseConfigValid } from '../lib/supabase';
+import * as db from '../lib/supabaseDb';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Local Storage Keys (for cart only - products now in Firestore)
+// Local Storage Keys (for cart only - products now in Supabase)
 // ═══════════════════════════════════════════════════════════════════════════
 
 const STORAGE_KEYS = {
@@ -104,8 +81,8 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
   // Subscribe to auth state changes - Delayed to improve TBT and initial LCP
   useEffect(() => {
-    if (!isFirebaseConfigValid) {
-      console.warn('Auth subscription skipped: Firebase config is missing.');
+    if (!isSupabaseConfigValid) {
+      console.warn('Auth subscription skipped: Supabase config is missing.');
       return;
     }
 
@@ -113,30 +90,29 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     let authUnsubscribe: (() => void) | null = null;
 
     // Remove the artificial 2s delay to fix refresh redirects
-    authUnsubscribe = onAuthChange(async (firebaseUser: User | null) => {
+    authUnsubscribe = onAuthChange(async (sbUser: User | null) => {
       if (profileUnsubscribe) {
         profileUnsubscribe();
         profileUnsubscribe = null;
       }
 
-      if (firebaseUser) {
+      if (sbUser) {
         // Ensure user document exists in Supabase Profiles
-        await ensureUserProfile(firebaseUser.id, firebaseUser.email || null, firebaseUser.user_metadata);
+        await db.ensureUserProfile(sbUser.id, sbUser.email || null, sbUser.user_metadata);
 
-        // Subscribe to user profile for Real-time admin/role updates
-        profileUnsubscribe = subscribeToUserProfile(firebaseUser.id, (profileData) => {
-          setUser({
-            uid: firebaseUser.id,
-            email: firebaseUser.email || null,
-            isAdmin: profileData.isAdmin || false,
+        profileUnsubscribe = db.subscribeToUserProfile(sbUser.id, (profile) => {
+          const authUser: AuthUser = {
+            uid: sbUser.id,
+            email: sbUser.email || null,
+            isAdmin: !!profile?.is_admin,
             metadata: {
-              ...firebaseUser.user_metadata,
-              first_name: profileData.first_name || firebaseUser.user_metadata?.first_name,
-              last_name: profileData.last_name || firebaseUser.user_metadata?.last_name,
-              phone: profileData.phone || firebaseUser.user_metadata?.phone,
-              country: profileData.country || firebaseUser.user_metadata?.country,
+              first_name: profile?.first_name || '',
+              last_name: profile?.last_name || '',
+              phone: profile?.phone || '',
+              country: profile?.country || ''
             }
-          });
+          };
+          setUser(authUser);
           setAuthLoading(false);
         });
       } else {
@@ -216,10 +192,10 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     return () => clearInterval(intervalId);
   }, []);
 
-  // Load products from Firestore in real-time
+  // Load products from Supabase in real-time
   useEffect(() => {
-    if (!isFirebaseConfigValid) {
-      console.warn('Products subscription skipped: Firebase config is missing.');
+    if (!isSupabaseConfigValid) {
+      console.warn('Products subscription skipped: Supabase config is missing.');
       setLoading(false);
       return;
     }
@@ -229,9 +205,9 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
     let unsubscribe: (() => void) | null = null;
     try {
-      unsubscribe = subscribeToProducts((firestoreProducts) => {
-        console.log('Subscription data received:', firestoreProducts.length, 'products');
-        setProducts(firestoreProducts);
+      unsubscribe = db.subscribeToProducts((sbProducts) => {
+        console.log('Subscription data received:', sbProducts.length, 'products');
+        setProducts(sbProducts);
         setLoading(false);
       }, (error) => {
         console.error('Store subscription error:', error);
@@ -249,18 +225,18 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
   // Subscribe to categories and auto-seed if empty
   useEffect(() => {
-    if (!isFirebaseConfigValid) {
-      console.warn('Categories subscription skipped: Firebase config is missing.');
+    if (!isSupabaseConfigValid) {
+      console.warn('Categories subscription skipped: Supabase config is missing.');
       return;
     }
 
-    const unsubscribe = subscribeToCategories(async (firestoreCategories) => {
-      if (firestoreCategories.length > 0) {
-        setCategories(firestoreCategories);
+    const unsubscribe = db.subscribeToCategories(async (sbCategories) => {
+      if (sbCategories.length > 0) {
+        setCategories(sbCategories);
       } else {
-        console.log('No categories in Firestore, seeding initial data...');
+        console.log('No categories in Supabase, seeding initial data...');
         try {
-          await seedCategories(CATEGORIES);
+          await db.seedCategories(CATEGORIES);
           console.log('Categories seeded successfully.');
         } catch (error) {
           console.error('Failed to seed categories:', error);
@@ -272,21 +248,21 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
   // Subscribe to reviews
   useEffect(() => {
-    const unsubscribe = subscribeToReviews((firestoreReviews) => {
-      setReviews(firestoreReviews);
+    const unsubscribe = db.subscribeToReviews((sbReviews) => {
+      setReviews(sbReviews);
     });
     return () => unsubscribe();
   }, []);
 
-  // Auto-seed products if Firestore is empty
+  // Auto-seed products if Supabase is empty
   useEffect(() => {
     const checkAndSeedProducts = async () => {
-      // We check if products are empty after initial loading from Firestore
+      // We check if products are empty after initial loading from Supabase
       // The subscribeToProducts already sets loading to false
       if (!loading && products.length === 0) {
-        console.log('No products in Firestore, seeding default products...');
+        console.log('No products in Supabase, seeding default products...');
         try {
-          await seedProducts(DEFAULT_PRODUCTS);
+          await db.seedProducts(DEFAULT_PRODUCTS);
           console.log('Products seeded successfully.');
         } catch (error) {
           console.error('Failed to seed products:', error);
@@ -307,19 +283,19 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
   // Subscribe to orders for admin
   useEffect(() => {
-    if (!isFirebaseConfigValid || !user?.isAdmin) return;
+    if (!isSupabaseConfigValid || !user?.isAdmin) return;
 
-    const unsubscribe = subscribeToOrders((newOrders) => {
+    const unsubscribe = db.subscribeToOrders((newOrders) => {
       setOrders(newOrders);
     });
 
     return () => unsubscribe();
   }, [user?.isAdmin]);
 
-  // ─── Product Actions (Firestore) ───
+  // ─── Product Actions (Supabase) ───
   const addProduct = async (productData: Omit<Product, 'id' | 'slug' | 'createdAt' | 'updatedAt'>) => {
     try {
-      await addProductToFirestore(productData);
+      await db.addProduct(productData);
     } catch (error) {
       console.error('Failed to add product:', error);
       throw error;
@@ -328,7 +304,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
   const updateProduct = async (id: string, updates: Partial<Product>) => {
     try {
-      await updateProductInFirestore(id, updates);
+      await db.updateProduct(id, updates);
     } catch (error) {
       console.error('Failed to update product:', error);
       throw error;
@@ -337,7 +313,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
   const deleteProduct = async (id: string) => {
     try {
-      await deleteProductFromFirestore(id);
+      await db.deleteProduct(id);
     } catch (error) {
       console.error('Failed to delete product:', error);
       throw error;
@@ -347,7 +323,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
   // --- Category Actions ---
   const addCategory = async (data: Omit<Category, 'id' | 'slug' | 'createdAt'>) => {
     try {
-      await addCategoryToFirestore(data);
+      await db.addCategory(data);
     } catch (error) {
       console.error('Failed to add category:', error);
       throw error;
@@ -356,7 +332,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
   const updateCategory = async (id: string, updates: Partial<Category>) => {
     try {
-      await updateCategoryInFirestore(id, updates);
+      await db.updateCategory(id, updates);
     } catch (error) {
       console.error('Failed to update category:', error);
       throw error;
@@ -365,7 +341,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
   const deleteCategory = async (id: string) => {
     try {
-      await deleteCategoryFromFirestore(id);
+      await db.deleteCategory(id);
     } catch (error) {
       console.error('Failed to delete category:', error);
       throw error;
@@ -375,7 +351,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
   // --- Review Actions ---
   const addReview = async (data: Omit<CustomerReview, 'id' | 'createdAt'>) => {
     try {
-      await addReviewToFirestore(data);
+      await db.addReview(data);
     } catch (error) {
       console.error('Failed to add review:', error);
       throw error;
@@ -384,7 +360,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
   const updateReview = async (id: string, updates: Partial<CustomerReview>) => {
     try {
-      await updateReviewInFirestore(id, updates);
+      await db.updateReview(id, updates);
     } catch (error) {
       console.error('Failed to update review:', error);
       throw error;
@@ -393,7 +369,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
   const deleteReview = async (id: string) => {
     try {
-      await deleteReviewFromFirestore(id);
+      await db.deleteReview(id);
     } catch (error) {
       console.error('Failed to delete review:', error);
       throw error;
@@ -402,7 +378,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
   const updateOrderStatus = async (id: string, status: Order['orderStatus']) => {
     try {
-      await updateOrderStatusInFirestore(id, status);
+      await db.updateOrderStatus(id, status);
     } catch (error) {
       console.error('Failed to update order status:', error);
     }
@@ -410,7 +386,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
   const deleteOrder = async (id: string) => {
     try {
-      await deleteOrderFromFirestore(id);
+      await db.deleteOrder(id);
     } catch (error) {
       console.error('Failed to delete order:', error);
     }
@@ -420,7 +396,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     if (!user) return;
     try {
       // Sync to profiles table
-      await updateUserProfile(user.uid, updates);
+      await db.updateUserProfile(user.uid, updates);
 
       // Local state update happens automatically via the Real-time subscription in useEffect
     } catch (error) {
@@ -431,20 +407,24 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
 
   const migrateCategories = async () => {
     try {
-      await seedCategories(CATEGORIES);
-      console.log('Categories migrated to Firestore successfully');
+      await db.seedCategories(CATEGORIES);
+      console.log('Categories migrated to Supabase successfully');
     } catch (error) {
       console.error('Failed to migrate categories:', error);
     }
   };
 
+  const createOrder = async (orderData: Omit<Order, 'id' | 'createdAt' | 'updatedAt'>) => {
+    return await db.createOrder(orderData);
+  };
+
   const refreshProducts = async () => {
-    console.log('Manually refreshing products from Firestore...');
+    console.log('Manually refreshing products from Supabase...');
     setLoading(true);
     try {
-      const firestoreProducts = await getProducts();
-      console.log('Products fetched:', firestoreProducts.length);
-      setProducts(firestoreProducts);
+      const supabaseProducts = await db.getProducts();
+      console.log('Products fetched:', supabaseProducts.length);
+      setProducts(supabaseProducts);
     } catch (error) {
       console.error('Failed to refresh products:', error);
     } finally {
@@ -523,6 +503,8 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     updateOrderStatus,
     deleteOrder,
     updateProfile,
+    authLoading,
+    exchangeRates,
     createOrder,
   }), [
     products,
@@ -547,73 +529,8 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
   );
 };
 
+
 // ═══════════════════════════════════════════════════════════════════════════
-// Helper Functions (exported for use in components)
+// End of Store Provider
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const formatPrice = (
-  price: number | { amount: number; isConverted?: boolean },
-  currencyCode: CurrencyCode = 'NGN'
-): string => {
-  const currencyInfo = CURRENCIES.find(c => c.code === currencyCode) || CURRENCIES[0];
-
-  let finalAmount: number;
-
-  if (typeof price === 'object') {
-    finalAmount = price.amount;
-  } else {
-    // Standard path: convert from Naira using the global rate
-    finalAmount = price * currencyInfo.rate;
-  }
-
-  const fractionDigits = currencyCode === 'NGN' ? 0 : 2;
-  return `${currencyInfo.symbol}${finalAmount.toLocaleString(undefined, {
-    minimumFractionDigits: fractionDigits,
-    maximumFractionDigits: fractionDigits
-  })}`;
-};
-
-/**
- * Centrally calculates the price for a product based on active currency, 
- * respecting manual USD price overrides if present.
- */
-export const getProductPrice = (product: any, currency: CurrencyCode = 'NGN'): { original: number, sale?: number } => {
-  if (currency === 'NGN') {
-    return {
-      original: product.price,
-      sale: product.salePrice
-    };
-  }
-
-  // Handle USD with potential manual price overrides
-  const rate = CURRENCIES.find(c => c.code === 'USD')?.rate || 0.00125;
-
-  // Use product.priceUSD if it exists, otherwise fallback to rate conversion
-  const originalUSD = product.priceUSD || (product.price * rate);
-
-  // Calculate sale price in USD
-  let saleUSD: number | undefined = undefined;
-  if (product.salePrice) {
-    if (product.priceUSD) {
-      // If we have a custom USD price, we scale the sale price proportionally
-      const discountRatio = product.salePrice / product.price;
-      saleUSD = product.priceUSD * discountRatio;
-    } else {
-      saleUSD = product.salePrice * rate;
-    }
-  }
-
-  return {
-    original: originalUSD,
-    sale: saleUSD
-  };
-};
-
-export const getCategoryName = (categoryId: string, categories: Category[] = []): string => {
-  // Try finding in the provided live categories first
-  const found = categories.find(c => c.id === categoryId);
-  if (found) return found.name;
-
-  // Fallback to static CATEGORIES for safety if live list is empty or doesn't match
-  return CATEGORIES.find(c => c.id === categoryId)?.name || 'Uncategorized';
-};

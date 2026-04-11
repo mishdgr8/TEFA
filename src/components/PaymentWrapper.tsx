@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useStore, formatPrice } from '../data/store';
+import { useStore } from '../data/store';
+import { formatPrice } from '../utils/shopHelpers';
 import { usePaystackPayment } from 'react-paystack';
 import { CheckCircle, Loader2, CreditCard, ShieldCheck } from 'lucide-react';
 

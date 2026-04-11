@@ -3,7 +3,9 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ChevronLeft, ShoppingBag, Plus, Minus, Sparkles, Truck, Play, X, CheckCircle2 } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 import { ProductCard } from '../components/ProductCard';
-import { useStore, formatPrice, getProductPrice } from '../data/store';
+import { useStore } from '../data/store';
+import { formatPrice, getProductPrice } from '../utils/shopHelpers';
+
 import { CartItem } from '../types';
 import { SizeGuideModal } from '../components/SizeGuideModal';
 import { OptimizedImage } from '../components/OptimizedImage';

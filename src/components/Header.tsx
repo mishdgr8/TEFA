@@ -2,7 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { ShoppingBag, Menu, X, ChevronRight, Search, User, LogOut, ChevronDown, Settings, History, Heart } from 'lucide-react';
 import { useScroll, useTransform, m, AnimatePresence } from 'framer-motion';
-import { useStore, getProductPrice, formatPrice } from '../data/store';
+import { useStore } from '../data/store';
+import { getProductPrice, formatPrice } from '../utils/shopHelpers';
+
 import { CATEGORIES } from '../data/categories';
 import { PageName, PageParams, CURRENCIES } from '../types';
 import { AuthModal } from './AuthModal';
@@ -49,13 +51,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
   const currentCurrency = CURRENCIES.find(c => c.code === currency) || CURRENCIES[0];
   const rate = exchangeRates[currency] || 1;
 
-  // Currency selector outside click
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      // Empty placeholder or handle currency click outside if needed
-    };
-    // ...
-  }, []);
 
 
 
@@ -347,22 +342,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
                   ))}
                 </div>
 
-                {/* Currency Selector in Mobile Menu (Hidden) */}
-                {/* <div className="mobile-menu-currency">
-                  <span className="mobile-menu-currency-label">Currency</span>
-                  <div className="mobile-menu-currency-options">
-                    {CURRENCIES.map(curr => (
-                      <button
-                        key={curr.code}
-                        className={`mobile-currency-btn ${currency === curr.code ? 'active' : ''}`}
-                        onClick={() => setCurrency(curr.code)}
-                      >
-                        <span>{curr.symbol}</span>
-                        <span>{curr.code}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div> */}
 
                 {user?.isAdmin && (
                   <div className="mobile-menu-footer">

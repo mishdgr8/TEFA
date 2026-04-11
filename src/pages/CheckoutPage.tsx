@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Instagram, MessageCircle, CreditCard, ArrowLeft, ShieldCheck, CheckCircle } from 'lucide-react';
-import { useStore, formatPrice } from '../data/store';
+import { useStore } from '../data/store';
+import { formatPrice } from '../utils/shopHelpers';
 import { CustomerInfo, CURRENCIES } from '../types';
 import { SEOHead } from '../components/SEOHead';
 import { PaymentWrapper } from '../components/PaymentWrapper';
@@ -192,7 +193,7 @@ export const CheckoutPage: React.FC = () => {
 
       <div className="checkout-container">
         <header className="checkout-header">
-          <button onClick={() => navigate('/cart')} className="back-link">
+          <button onClick={() => navigate('/cart')} className="back-sm">
             <ArrowLeft size={16} /> Back to Cart
           </button>
           <h1>Secure Your Pieces</h1>
@@ -368,7 +369,9 @@ export const CheckoutPage: React.FC = () => {
                         <span className="method-label">Credit card</span>
                       </div>
                       <div className="card-icons">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" style={{ height: '12px' }} />
+                        <svg width="34" height="20" viewBox="0 0 34 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M14.604 15.65H11.666L13.504 4.35H16.442L14.604 15.65ZM25.071 4.542C24.167 4.195 22.84 3.868 21.282 3.868C17.266 3.868 14.428 5.86 14.405 8.718C14.381 10.835 16.417 12.016 17.957 12.721C19.539 13.447 20.069 13.91 20.061 14.566C20.05 15.564 18.783 16.014 17.587 16.014C15.845 16.014 14.887 15.794 13.628 15.263L13.111 15.039L12.56 18.291C13.493 18.691 15.222 19.03 16.994 19.03C21.242 19.03 24.013 17.067 24.045 14.156C24.068 11.974 22.656 10.741 20.463 9.752C19.13 9.123 18.337 8.749 18.349 8.114C18.349 7.423 19.176 6.7 21.033 6.7C22.457 6.7 23.518 6.983 24.316 7.299L24.672 7.447L25.071 4.542ZM32.748 4.35H30.436C29.728 4.35 29.117 4.73 28.847 5.343L24.463 15.65H27.532L28.143 14.041H31.895L32.249 15.65H35L32.748 4.35ZM28.916 11.455L30.632 6.953L31.579 11.455H28.916ZM9.507 4.35L6.685 11.93L6.37 10.43L5.438 6.007C5.228 5.161 4.536 4.35 3.585 4.35H0.08L0.012 4.678C0.713 4.838 1.571 5.093 2.059 5.347C2.362 5.503 2.454 5.679 2.56 6.096L5.053 15.65H8.225L13.141 4.35H9.507Z" fill="#1434CB" />
+                        </svg>
                         <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" style={{ height: '18px' }} />
                         <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style={{ height: '18px', opacity: 0.5, filter: 'grayscale(1)' }} />
                       </div>
@@ -382,7 +385,11 @@ export const CheckoutPage: React.FC = () => {
                           value={cardData.number}
                           onChange={e => setCardData({ ...cardData, number: e.target.value })}
                         />
-                        <ShieldCheck size={18} className="input-icon-right" />
+                        <div className="brand-icon-input">
+                          <svg width="24" height="15" viewBox="0 0 34 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M14.604 15.65H11.666L13.504 4.35H16.442L14.604 15.65ZM25.071 4.542C24.167 4.195 22.84 3.868 21.282 3.868C17.266 3.868 14.428 5.86 14.405 8.718C14.381 10.835 16.417 12.016 17.957 12.721C19.539 13.447 20.069 13.91 20.061 14.566C20.05 15.564 18.783 16.014 17.587 16.014C15.845 16.014 14.887 15.794 13.628 15.263L13.111 15.039L12.56 18.291C13.493 18.691 15.222 19.03 16.994 19.03C21.242 19.03 24.013 17.067 24.045 14.156C24.068 11.974 22.656 10.741 20.463 9.752C19.13 9.123 18.337 8.749 18.349 8.114C18.349 7.423 19.176 6.7 21.033 6.7C22.457 6.7 23.518 6.983 24.316 7.299L24.672 7.447L25.071 4.542ZM32.748 4.35H30.436C29.728 4.35 29.117 4.73 28.847 5.343L24.463 15.65H27.532L28.143 14.041H31.895L32.249 15.65H35L32.748 4.35ZM28.916 11.455L30.632 6.953L31.579 11.455H28.916ZM9.507 4.35L6.685 11.93L6.37 10.43L5.438 6.007C5.228 5.161 4.536 4.35 3.585 4.35H0.08L0.012 4.678C0.713 4.838 1.571 5.093 2.059 5.347C2.362 5.503 2.454 5.679 2.56 6.096L5.053 15.65H8.225L13.141 4.35H9.507Z" fill="#1434CB" />
+                          </svg>
+                        </div>
                       </div>
                       <div className="card-row">
                         <input
@@ -678,7 +685,7 @@ export const CheckoutPage: React.FC = () => {
         .checkout-page {
           background-color: #fdfaf7;
           min-height: 100vh;
-          padding: 100px 24px 80px;
+          padding: 160px 24px 80px;
           color: #1a1a1a;
         }
 
@@ -993,6 +1000,18 @@ export const CheckoutPage: React.FC = () => {
           color: #aaa;
         }
 
+        .brand-icon-input {
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          display: flex;
+          align-items: center;
+          height: 100%;
+          padding-left: 10px;
+          border-left: 1px solid #eee;
+        }
+
         .info-icon {
           position: absolute;
           right: 14px;
@@ -1169,6 +1188,36 @@ export const CheckoutPage: React.FC = () => {
           align-items: center;
           justify-content: center;
           gap: 6px;
+        }
+
+        .interface-header {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+
+        .back-sm {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: #f5f5f5;
+          border: 1px solid #eee;
+          padding: 8px 14px;
+          border-radius: 8px;
+          color: #666;
+          font-family: 'Quicksand', sans-serif;
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+          width: fit-content;
+          transition: all 0.2s ease;
+        }
+
+        .back-sm:hover {
+          background: #eee;
+          color: #1a1a1a;
+          border-color: #ddd;
         }
 
         /* ═══════════ ORDER SUMMARY SIDEBAR ═══════════ */

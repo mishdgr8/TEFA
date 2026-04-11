@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag } from 'lucide-react';
-import { useStore, formatPrice } from '../data/store';
+import { useStore } from '../data/store';
+import { formatPrice } from '../utils/shopHelpers';
 import { OptimizedImage } from '../components/OptimizedImage';
 import { SEOHead } from '../components/SEOHead';
 import './CartPage.css';

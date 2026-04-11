@@ -4,7 +4,9 @@ import { m } from 'framer-motion';
 import { Product } from '../types';
 import { OptimizedImage } from './OptimizedImage';
 import './ProductCard.css';
-import { formatPrice, getCategoryName, useStore, getProductPrice } from '../data/store';
+import { useStore } from '../data/store';
+import { formatPrice, getCategoryName, getProductPrice } from '../utils/shopHelpers';
+
 
 interface ProductCardProps {
   product: Product;

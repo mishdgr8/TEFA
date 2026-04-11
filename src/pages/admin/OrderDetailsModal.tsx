@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, Printer, Package, Truck, Phone, Mail, MapPin, Calendar, Clock, CreditCard } from 'lucide-react';
 import { Order } from '../../types';
-import { formatPrice } from '../../data/store';
+import { formatPrice } from '../../utils/shopHelpers';
 import { OptimizedImage } from '../../components/OptimizedImage';
 
 interface OrderDetailsModalProps {

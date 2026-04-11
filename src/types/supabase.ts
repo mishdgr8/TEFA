@@ -61,6 +61,7 @@ export interface Database {
                     colors: Json;
                     created_at: string;
                     updated_at: string;
+                    weight: number;
                 };
                 Insert: {
                     id?: string;
@@ -82,6 +83,7 @@ export interface Database {
                     colors?: Json;
                     created_at?: string;
                     updated_at?: string;
+                    weight?: number;
                 };
                 Update: {
                     id?: string;
@@ -103,6 +105,7 @@ export interface Database {
                     colors?: Json;
                     created_at?: string;
                     updated_at?: string;
+                    weight?: number;
                 };
             };
             profiles: {

@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { MessageCircle, X, Send, Loader2, Minus, Maximize2, User, Bot, ExternalLink } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 import { sendWhatsAppMessage } from '../lib/whatsapp';
-import { supabase } from '../lib/supabase';
+import { supabase as supabaseClient } from '../lib/supabase';
+const supabase = supabaseClient as any;
 import { useStore } from '../data/store';
 
 interface Message {
@@ -138,7 +139,7 @@ export const ChatWidget: React.FC = () => {
 
       // Send notification to owner via WhatsApp Cloud API
       await sendWhatsAppMessage({
-        text: userMessage,      // Saved to Firestore (User sees this)
+        text: userMessage,      // Saved to Supabase (User sees this)
         adminText: notificationText, // Sent to WhatsApp (Admin sees this)
         chatId: chatId
       });

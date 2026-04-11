@@ -1,7 +1,8 @@
 // =============================================================
 // Supabase Database Operations (replaces firestore.ts)
 // =============================================================
-import { supabase } from './supabase';
+import { supabase as supabaseClient } from './supabase';
+const supabase = supabaseClient as any;
 import { Product, Category, CustomerReview, Order } from '../types';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -195,7 +196,7 @@ export const subscribeToProducts = (
     };
 };
 
-export const addProductToFirestore = async (
+export const addProduct = async (
     productData: Omit<Product, 'id' | 'slug' | 'createdAt' | 'updatedAt'>
 ): Promise<string> => {
     console.log('supabaseDb.ts: addProduct started', productData.name);
@@ -231,7 +232,7 @@ export const addProductToFirestore = async (
     return data.id;
 };
 
-export const updateProductInFirestore = async (
+export const updateProduct = async (
     id: string,
     updates: Partial<Product>
 ): Promise<void> => {
@@ -270,7 +271,7 @@ export const updateProductInFirestore = async (
     console.log('supabaseDb.ts: updateProduct success');
 };
 
-export const deleteProductFromFirestore = async (id: string): Promise<void> => {
+export const deleteProduct = async (id: string): Promise<void> => {
     const { error } = await supabase.from('products').delete().eq('id', id);
     if (error) throw error;
 };
@@ -341,7 +342,7 @@ export const subscribeToCategories = (
     };
 };
 
-export const addCategoryToFirestore = async (
+export const addCategory = async (
     categoryData: Omit<Category, 'id' | 'slug' | 'createdAt'>
 ): Promise<string> => {
     const { data, error } = await supabase
@@ -359,7 +360,7 @@ export const addCategoryToFirestore = async (
     return data.id;
 };
 
-export const updateCategoryInFirestore = async (
+export const updateCategory = async (
     id: string,
     updates: Partial<Category>
 ): Promise<void> => {
@@ -375,7 +376,7 @@ export const updateCategoryInFirestore = async (
     if (error) throw error;
 };
 
-export const deleteCategoryFromFirestore = async (id: string): Promise<void> => {
+export const deleteCategory = async (id: string): Promise<void> => {
     const { error } = await supabase.from('categories').delete().eq('id', id);
     if (error) throw error;
 };
@@ -433,7 +434,7 @@ export const subscribeToReviews = (
     };
 };
 
-export const addReviewToFirestore = async (
+export const addReview = async (
     reviewData: Omit<CustomerReview, 'id' | 'createdAt'>
 ): Promise<string> => {
     const { data, error } = await supabase
@@ -452,7 +453,7 @@ export const addReviewToFirestore = async (
     return data.id;
 };
 
-export const updateReviewInFirestore = async (
+export const updateReview = async (
     id: string,
     updates: Partial<CustomerReview>
 ): Promise<void> => {
@@ -467,7 +468,7 @@ export const updateReviewInFirestore = async (
     if (error) throw error;
 };
 
-export const deleteReviewFromFirestore = async (id: string): Promise<void> => {
+export const deleteReview = async (id: string): Promise<void> => {
     const { error } = await supabase.from('reviews').delete().eq('id', id);
     if (error) throw error;
 };
@@ -648,7 +649,7 @@ export const createOrder = async (orderData: Partial<Order>): Promise<string> =>
     return newOrder.id;
 };
 
-export const updateOrderStatusInFirestore = async (
+export const updateOrderStatus = async (
     id: string,
     status: Order['orderStatus']
 ): Promise<void> => {
@@ -660,7 +661,7 @@ export const updateOrderStatusInFirestore = async (
     if (error) throw error;
 };
 
-export const deleteOrderFromFirestore = async (id: string): Promise<void> => {
+export const deleteOrder = async (id: string): Promise<void> => {
     const { error } = await supabase.from('orders').delete().eq('id', id);
     if (error) throw error;
 };

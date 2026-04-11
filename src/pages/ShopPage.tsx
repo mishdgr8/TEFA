@@ -4,7 +4,9 @@ import { X, SlidersHorizontal } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 import { ProductCard } from '../components/ProductCard';
 import { SEOHead } from '../components/SEOHead';
-import { useStore, formatPrice, getProductPrice } from '../data/store';
+import { useStore } from '../data/store';
+import { formatPrice, getProductPrice } from '../utils/shopHelpers';
+
 
 export const ShopPage: React.FC = () => {
   const { categoryId } = useParams();

@@ -2,7 +2,8 @@ import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { OrderDetailsModal } from './OrderDetailsModal';
 import { ShoppingBag, Trash2, Loader2, Eye } from 'lucide-react';
-import { useStore, formatPrice } from '../../data/store';
+import { useStore } from '../../data/store';
+import { formatPrice } from '../../utils/shopHelpers';
 import { Order } from '../../types';
 
 export const AdminOrders: React.FC = () => {

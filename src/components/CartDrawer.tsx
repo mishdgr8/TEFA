@@ -2,7 +2,7 @@ import React from 'react';
 import { ShoppingBag, X, Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 import { CartItem, CurrencyCode } from '../types';
-import { formatPrice } from '../data/store';
+import { formatPrice } from '../utils/shopHelpers';
 import { OptimizedImage } from './OptimizedImage';
 
 interface CartDrawerProps {

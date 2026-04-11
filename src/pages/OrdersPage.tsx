@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useStore, formatPrice } from '../data/store';
+import { useStore } from '../data/store';
+import { formatPrice } from '../utils/shopHelpers';
 import { getUserOrders } from '../lib/supabaseDb';
 import { Order } from '../types';
 import { ShoppingBag, Package, Truck, CheckCircle, Clock, XCircle, ArrowLeft } from 'lucide-react';
@@ -193,7 +194,7 @@ export const OrdersPage: React.FC = () => {
                 .orders-page {
                     min-height: 100vh;
                     background: #fdfaf7;
-                    padding: 140px 5% 80px;
+                    padding: 160px 5% 80px;
                     font-family: 'Quicksand', sans-serif;
                 }
                 .orders-container {
