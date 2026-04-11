@@ -16,10 +16,15 @@ export const INTERNATIONAL_SHIPPING_RATES: InternationalShippingRate[] = [
     { country: 'Switzerland', rateNGN: 78500 },
     { country: 'Barbados', rateNGN: 98800 },
     { country: 'Belgium', rateNGN: 78800 },
+    { country: 'Canada', rateNGN: 75800 },
 ];
 
+export const WORLDWIDE_FLAT_RATE = 80000;
+
 // Helper to get rate by country name
-export const getInternationalRate = (countryName: string): number | null => {
+export const getInternationalRate = (countryName: string): number => {
+    if (!countryName || countryName === 'Nigeria') return 0;
+
     // Try exact match or common aliases
     const matched = INTERNATIONAL_SHIPPING_RATES.find(r =>
         r.country.toLowerCase() === countryName.toLowerCase() ||
@@ -27,5 +32,6 @@ export const getInternationalRate = (countryName: string): number | null => {
         (r.country === 'United Kingdom' && (countryName === 'UK' || countryName === 'Britain')) ||
         (r.country === 'United Arab Emirates' && (countryName === 'Dubai' || countryName === 'UAE'))
     );
-    return matched ? matched.rateNGN : null;
+
+    return matched ? matched.rateNGN : WORLDWIDE_FLAT_RATE;
 };
