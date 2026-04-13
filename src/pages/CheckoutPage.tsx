@@ -10,6 +10,7 @@ import { SearchableDropdown } from '../components/SearchableDropdown';
 import { COUNTRIES } from '../data/countries';
 import { supabase } from '../lib/supabase';
 import { getInternationalRate } from '../data/shippingRates';
+import { validatePromoCode, markDiscountAsUsed } from '../lib/supabaseDb';
 
 export const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
@@ -109,7 +110,37 @@ export const CheckoutPage: React.FC = () => {
 
   const [showPayment, setShowPayment] = useState(false);
   const [promoCode, setPromoCode] = useState('');
-  const [appliedDiscount, setAppliedDiscount] = useState<{ code: string, amount: number } | null>(null);
+  const [promoError, setPromoError] = useState('');
+  const [isApplyingPromo, setIsApplyingPromo] = useState(false);
+  const [appliedDiscount, setAppliedDiscount] = useState<{ code: string, percent: number } | null>(null);
+
+  const handleApplyPromo = async () => {
+    if (!promoCode) return;
+    if (!formData.email) {
+      setPromoError('Please enter your email first to validate this code.');
+      return;
+    }
+
+    setIsApplyingPromo(true);
+    setPromoError('');
+
+    try {
+      const result = await validatePromoCode(promoCode, formData.email);
+      if (result.valid && result.discountPercent) {
+        setAppliedDiscount({
+          code: promoCode.toUpperCase(),
+          percent: result.discountPercent
+        });
+        setPromoCode('');
+      } else {
+        setPromoError(result.message || 'Invalid code.');
+      }
+    } catch (err) {
+      setPromoError('Validation failed. Please try again.');
+    } finally {
+      setIsApplyingPromo(false);
+    }
+  };
   const [paymentMethod, setPaymentMethod] = useState<'card'>('card');
   const [cardData, setCardData] = useState({
     number: '',
@@ -140,7 +171,7 @@ export const CheckoutPage: React.FC = () => {
     : (formData.country !== 'Nigeria' ? (getInternationalRate(formData.country) || 0) * (currency === 'USD' ? rate : 1) : 0);
 
   // Convert discount amount if needed
-  const discountAmount = appliedDiscount ? (currency === 'USD' ? (appliedDiscount.amount * rate) : appliedDiscount.amount) : 0;
+  const discountAmount = appliedDiscount ? (subtotal * appliedDiscount.percent / 100) : 0;
   const total = subtotal - discountAmount + shippingCost;
 
   if (cart.length === 0 && !isSuccess) {
@@ -513,6 +544,9 @@ export const CheckoutPage: React.FC = () => {
                             // It might still be processed by the webhook
                           }
                           clearCart();
+                          if (appliedDiscount && formData.email) {
+                            markDiscountAsUsed(formData.email);
+                          }
                           setIsSuccess(true);
                         }}
                         onClose={() => setShowPayment(false)}
@@ -551,6 +585,31 @@ export const CheckoutPage: React.FC = () => {
                       </div>
                     );
                   })}
+                </div>
+
+                <div className="promo-section">
+                  <div className="promo-input-wrapper">
+                    <input
+                      type="text"
+                      placeholder="Promo code"
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleApplyPromo()}
+                    />
+                    <button
+                      onClick={handleApplyPromo}
+                      disabled={isApplyingPromo || !promoCode}
+                    >
+                      {isApplyingPromo ? '...' : 'Apply'}
+                    </button>
+                  </div>
+                  {promoError && <p className="promo-error">{promoError}</p>}
+                  {appliedDiscount && (
+                    <div className="applied-promo-tag">
+                      <span>{appliedDiscount.code} applied ({appliedDiscount.percent}%)</span>
+                      <button onClick={() => setAppliedDiscount(null)}>&times;</button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="summary-totals">
@@ -1654,6 +1713,75 @@ export const CheckoutPage: React.FC = () => {
           position: absolute;
           left: 0;
           color: #c69b7b;
+        }
+
+        .promo-section {
+          margin: 24px 0;
+          padding: 20px 0;
+          border-top: 1px solid #eee;
+        }
+
+        .promo-input-wrapper {
+          display: flex;
+          gap: 10px;
+        }
+
+        .promo-input-wrapper input {
+          flex: 1;
+          padding: 12px 16px;
+          background: #f9f9f9;
+          border: 1px solid #eee;
+          border-radius: 8px;
+          font-size: 0.9rem;
+          font-family: 'Quicksand', sans-serif;
+        }
+
+        .promo-input-wrapper button {
+          padding: 0 20px;
+          background: #1a1a1a;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 0.85rem;
+          cursor: pointer;
+          transition: opacity 0.2s;
+        }
+
+        .promo-input-wrapper button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .promo-error {
+          color: #e53e3e;
+          font-size: 0.75rem;
+          margin-top: 8px;
+          font-weight: 500;
+        }
+
+        .applied-promo-tag {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: #fdfaf7;
+          border: 1px dashed #c69b7b;
+          padding: 8px 12px;
+          border-radius: 8px;
+          margin-top: 12px;
+          font-size: 0.85rem;
+          color: #c69b7b;
+          font-weight: 600;
+        }
+
+        .applied-promo-tag button {
+          background: none;
+          border: none;
+          color: #c69b7b;
+          font-size: 1.2rem;
+          cursor: pointer;
+          padding: 0;
+          line-height: 1;
         }
 
       `}</style>

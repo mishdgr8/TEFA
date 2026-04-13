@@ -232,6 +232,7 @@ export const addProduct = async (
     return data.id;
 };
 
+
 export const updateProduct = async (
     id: string,
     updates: Partial<Product>
@@ -699,4 +700,125 @@ export const subscribeToNewsletter = async (email: string): Promise<string> => {
 
     console.log('supabaseDb.ts: subscribeToNewsletter success, ID:', data.id);
     return data.id;
+};
+
+/**
+ * Validates a promo code against the promotions table and checks subscriber eligibility.
+ */
+export const validatePromoCode = async (code: string, email: string): Promise<{ valid: boolean, discountPercent?: number, message?: string }> => {
+    // 1. Check if the promotion exists and is active
+    const { data: promo, error: promoError } = await supabase
+        .from('promotions')
+        .select('*')
+        .eq('code', code.toUpperCase())
+        .eq('is_active', true)
+        .single();
+
+    if (promoError || !promo) {
+        return { valid: false, message: 'Invalid or expired promo code.' };
+    }
+
+    // 2. If it's a subscriber-only code, verify eligibility
+    if (promo.allow_only_subscribers) {
+        const { data: subscriber, error: subError } = await supabase
+            .from('subscribers')
+            .select('discount_used')
+            .eq('email', email.toLowerCase())
+            .single();
+
+        if (subError || !subscriber) {
+            return { valid: false, message: 'This code is only for our newsletter family.' };
+        }
+
+        if (subscriber.discount_used) {
+            return { valid: false, message: 'This discount has already been used by this email.' };
+        }
+    }
+
+    return {
+        valid: true,
+        discountPercent: promo.discount_percent
+    };
+};
+
+/**
+ * Marks a subscriber's discount as used.
+ */
+export const markDiscountAsUsed = async (email: string) => {
+    await supabase
+        .from('subscribers')
+        .update({ discount_used: true })
+        .eq('email', email.toLowerCase());
+};
+
+// ═══════════════════════════════════════════════════════════════
+// PROMOTION OPERATIONS
+// ═══════════════════════════════════════════════════════════════
+
+export const subscribeToPromotions = (onUpdate: (promos: any[]) => void) => {
+    supabase
+        .from('promotions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .then(({ data }) => {
+            if (data) onUpdate(data.map(p => ({
+                code: p.code,
+                discountPercent: p.discount_percent,
+                isActive: p.is_active,
+                allowOnlySubscribers: p.allow_only_subscribers,
+                createdAt: new Date(p.created_at).getTime()
+            })));
+        });
+
+    return supabase
+        .channel('public:promotions')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'promotions' }, () => {
+            supabase
+                .from('promotions')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .then(({ data }) => {
+                    if (data) onUpdate(data.map(p => ({
+                        code: p.code,
+                        discountPercent: p.discount_percent,
+                        isActive: p.is_active,
+                        allowOnlySubscribers: p.allow_only_subscribers,
+                        createdAt: new Date(p.created_at).getTime()
+                    })));
+                });
+        })
+        .subscribe();
+};
+
+export const updatePromotion = async (code: string, updates: any) => {
+    const dbUpdates: any = {};
+    if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
+    if (updates.discountPercent !== undefined) dbUpdates.discount_percent = updates.discountPercent;
+    if (updates.allowOnlySubscribers !== undefined) dbUpdates.allow_only_subscribers = updates.allowOnlySubscribers;
+
+    const { error } = await supabase
+        .from('promotions')
+        .update(dbUpdates)
+        .eq('code', code);
+    if (error) throw error;
+};
+
+export const addPromotion = async (promo: any) => {
+    const { error } = await supabase
+        .from('promotions')
+        .insert({
+            code: promo.code.toUpperCase(),
+            discount_percent: promo.discountPercent,
+            is_active: promo.isActive,
+            allow_only_subscribers: promo.allowOnlySubscribers
+        });
+    if (error) throw error;
+};
+
+export const deletePromotion = async (code: string) => {
+    const { error } = await supabase
+        .from('promotions')
+        .delete()
+        .eq('code', code);
+    if (error) throw error;
 };

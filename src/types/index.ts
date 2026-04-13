@@ -97,6 +97,14 @@ export interface Order {
   updatedAt: number;
 }
 
+export interface Promotion {
+  code: string;
+  discountPercent: number;
+  isActive: boolean;
+  allowOnlySubscribers: boolean;
+  createdAt: number;
+}
+
 // Navigation
 export type PageName = 'home' | 'shop' | 'product' | 'checkout' | 'about' | 'admin';
 
@@ -119,6 +127,7 @@ export interface StoreState {
   isAuthModalOpen: boolean;
   isProfileModalOpen: boolean;
   exchangeRates: Record<string, number>;
+  promotions: Promotion[];
 }
 
 export interface AuthUser {
@@ -160,6 +169,9 @@ export interface StoreActions {
   setIsSearchOpen: (isOpen: boolean) => void;
   setIsAuthModalOpen: (isOpen: boolean) => void;
   setIsProfileModalOpen: (isOpen: boolean) => void;
+  updatePromotion: (code: string, updates: Partial<Promotion>) => Promise<void>;
+  deletePromotion: (code: string) => Promise<void>;
+  addPromotion: (promo: Promotion) => Promise<void>;
 }
 
 // Currency types

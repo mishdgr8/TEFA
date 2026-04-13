@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Product, CartItem, Category, StoreContextType, AuthUser, CurrencyCode, CURRENCIES, CustomerReview, Order } from '../types';
+import { Product, CartItem, Category, StoreContextType, AuthUser, CurrencyCode, CURRENCIES, CustomerReview, Order, Promotion } from '../types';
 import { DEFAULT_PRODUCTS } from './products';
 import { CATEGORIES } from './categories';
 import { onAuthChange, User } from '../lib/supabaseAuth';
@@ -63,6 +63,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     loadFromStorage(STORAGE_KEYS.CART, [])
   );
   const [orders, setOrders] = useState<Order[]>([]);
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [currency, setCurrencyState] = useState<CurrencyCode>(() =>
     loadFromStorage(STORAGE_KEYS.CURRENCY, 'NGN') as CurrencyCode
@@ -292,6 +293,17 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     return () => unsubscribe();
   }, [user?.isAdmin]);
 
+  // Subscribe to promotions
+  useEffect(() => {
+    if (!isSupabaseConfigValid) return;
+
+    const unsubscribe = db.subscribeToPromotions((newPromos) => {
+      setPromotions(newPromos);
+    });
+
+    return () => unsubscribe.unsubscribe();
+  }, []);
+
   // ─── Product Actions (Supabase) ───
   const addProduct = async (productData: Omit<Product, 'id' | 'slug' | 'createdAt' | 'updatedAt'>) => {
     try {
@@ -405,6 +417,33 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     }
   };
 
+  const addPromotion = async (promo: Promotion) => {
+    try {
+      await db.addPromotion(promo);
+    } catch (error) {
+      console.error('Failed to add promotion:', error);
+      throw error;
+    }
+  };
+
+  const updatePromotion = async (code: string, updates: Partial<Promotion>) => {
+    try {
+      await db.updatePromotion(code, updates);
+    } catch (error) {
+      console.error('Failed to update promotion:', error);
+      throw error;
+    }
+  };
+
+  const deletePromotion = async (code: string) => {
+    try {
+      await db.deletePromotion(code);
+    } catch (error) {
+      console.error('Failed to delete promotion:', error);
+      throw error;
+    }
+  };
+
   const migrateCategories = async () => {
     try {
       await db.seedCategories(CATEGORIES);
@@ -506,6 +545,10 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     authLoading,
     exchangeRates,
     createOrder,
+    promotions,
+    updatePromotion,
+    deletePromotion,
+    addPromotion,
   }), [
     products,
     categories,
@@ -520,6 +563,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
     isAuthModalOpen,
     isProfileModalOpen,
     exchangeRates,
+    promotions,
   ]);
 
   return (

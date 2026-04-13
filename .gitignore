@@ -28,3 +28,4 @@ service-account.json
 credentials.json
 key.json
 *.mjs
+*.sql

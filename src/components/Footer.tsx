@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Instagram, MessageCircle, ChevronRight } from 'lucide-react';
+import { Instagram, MessageCircle, ChevronRight, Check } from 'lucide-react';
+import { subscribeToNewsletter } from '../lib/supabaseDb';
 
 export const Footer: React.FC = React.memo(() => {
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   return (
     <footer className="footer">
@@ -53,16 +56,47 @@ export const Footer: React.FC = React.memo(() => {
             </div>
           </div>
 
-          {/* Newsletter Column */}
-          <div className="footer-column">
+          <div className="footer-newsletter">
             <h4 className="footer-heading">Newsletter</h4>
-            <p className="footer-newsletter-text">Get early access to drops and stories.</p>
-            <div className="footer-newsletter-form">
-              <input type="email" placeholder="Your Email" />
-              <button type="submit" aria-label="Subscribe">
-                <ChevronRight size={20} />
+            <p className="footer-newsletter-text">
+              {status === 'success'
+                ? "Welcome to the family! Use code TEFA10 for 10% off."
+                : "Get early access to drops and stories."}
+            </p>
+            <form
+              className="footer-newsletter-form"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!email || status === 'loading') return;
+                setStatus('loading');
+                try {
+                  await subscribeToNewsletter(email);
+                  setStatus('success');
+                  setEmail('');
+                  localStorage.setItem('tefa_newsletter_subscribed', 'true');
+                } catch (err) {
+                  setStatus('error');
+                  setTimeout(() => setStatus('idle'), 3000);
+                }
+              }}
+            >
+              <input
+                type="email"
+                placeholder={status === 'success' ? "Subscribed!" : "Your Email"}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={status === 'loading' || status === 'success'}
+              />
+              <button
+                type="submit"
+                aria-label="Subscribe"
+                disabled={status === 'loading' || status === 'success'}
+                style={{ opacity: status === 'success' ? 0.5 : 1 }}
+              >
+                {status === 'success' ? <Check size={20} /> : <ChevronRight size={20} />}
               </button>
-            </div>
+            </form>
+            {status === 'error' && <p style={{ color: '#ff4d4d', fontSize: '0.7rem', marginTop: '5px' }}>Already subscribed or invalid email.</p>}
           </div>
         </div>
 

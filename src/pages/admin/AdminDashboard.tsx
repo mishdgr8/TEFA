@@ -13,7 +13,8 @@ import {
   Trash2,
   Edit,
   ExternalLink,
-  ShoppingBag
+  ShoppingBag,
+  CheckCircle
 } from 'lucide-react';
 import { useStore } from '../../data/store';
 import { CategoryForm } from './CategoryForm';
@@ -40,11 +41,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     orders,
     user,
     loading,
-    authLoading
+    authLoading,
+    promotions,
+    updatePromotion,
+    deletePromotion,
+    addPromotion
   } = useStore();
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = (searchParams.get('tab') as 'products' | 'categories' | 'reviews' | 'orders') || 'products';
+  const activeTab = (searchParams.get('tab') as 'products' | 'categories' | 'reviews' | 'orders' | 'promotions') || 'products';
 
   const setActiveTab = (tab: string) => {
     setSearchParams({ tab });
@@ -245,6 +250,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <option value="categories">🗂️ Categories</option>
               <option value="reviews">💬 Customer Reviews</option>
               <option value="orders">🛍️ Orders</option>
+              <option value="promotions">🏷️ Promotions</option>
             </select>
           </div>
 
@@ -276,6 +282,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             >
               <ShoppingBag size={18} />
               Orders
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'promotions' ? 'active' : ''}`}
+              onClick={() => setActiveTab('promotions')}
+            >
+              <Plus size={18} />
+              Promotions
             </button>
           </div>
         </div>
@@ -423,6 +436,84 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         )}
 
         {activeTab === 'orders' && <AdminOrders />}
+
+        {activeTab === 'promotions' && (
+          <div className="admin-section">
+            <div className="section-header">
+              <h2>Promotions ({promotions.length})</h2>
+              <button
+                onClick={() => {
+                  const code = prompt('Enter new promo code:');
+                  if (code) {
+                    const percent = prompt('Enter discount percentage:', '10');
+                    if (percent) {
+                      addPromotion({
+                        code: code.toUpperCase(),
+                        discountPercent: parseInt(percent),
+                        isActive: true,
+                        allowOnlySubscribers: true,
+                        createdAt: Date.now()
+                      });
+                    }
+                  }
+                }}
+                className="section-add-btn"
+              >
+                <Plus size={16} /> Add Promotion
+              </button>
+            </div>
+
+            <div className="products-table">
+              <div className="table-header promo-grid">
+                <span>Code</span>
+                <span>Discount</span>
+                <span>Targeting</span>
+                <span>Status</span>
+                <span>Actions</span>
+              </div>
+
+              <div className="table-body">
+                {promotions.map(promo => (
+                  <div key={promo.code} className="table-row promo-grid">
+                    <div>
+                      <code style={{ fontSize: '1rem', fontWeight: 'bold', background: '#f5f5f5', padding: '4px 8px', borderRadius: '4px' }}>
+                        {promo.code}
+                      </code>
+                    </div>
+                    <div>{promo.discountPercent}% OFF</div>
+                    <div style={{ fontSize: '0.8rem', color: '#666' }}>
+                      {promo.allowOnlySubscribers ? 'Subscribers Only' : 'Everyone'}
+                    </div>
+                    <div>
+                      <span className={`status-badge ${promo.isActive ? 'active' : 'paused'}`}>
+                        {promo.isActive ? 'Active' : 'Paused'}
+                      </span>
+                    </div>
+                    <div className="col-actions">
+                      <button
+                        onClick={() => updatePromotion(promo.code, { isActive: !promo.isActive })}
+                        className={`action-btn ${promo.isActive ? 'pause' : 'resume'}`}
+                        style={{ background: promo.isActive ? '#fff7ed' : '#f0fdf4', color: promo.isActive ? '#9a3412' : '#166534' }}
+                      >
+                        {promo.isActive ? <Lock size={16} /> : <CheckCircle size={16} />}
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Delete promo code ${promo.code}?`)) {
+                            deletePromotion(promo.code);
+                          }
+                        }}
+                        className="action-btn delete"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {isCategoryFormOpen && <CategoryForm category={editingCategory} onClose={() => setIsCategoryFormOpen(false)} />}
@@ -691,6 +782,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
         .cat-grid { grid-template-columns: 80px 1fr 1fr 150px !important; }
         .review-grid { grid-template-columns: 80px 1fr 100px 150px !important; }
+        .promo-grid { grid-template-columns: 1fr 120px 150px 120px 150px !important; }
+
+        .status-badge {
+          padding: 4px 10px;
+          border-radius: 20px;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .status-badge.active {
+          background: #dcfce7;
+          color: #166534;
+        }
+
+        .status-badge.paused {
+          background: #fee2e2;
+          color: #991b1b;
+        }
 
         @keyframes spin {
           from { transform: rotate(0deg); }
