@@ -7,7 +7,7 @@
  * Update SITE_URL once the custom domain is live.
  */
 export const SEO_CONFIG = {
-    SITE_URL: 'https://houseoftefa.com',
+    SITE_URL: 'https://shoptefa.com',
     SITE_NAME: 'TÉFA',
     DEFAULT_TITLE: 'TÉFA — Premium African Fashion | Handcrafted in Lagos',
     DEFAULT_DESCRIPTION:
@@ -19,10 +19,10 @@ export const SEO_CONFIG = {
     CURRENCY: 'NGN',
     BRAND: {
         name: 'TÉFA',
-        url: 'https://houseoftefa.com',
-        logo: 'https://houseoftefa.com/assets/Hero/Screenshot 2026-02-06 at 13.44.48.webp',
+        url: 'https://shoptefa.com',
+        logo: 'https://shoptefa.com/assets/Hero/Screenshot 2026-02-06 at 13.44.48.webp',
         description: 'Premium African fashion for the bold and beautiful. Handcrafted in Lagos, Nigeria.',
-        email: 'hello@houseoftefa.com',
+        email: 'hello@shoptefa.com',
         phone: '+2348135407871',
         address: {
             city: 'Lagos',
