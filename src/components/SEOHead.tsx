@@ -1,6 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { SEO_CONFIG, formatPageTitle, getCanonicalUrl } from '../lib/seo';
+import { SEO_CONFIG, formatPageTitle, getCanonicalUrl, getCloudinaryOgUrl } from '../lib/seo';
 
 interface SEOHeadProps {
     /** Page-specific title (will be appended with "| TÉFA") */
@@ -31,9 +31,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
     const fullTitle = formatPageTitle(title);
     const fullDescription = description || SEO_CONFIG.DEFAULT_DESCRIPTION;
     const canonicalUrl = getCanonicalUrl(path);
-    const ogImage = image?.startsWith('http')
-        ? image
-        : `${SEO_CONFIG.SITE_URL}${image || SEO_CONFIG.DEFAULT_OG_IMAGE}`;
+    const ogImage = getCloudinaryOgUrl(image);
 
     return (
         <Helmet>

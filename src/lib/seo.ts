@@ -49,3 +49,29 @@ export const getCanonicalUrl = (path: string): string => {
     const cleanPath = path.startsWith('/') ? path : `/${path}`;
     return `${SEO_CONFIG.SITE_URL}${cleanPath}`;
 };
+
+/**
+ * Generate a Cloudinary-optimized Open Graph image URL.
+ * Social platforms prefer 1200x630.
+ */
+export const getCloudinaryOgUrl = (src?: string): string => {
+    const CLOUD_NAME = 'dzfrrcacc';
+    const defaultImage = `${SEO_CONFIG.SITE_URL}${SEO_CONFIG.DEFAULT_OG_IMAGE}`;
+    const imageToProcess = src || defaultImage;
+
+    // 1. If it's already a Cloudinary URL
+    if (imageToProcess.includes('res.cloudinary.com')) {
+        // Return with OG transformations
+        return imageToProcess.replace(/\/upload\/.*?\/(v\d+\/)?/, `/upload/f_auto,q_auto,w_1200,h_630,c_fill,g_auto/`);
+    }
+
+    // 2. If it's an absolute URL (Firebase etc)
+    if (imageToProcess.startsWith('http')) {
+        return `https://res.cloudinary.com/${CLOUD_NAME}/image/fetch/f_auto,q_auto,w_1200,h_630,c_fill,g_auto/${encodeURIComponent(imageToProcess)}`;
+    }
+
+    // 3. Local path
+    const cleanPath = imageToProcess.startsWith('/') ? imageToProcess.substring(1) : imageToProcess;
+    const publicId = `TEFA/${cleanPath.replace(/\//g, '_').replace(/\.[^/.]+$/, "")}`;
+    return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/f_auto,q_auto,w_1200,h_630,c_fill,g_auto/${encodeURIComponent(publicId)}`;
+};
