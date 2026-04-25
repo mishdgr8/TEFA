@@ -12,7 +12,7 @@ export const SEO_CONFIG = {
     DEFAULT_TITLE: 'TÉFA — Premium African Fashion | Handcrafted in Lagos',
     DEFAULT_DESCRIPTION:
         'TÉFA — Ethically handcrafted luxury African fashion. Discover premium kaftans, bold sets, and contemporary gowns from Lagos, Nigeria. Blending rich African heritage with modern, sophisticated aesthetics for the bold and beautiful worldwide.',
-    DEFAULT_OG_IMAGE: '/assets/branding/logo-black.png',
+    DEFAULT_OG_IMAGE: '/assets/branding/logo-premium.png',
     TWITTER_HANDLE: '@shop.tefa',
     INSTAGRAM_HANDLE: '@shop.tefa',
     LOCALE: 'en_US',
@@ -59,19 +59,26 @@ export const getCloudinaryOgUrl = (src?: string): string => {
     const defaultImage = `${SEO_CONFIG.SITE_URL}${SEO_CONFIG.DEFAULT_OG_IMAGE}`;
     const imageToProcess = src || defaultImage;
 
+    // Determine transformation based on whether it's a product or a logo
+    // Products usually look better with 'c_fill' (cropped to fill)
+    // Logos/Branding look better with 'c_pad' (padded with background)
+    const isProduct = src && (src.includes('/product/') || src.includes('firebasestorage') || src.includes('products%2F'));
+    const transformation = isProduct
+        ? 'f_auto,q_auto,w_1200,h_630,c_fill,g_auto'
+        : 'f_auto,q_auto,w_1200,h_630,c_pad,b_black'; // Use padding for logos to keep them elegant
+
     // 1. If it's already a Cloudinary URL
     if (imageToProcess.includes('res.cloudinary.com')) {
-        // Return with OG transformations
-        return imageToProcess.replace(/\/upload\/.*?\/(v\d+\/)?/, `/upload/f_auto,q_auto,w_1200,h_630,c_fill,g_auto/`);
+        return imageToProcess.replace(/\/upload\/.*?\/(v\d+\/)?/, `/upload/${transformation}/`);
     }
 
-    // 2. If it's an absolute URL (Firebase etc)
+    // 2. If it's an absolute URL
     if (imageToProcess.startsWith('http')) {
-        return `https://res.cloudinary.com/${CLOUD_NAME}/image/fetch/f_auto,q_auto,w_1200,h_630,c_fill,g_auto/${encodeURIComponent(imageToProcess)}`;
+        return `https://res.cloudinary.com/${CLOUD_NAME}/image/fetch/${transformation}/${encodeURIComponent(imageToProcess)}`;
     }
 
     // 3. Local path
     const cleanPath = imageToProcess.startsWith('/') ? imageToProcess.substring(1) : imageToProcess;
     const publicId = `TEFA/${cleanPath.replace(/\//g, '_').replace(/\.[^/.]+$/, "")}`;
-    return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/f_auto,q_auto,w_1200,h_630,c_fill,g_auto/${encodeURIComponent(publicId)}`;
+    return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${transformation}/${encodeURIComponent(publicId)}`;
 };
